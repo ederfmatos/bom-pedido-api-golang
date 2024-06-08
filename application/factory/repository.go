@@ -6,8 +6,15 @@ import (
 
 type RepositoryFactory struct {
 	CustomerRepository repository.CustomerRepository
+	ProductRepository  repository.ProductRepository
 }
 
-func NewRepositoryFactory(customerRepository repository.CustomerRepository) *RepositoryFactory {
-	return &RepositoryFactory{CustomerRepository: customerRepository}
+func NewRepositoryFactory(
+	customerRepository repository.CustomerRepository,
+	productRepository repository.ProductRepository,
+) *RepositoryFactory {
+	return &RepositoryFactory{
+		CustomerRepository: customerRepository,
+		ProductRepository:  productRepository,
+	}
 }

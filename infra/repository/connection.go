@@ -12,7 +12,8 @@ type SqlConnection interface {
 type ConnectionBuilder interface {
 	Values(value ...interface{}) ConnectionBuilder
 	Update(ctx context.Context) error
-	FindOne(ctx context.Context, values ...interface{}) error
+	FindOne(ctx context.Context, values ...interface{}) (bool, error)
+	Exists(ctx context.Context) (bool, error)
 }
 
 type DefaultSqlConnection struct {
@@ -43,7 +44,7 @@ func (builder *DefaultConnectionBuilder) Values(value ...interface{}) Connection
 }
 
 func (builder *DefaultConnectionBuilder) Update(ctx context.Context) error {
-	statement, err := builder.database.Prepare(*builder.sql)
+	statement, err := builder.database.PrepareContext(ctx, *builder.sql)
 	if err != nil {
 		return err
 	}
@@ -52,12 +53,25 @@ func (builder *DefaultConnectionBuilder) Update(ctx context.Context) error {
 	return err
 }
 
-func (builder *DefaultConnectionBuilder) FindOne(ctx context.Context, values ...interface{}) error {
-	statement, err := builder.database.Prepare(*builder.sql)
+func (builder *DefaultConnectionBuilder) FindOne(ctx context.Context, values ...interface{}) (bool, error) {
+	statement, err := builder.database.PrepareContext(ctx, *builder.sql)
 	if err != nil {
-		return err
+		return false, err
 	}
 	defer statement.Close()
 	err = statement.QueryRowContext(ctx, builder.values).Scan(values)
-	return err
+	return true, err
+}
+
+func (builder *DefaultConnectionBuilder) Exists(ctx context.Context) (bool, error) {
+	statement, err := builder.database.PrepareContext(ctx, *builder.sql)
+	if err != nil {
+		return false, err
+	}
+	defer statement.Close()
+	rows, err := statement.QueryContext(ctx, builder.values)
+	if err != nil {
+		return false, err
+	}
+	return rows.Next(), nil
 }

@@ -21,6 +21,6 @@ func NewPhoneNumber(value string) (*PhoneNumber, error) {
 	return &PhoneNumber{value: cleanedNumber}, nil
 }
 
-func (p *PhoneNumber) Value() string {
-	return p.value
+func (p *PhoneNumber) Value() *string {
+	return &p.value
 }

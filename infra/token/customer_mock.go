@@ -1,7 +1,6 @@
 package token
 
 import (
-	"bom-pedido-api/application/token"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -9,7 +8,7 @@ type CustomerTokenManagerMock struct {
 	mock.Mock
 }
 
-func NewFakeCustomerTokenManager() token.CustomerTokenManager {
+func NewFakeCustomerTokenManager() *CustomerTokenManagerMock {
 	return &CustomerTokenManagerMock{}
 }
 

@@ -10,7 +10,7 @@ func TestNewEmail(t *testing.T) {
 		expectedErr string
 	}{
 		{"example@example.com", ""},
-		{"invalid-email", "invalid email format"},
+		{"invalid-email", "invalid email"},
 		{"another.valid@example.com", ""},
 		{"", "email is empty"},
 		{"toolong" + string(make([]byte, 250)) + "@example.com", "email is too long"},

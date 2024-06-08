@@ -10,8 +10,8 @@ const (
 type Customer struct {
 	Id          string
 	Name        string
-	Email       value_object.Email
-	PhoneNumber *value_object.PhoneNumber
+	email       value_object.Email
+	phoneNumber *value_object.PhoneNumber
 	Status      string
 }
 
@@ -23,7 +23,7 @@ func NewCustomer(name, email string) (*Customer, error) {
 	return &Customer{
 		Id:     value_object.NewID(),
 		Name:   name,
-		Email:  *newEmail,
+		email:  *newEmail,
 		Status: ACTIVE,
 	}, nil
 }
@@ -43,8 +43,8 @@ func RestoreCustomer(id, name, email, phoneNumber, status string) (*Customer, er
 	return &Customer{
 		Id:          id,
 		Name:        name,
-		Email:       *newEmail,
-		PhoneNumber: newPhoneNumber,
+		email:       *newEmail,
+		phoneNumber: newPhoneNumber,
 		Status:      status,
 	}, nil
 }
@@ -55,4 +55,24 @@ func (customer Customer) isActive() bool {
 
 func (customer Customer) isInactive() bool {
 	return customer.Status == INACTIVE
+}
+
+func (customer Customer) GetPhoneNumber() *string {
+	if customer.phoneNumber == nil {
+		return nil
+	}
+	return customer.phoneNumber.Value()
+}
+
+func (customer Customer) SetPhoneNumber(phoneNumber string) error {
+	newPhoneNumber, err := value_object.NewPhoneNumber(phoneNumber)
+	if err != nil {
+		return err
+	}
+	customer.phoneNumber = newPhoneNumber
+	return nil
+}
+
+func (customer Customer) GetEmail() *string {
+	return customer.email.Value()
 }

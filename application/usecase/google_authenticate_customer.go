@@ -1,4 +1,4 @@
-package auth
+package usecase
 
 import (
 	"bom-pedido-api/application/factory"
@@ -8,6 +8,15 @@ import (
 	"bom-pedido-api/domain/entity"
 	"context"
 )
+
+type GoogleAuthenticateCustomerInput struct {
+	Token   string
+	Context context.Context
+}
+
+type GoogleAuthenticateCustomerOutput struct {
+	Token string
+}
 
 type GoogleAuthenticateCustomerUseCase struct {
 	googleGateway        gateway.GoogleGateway
@@ -23,21 +32,11 @@ func NewGoogleAuthenticateCustomerUseCase(factory *factory.ApplicationFactory) *
 	}
 }
 
-type Input struct {
-	Token   string
-	Context context.Context
-}
-
-type Output struct {
-	Token string
-}
-
-func (useCase GoogleAuthenticateCustomerUseCase) Execute(input Input) (*Output, error) {
+func (useCase GoogleAuthenticateCustomerUseCase) Execute(input GoogleAuthenticateCustomerInput) (*GoogleAuthenticateCustomerOutput, error) {
 	googleUser, err := useCase.googleGateway.GetUserByToken(input.Token)
 	if err != nil {
 		return nil, err
 	}
-
 	customer, err := useCase.customerRepository.FindByEmail(input.Context, googleUser.Email)
 	if err != nil {
 		return nil, err
@@ -53,5 +52,5 @@ func (useCase GoogleAuthenticateCustomerUseCase) Execute(input Input) (*Output, 
 		}
 	}
 	customerToken, err := useCase.customerTokenManager.Encrypt(customer.Id)
-	return &Output{Token: customerToken}, err
+	return &GoogleAuthenticateCustomerOutput{Token: customerToken}, err
 }

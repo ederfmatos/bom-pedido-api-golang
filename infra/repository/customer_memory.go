@@ -30,7 +30,7 @@ func (repository *CustomerMemoryRepository) FindById(_ context.Context, id strin
 
 func (repository *CustomerMemoryRepository) FindByEmail(_ context.Context, email string) (*entity.Customer, error) {
 	for _, customer := range repository.customers {
-		if customer.Email.Value() == email {
+		if *customer.GetEmail() == email {
 			return customer, nil
 		}
 	}
