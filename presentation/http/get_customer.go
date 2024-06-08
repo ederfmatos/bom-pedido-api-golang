@@ -1,4 +1,4 @@
-package handler
+package http
 
 import (
 	"bom-pedido-api/application/factory"
@@ -6,14 +6,14 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func HandleGetAuthenticatedCustomer(appFactory *factory.ApplicationFactory) func(context echo.Context) error {
-	getCustomerUseCase := usecase.NewGetCustomerUseCase(appFactory)
+func HandleGetAuthenticatedCustomer(factory *factory.ApplicationFactory) func(context echo.Context) error {
+	useCase := usecase.NewGetCustomerUseCase(factory)
 	return func(context echo.Context) error {
 		input := usecase.GetCustomerInput{
 			Id:      context.Get("currentUserId").(string),
 			Context: context.Request().Context(),
 		}
-		output, err := getCustomerUseCase.Execute(input)
+		output, err := useCase.Execute(input)
 		if err != nil {
 			return err
 		}

@@ -22,6 +22,6 @@ func NewTestApplicationFactory() *ApplicationFactory {
 			repository.NewProductMemoryRepository(),
 		),
 		NewTokenFactory(token.NewFakeCustomerTokenManager()),
-		NewEventFactory(event.NewMemoryEventEmitter()),
+		NewEventFactory(event.NewMemoryEventEmitter(), nil),
 	}
 }

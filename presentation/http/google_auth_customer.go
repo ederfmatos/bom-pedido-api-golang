@@ -1,4 +1,4 @@
-package handler
+package http
 
 import (
 	"bom-pedido-api/application/factory"
@@ -10,8 +10,8 @@ type GoogleAuthCustomerRequest struct {
 	Token string `body:"token"`
 }
 
-func HandleGoogleAuthCustomer(appFactory *factory.ApplicationFactory) func(context echo.Context) error {
-	googleAuthenticateCustomerUseCase := usecase.NewGoogleAuthenticateCustomerUseCase(appFactory)
+func HandleGoogleAuthCustomer(factory *factory.ApplicationFactory) func(context echo.Context) error {
+	useCase := usecase.NewGoogleAuthenticateCustomerUseCase(factory)
 	return func(context echo.Context) error {
 		var request GoogleAuthCustomerRequest
 		err := context.Bind(&request)
@@ -22,7 +22,7 @@ func HandleGoogleAuthCustomer(appFactory *factory.ApplicationFactory) func(conte
 			Token:   request.Token,
 			Context: context.Request().Context(),
 		}
-		output, err := googleAuthenticateCustomerUseCase.Execute(input)
+		output, err := useCase.Execute(input)
 		if err != nil {
 			return err
 		}

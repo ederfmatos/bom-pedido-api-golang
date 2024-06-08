@@ -14,8 +14,15 @@ func NewApplicationFactory(database *sql.DB) *factory.ApplicationFactory {
 		GatewayFactory:    gatewayFactory(),
 		RepositoryFactory: repositoryFactory(database),
 		TokenFactory:      tokenFactory(),
-		EventFactory:      factory.NewEventFactory(event.NewMemoryEventEmitter()),
+		EventFactory:      eventFactory(),
 	}
+}
+
+func eventFactory() *factory.EventFactory {
+	kafkaServer := os.Getenv("KAFKA_SERVER")
+	eventEmitter := event.NewKafkaEventEmitter(kafkaServer)
+	eventHandler := event.NewKafkaEventHandler(kafkaServer)
+	return factory.NewEventFactory(eventEmitter, eventHandler)
 }
 
 func tokenFactory() *factory.TokenFactory {

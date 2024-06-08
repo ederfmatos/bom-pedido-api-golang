@@ -6,8 +6,12 @@ import (
 
 type EventFactory struct {
 	EventEmitter event.EventEmitter
+	EventHandler event.EventHandler
 }
 
-func NewEventFactory(EventEmitter event.EventEmitter) *EventFactory {
-	return &EventFactory{EventEmitter: EventEmitter}
+func NewEventFactory(EventEmitter event.EventEmitter, EventHandler event.EventHandler) *EventFactory {
+	return &EventFactory{
+		EventEmitter: EventEmitter,
+		EventHandler: EventHandler,
+	}
 }

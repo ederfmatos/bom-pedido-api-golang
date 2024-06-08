@@ -1,4 +1,4 @@
-package handler
+package http
 
 import (
 	"bom-pedido-api/application/factory"
@@ -12,8 +12,8 @@ type createProductRequest struct {
 	Price       float64 `body:"price" json:"price,omitempty"`
 }
 
-func HandleCreateProduct(appFactory *factory.ApplicationFactory) func(context echo.Context) error {
-	createProductUseCase := usecase.NewCreateProductUseCase(appFactory)
+func HandleCreateProduct(factory *factory.ApplicationFactory) func(context echo.Context) error {
+	createProductUseCase := usecase.NewCreateProductUseCase(factory)
 	return func(context echo.Context) error {
 		var request createProductRequest
 		err := context.Bind(&request)

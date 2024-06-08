@@ -49,7 +49,7 @@ func (builder *DefaultConnectionBuilder) Update(ctx context.Context) error {
 		return err
 	}
 	defer statement.Close()
-	_, err = statement.ExecContext(ctx, builder.values)
+	_, err = statement.ExecContext(ctx, builder.values...)
 	return err
 }
 
@@ -59,7 +59,7 @@ func (builder *DefaultConnectionBuilder) FindOne(ctx context.Context, values ...
 		return false, err
 	}
 	defer statement.Close()
-	err = statement.QueryRowContext(ctx, builder.values).Scan(values)
+	err = statement.QueryRowContext(ctx, builder.values...).Scan(values...)
 	return true, err
 }
 
@@ -69,7 +69,7 @@ func (builder *DefaultConnectionBuilder) Exists(ctx context.Context) (bool, erro
 		return false, err
 	}
 	defer statement.Close()
-	rows, err := statement.QueryContext(ctx, builder.values)
+	rows, err := statement.QueryContext(ctx, builder.values...)
 	if err != nil {
 		return false, err
 	}

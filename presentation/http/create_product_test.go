@@ -1,4 +1,4 @@
-package handler
+package http
 
 import (
 	"bom-pedido-api/application/factory"
