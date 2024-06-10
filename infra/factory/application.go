@@ -6,6 +6,7 @@ import (
 	"bom-pedido-api/infra/gateway"
 	"bom-pedido-api/infra/repository"
 	"database/sql"
+	"github.com/redis/go-redis/v9"
 	"os"
 )
 
@@ -37,7 +38,13 @@ func gatewayFactory() *factory.GatewayFactory {
 
 func repositoryFactory(database *sql.DB) *factory.RepositoryFactory {
 	connection := repository.NewDefaultSqlConnection(database)
+	options, err := redis.ParseURL(os.Getenv("REDIS_URL"))
+	if err != nil {
+		panic(err)
+	}
+	redisClient := redis.NewClient(options)
 	customerRepository := repository.NewDefaultCustomerRepository(connection)
 	productRepository := repository.NewDefaultProductRepository(connection)
-	return factory.NewRepositoryFactory(customerRepository, productRepository)
+	shoppingCartRepository := repository.NewShoppingCartRedisRepository(redisClient)
+	return factory.NewRepositoryFactory(customerRepository, productRepository, shoppingCartRepository)
 }

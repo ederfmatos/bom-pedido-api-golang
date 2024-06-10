@@ -20,6 +20,7 @@ func NewTestApplicationFactory() *ApplicationFactory {
 		NewRepositoryFactory(
 			repository.NewCustomerMemoryRepository(),
 			repository.NewProductMemoryRepository(),
+			repository.NewShoppingCartMemoryRepository(),
 		),
 		NewTokenFactory(token.NewFakeCustomerTokenManager()),
 		NewEventFactory(event.NewMemoryEventEmitter(), nil),

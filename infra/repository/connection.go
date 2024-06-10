@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 )
 
 type SqlConnection interface {
@@ -60,7 +61,13 @@ func (builder *DefaultConnectionBuilder) FindOne(ctx context.Context, values ...
 	}
 	defer statement.Close()
 	err = statement.QueryRowContext(ctx, builder.values...).Scan(values...)
-	return true, err
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 func (builder *DefaultConnectionBuilder) Exists(ctx context.Context) (bool, error) {

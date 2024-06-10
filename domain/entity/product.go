@@ -8,8 +8,9 @@ import (
 type ProductStatus string
 
 var (
-	ProductStatusActive   = ProductStatus("ACTIVE")
-	ProductStatusInactive = ProductStatus("INACTIVE")
+	ProductStatusActive      = ProductStatus("ACTIVE")
+	ProductStatusInactive    = ProductStatus("INACTIVE")
+	ProductStatusUnAvailable = ProductStatus("UNAVAILABLE")
 )
 
 type Product struct {
@@ -61,4 +62,12 @@ func (product *Product) Validate() error {
 
 func (product *Product) IsActive() bool {
 	return product.Status == ProductStatusActive
+}
+
+func (product *Product) IsUnAvailable() bool {
+	return product.Status == ProductStatusUnAvailable
+}
+
+func (product *Product) MarkUnAvailable() {
+	product.Status = ProductStatusUnAvailable
 }

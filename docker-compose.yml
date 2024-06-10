@@ -11,6 +11,12 @@ services:
     ports:
       - "3306:3306"
 
+  redis:
+    image: redis:alpine
+    container_name: bom-pedido-redis
+    ports:
+      - "6379:6379"
+
   zookeeper:
     image: confluentinc/cp-zookeeper:6.1.0
     container_name: bom-pedido-zookeeper

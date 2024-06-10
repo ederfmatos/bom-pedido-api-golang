@@ -32,3 +32,11 @@ func (composite *CompositeError) Error() string {
 	}
 	return strings.Join(errs, "\n")
 }
+
+func (composite *CompositeError) GetErrors() []string {
+	errs := make([]string, len(composite.Errors))
+	for i, err := range composite.Errors {
+		errs[i] = err.Error()
+	}
+	return errs
+}
