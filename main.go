@@ -3,6 +3,7 @@ package main
 import (
 	"bom-pedido-api/infra/factory"
 	"bom-pedido-api/presentation/http"
+	middleware2 "bom-pedido-api/presentation/http/middleware"
 	"bom-pedido-api/presentation/messaging"
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
@@ -24,12 +25,7 @@ func main() {
 	server.Use(middleware.Logger())
 	server.Use(middleware.Recover())
 	server.Use(middleware.RequestID())
-	server.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			c.Set("customerId", "RANDOM_ID")
-			return next(c)
-		}
-	})
+	server.Use(middleware2.AuthenticateMiddleware(applicationFactory))
 	server.HTTPErrorHandler = http.HandleError
 
 	group := server.Group("/api")

@@ -31,7 +31,7 @@ func (repository *DefaultCustomerRepository) FindById(ctx context.Context, id st
 	var name string
 	var status string
 	var phoneNumber string
-	found, err := repository.Sql("SELECT id, name, phone_number, status FROM customers WHERE id = ?").
+	found, err := repository.Sql("SELECT id, name, email, phone_number, status FROM customers WHERE id = ?").
 		Values(id).
 		FindOne(ctx, &id, &name, &email, &phoneNumber, &status)
 	if err != nil {
@@ -48,7 +48,7 @@ func (repository *DefaultCustomerRepository) FindByEmail(ctx context.Context, em
 	var name string
 	var status string
 	var phoneNumber string
-	found, err := repository.Sql("SELECT id, name, phone_number, status FROM customers WHERE email = ?").
+	found, err := repository.Sql("SELECT id, name, email, phone_number, status FROM customers WHERE email = ?").
 		Values(email).
 		FindOne(ctx, &id, &name, &email, &phoneNumber, &status)
 	if err != nil {

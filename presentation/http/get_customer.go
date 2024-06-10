@@ -10,7 +10,7 @@ func HandleGetAuthenticatedCustomer(factory *factory.ApplicationFactory) func(co
 	useCase := usecase.NewGetCustomerUseCase(factory)
 	return func(context echo.Context) error {
 		input := usecase.GetCustomerInput{
-			Id:      context.Get("currentUserId").(string),
+			Id:      context.Get("customerId").(string),
 			Context: context.Request().Context(),
 		}
 		output, err := useCase.Execute(input)

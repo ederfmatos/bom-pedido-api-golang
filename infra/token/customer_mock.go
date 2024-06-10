@@ -16,3 +16,8 @@ func (tokenManager *CustomerTokenManagerMock) Encrypt(id string) (string, error)
 	args := tokenManager.Called(id)
 	return args.String(0), args.Error(1)
 }
+
+func (tokenManager *CustomerTokenManagerMock) Decrypt(token string) (string, error) {
+	args := tokenManager.Called(token)
+	return args.String(0), args.Error(1)
+}
