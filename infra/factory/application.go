@@ -4,6 +4,7 @@ import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/infra/event"
 	"bom-pedido-api/infra/gateway"
+	"bom-pedido-api/infra/query"
 	"bom-pedido-api/infra/repository"
 	"bom-pedido-api/infra/token"
 	"crypto/rsa"
@@ -15,11 +16,19 @@ import (
 )
 
 func NewApplicationFactory(database *sql.DB) *factory.ApplicationFactory {
+	connection := repository.NewDefaultSqlConnection(database)
 	return &factory.ApplicationFactory{
 		GatewayFactory:    gatewayFactory(),
-		RepositoryFactory: repositoryFactory(database),
+		RepositoryFactory: repositoryFactory(connection),
 		TokenFactory:      tokenFactory(),
 		EventFactory:      eventFactory(),
+		QueryFactory:      queryFactory(connection),
+	}
+}
+
+func queryFactory(connection repository.SqlConnection) *factory.QueryFactory {
+	return &factory.QueryFactory{
+		ProductQuery: query.NewProductSqlQuery(connection),
 	}
 }
 
@@ -58,8 +67,7 @@ func gatewayFactory() *factory.GatewayFactory {
 	)
 }
 
-func repositoryFactory(database *sql.DB) *factory.RepositoryFactory {
-	connection := repository.NewDefaultSqlConnection(database)
+func repositoryFactory(connection repository.SqlConnection) *factory.RepositoryFactory {
 	options, err := redis.ParseURL(os.Getenv("REDIS_URL"))
 	if err != nil {
 		panic(err)

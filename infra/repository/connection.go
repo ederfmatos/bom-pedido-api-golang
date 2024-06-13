@@ -10,10 +10,13 @@ type SqlConnection interface {
 	Sql(sql string) ConnectionBuilder
 }
 
+type Mapper func(getValues func(dest ...any) error) error
+
 type ConnectionBuilder interface {
 	Values(value ...interface{}) ConnectionBuilder
 	Update(ctx context.Context) error
 	FindOne(ctx context.Context, values ...interface{}) (bool, error)
+	List(ctx context.Context, mapper Mapper) error
 	Exists(ctx context.Context) (bool, error)
 }
 
@@ -81,4 +84,25 @@ func (builder *DefaultConnectionBuilder) Exists(ctx context.Context) (bool, erro
 		return false, err
 	}
 	return rows.Next(), nil
+}
+
+func (builder *DefaultConnectionBuilder) List(ctx context.Context, mapper Mapper) error {
+	statement, err := builder.database.PrepareContext(ctx, *builder.sql)
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+	rows, err := statement.QueryContext(ctx, builder.values...)
+	if err != nil {
+		return err
+	}
+	for rows.Next() {
+		err = mapper(func(dest ...any) error {
+			return rows.Scan(dest...)
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

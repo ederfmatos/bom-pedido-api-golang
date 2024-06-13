@@ -26,11 +26,12 @@ func main() {
 	server.Use(middleware.Recover())
 	server.Use(middleware.RequestID())
 	server.Use(middleware2.AuthenticateMiddleware(applicationFactory))
-	server.HTTPErrorHandler = http.HandleError
+	server.HTTPErrorHandler = middleware2.HandleError
 
 	group := server.Group("/api")
 	group.PATCH("/v1/shopping-cart/items", http.HandleAddItemToShoppingCart(applicationFactory))
 	group.POST("/v1/products", http.HandleCreateProduct(applicationFactory))
+	group.GET("/v1/products", http.HandleListProducts(applicationFactory))
 	group.POST("/v1/auth/google/customer", http.HandleGoogleAuthCustomer(applicationFactory))
 	group.GET("/v1/customers/me", http.HandleGetAuthenticatedCustomer(applicationFactory))
 	group.GET("/health", http.HandleHealth)

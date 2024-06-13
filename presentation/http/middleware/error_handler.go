@@ -1,4 +1,4 @@
-package http
+package middleware
 
 import (
 	domainError "bom-pedido-api/domain/errors"

@@ -12,6 +12,7 @@ type ApplicationFactory struct {
 	*RepositoryFactory
 	*TokenFactory
 	*EventFactory
+	*QueryFactory
 }
 
 func NewTestApplicationFactory() *ApplicationFactory {
@@ -24,5 +25,6 @@ func NewTestApplicationFactory() *ApplicationFactory {
 		),
 		NewTokenFactory(token.NewFakeCustomerTokenManager()),
 		NewEventFactory(event.NewMemoryEventEmitter(), nil),
+		nil,
 	}
 }
