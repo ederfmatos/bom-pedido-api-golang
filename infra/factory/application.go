@@ -2,6 +2,7 @@ package factory
 
 import (
 	"bom-pedido-api/application/factory"
+	"bom-pedido-api/infra/env"
 	"bom-pedido-api/infra/event"
 	"bom-pedido-api/infra/gateway"
 	"bom-pedido-api/infra/query"
@@ -15,13 +16,13 @@ import (
 	"os"
 )
 
-func NewApplicationFactory(database *sql.DB) *factory.ApplicationFactory {
+func NewApplicationFactory(database *sql.DB, environment *env.Environment) *factory.ApplicationFactory {
 	connection := repository.NewDefaultSqlConnection(database)
 	return &factory.ApplicationFactory{
-		GatewayFactory:    gatewayFactory(),
-		RepositoryFactory: repositoryFactory(connection),
-		TokenFactory:      tokenFactory(),
-		EventFactory:      eventFactory(),
+		GatewayFactory:    gatewayFactory(environment),
+		RepositoryFactory: repositoryFactory(connection, environment),
+		TokenFactory:      tokenFactory(environment),
+		EventFactory:      eventFactory(environment),
 		QueryFactory:      queryFactory(connection),
 	}
 }
@@ -32,15 +33,13 @@ func queryFactory(connection repository.SqlConnection) *factory.QueryFactory {
 	}
 }
 
-func eventFactory() *factory.EventFactory {
-	kafkaServer := os.Getenv("KAFKA_SERVER")
-	eventEmitter := event.NewKafkaEventEmitter(kafkaServer)
-	eventHandler := event.NewKafkaEventHandler(kafkaServer)
-	return factory.NewEventFactory(eventEmitter, eventHandler)
+func eventFactory(environment *env.Environment) *factory.EventFactory {
+	rabbitMqAdapter := event.NewRabbitMqAdapter(environment.RabbitMqServer)
+	return factory.NewEventFactory(rabbitMqAdapter, rabbitMqAdapter)
 }
 
-func tokenFactory() *factory.TokenFactory {
-	privateKey := loadPrivateKey(os.Getenv("JWE_PRIVATE_KEY_PATH"))
+func tokenFactory(environment *env.Environment) *factory.TokenFactory {
+	privateKey := loadPrivateKey(environment.JwePrivateKeyPath)
 	tokenManager := token.NewCustomerTokenManager(privateKey)
 	return factory.NewTokenFactory(tokenManager)
 }
@@ -61,14 +60,14 @@ func loadPrivateKey(file string) *rsa.PrivateKey {
 	return key
 }
 
-func gatewayFactory() *factory.GatewayFactory {
+func gatewayFactory(environment *env.Environment) *factory.GatewayFactory {
 	return factory.NewGatewayFactory(
-		gateway.NewDefaultGoogleGateway(os.Getenv("GOOGLE_AUTH_URL")),
+		gateway.NewDefaultGoogleGateway(environment.GoogleAuthUrl),
 	)
 }
 
-func repositoryFactory(connection repository.SqlConnection) *factory.RepositoryFactory {
-	options, err := redis.ParseURL(os.Getenv("REDIS_URL"))
+func repositoryFactory(connection repository.SqlConnection, environment *env.Environment) *factory.RepositoryFactory {
+	options, err := redis.ParseURL(environment.RedisUrl)
 	if err != nil {
 		panic(err)
 	}

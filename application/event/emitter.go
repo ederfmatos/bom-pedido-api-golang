@@ -1,5 +1,7 @@
 package event
 
+import "context"
+
 type EventEmitter interface {
-	Emit(event *Event) error
+	Emit(ctx context.Context, event *Event) error
 }

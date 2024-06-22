@@ -49,7 +49,7 @@ func (useCase CreateProductUseCase) Execute(input CreateProductInput) (*CreatePr
 	if err != nil {
 		return nil, err
 	}
-	err = useCase.eventEmitter.Emit(events.NewProductCreatedEvent(product))
+	err = useCase.eventEmitter.Emit(input.Context, events.NewProductCreatedEvent(product))
 	if err != nil {
 		return nil, err
 	}

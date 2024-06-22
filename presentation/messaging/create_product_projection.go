@@ -2,12 +2,12 @@ package messaging
 
 import (
 	"bom-pedido-api/application/event"
-	"fmt"
+	"log/slog"
 )
 
 func HandleCreateProductProjection() func(event event.Event) error {
 	return func(event event.Event) error {
-		fmt.Printf("Event received: %v\n", event)
+		slog.Info("Handling CreateProductProjection event", "product", event.Data)
 		return nil
 	}
 }
