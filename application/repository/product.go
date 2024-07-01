@@ -10,4 +10,5 @@ type ProductRepository interface {
 	Update(ctx context.Context, product *entity.Product) error
 	FindById(ctx context.Context, id string) (*entity.Product, error)
 	ExistsByName(ctx context.Context, name string) (bool, error)
+	FindAllById(ctx context.Context, ids []string) (map[string]*entity.Product, error)
 }
