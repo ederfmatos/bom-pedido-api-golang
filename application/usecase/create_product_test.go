@@ -75,8 +75,8 @@ func TestCreateProductUseCase_Execute(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.NotNil(t, output)
-		assert.NotEmpty(t, output.ID)
-		savedProduct, _ := applicationFactory.ProductRepository.FindById(input.Context, output.ID)
+		assert.NotEmpty(t, output.Id)
+		savedProduct, _ := applicationFactory.ProductRepository.FindById(input.Context, output.Id)
 		assert.NotNil(t, savedProduct)
 		assert.Equal(t, input.Name, savedProduct.Name)
 		assert.Equal(t, input.Description, savedProduct.Description)

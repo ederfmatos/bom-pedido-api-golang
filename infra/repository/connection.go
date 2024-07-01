@@ -8,16 +8,25 @@ import (
 
 type SqlConnection interface {
 	Sql(sql string) ConnectionBuilder
+	InTransaction(ctx context.Context, handler func(transaction SqlTransaction) error) error
 }
 
-type Mapper func(getValues func(dest ...any) error) error
+type SqlTransaction interface {
+	Sql(sql string) ConnectionBuilder
+}
+
+type RowMapper func(getValues func(dest ...any) error) error
 
 type ConnectionBuilder interface {
 	Values(value ...interface{}) ConnectionBuilder
 	Update(ctx context.Context) error
 	FindOne(ctx context.Context, values ...interface{}) (bool, error)
-	List(ctx context.Context, mapper Mapper) error
+	List(ctx context.Context, mapper RowMapper) error
 	Exists(ctx context.Context) (bool, error)
+}
+
+type Connection interface {
+	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
 }
 
 type DefaultSqlConnection struct {
@@ -25,21 +34,53 @@ type DefaultSqlConnection struct {
 }
 
 func NewDefaultSqlConnection(database *sql.DB) SqlConnection {
-	return &DefaultSqlConnection{database: database}
+	return &DefaultSqlConnection{database}
+}
+
+type DefaultSqlTransaction struct {
+	transaction *sql.Tx
+}
+
+func (transaction *DefaultSqlTransaction) Sql(sql string) ConnectionBuilder {
+	return &DefaultConnectionBuilder{
+		sql:        &sql,
+		values:     []interface{}{},
+		connection: transaction.transaction,
+	}
+}
+
+func (connection *DefaultSqlConnection) InTransaction(ctx context.Context, handler func(connection SqlTransaction) error) error {
+	tx, err := connection.database.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	transaction := &DefaultSqlTransaction{transaction: tx}
+	err = handler(transaction)
+	if err == nil {
+		if err := tx.Commit(); err != nil {
+			return err
+		}
+		return nil
+	}
+	rollbackError := tx.Rollback()
+	if rollbackError == nil {
+		return err
+	}
+	return rollbackError
 }
 
 func (connection *DefaultSqlConnection) Sql(sql string) ConnectionBuilder {
 	return &DefaultConnectionBuilder{
-		sql:      &sql,
-		database: connection.database,
-		values:   []interface{}{},
+		sql:        &sql,
+		values:     []interface{}{},
+		connection: connection.database,
 	}
 }
 
 type DefaultConnectionBuilder struct {
-	sql      *string
-	database *sql.DB
-	values   []interface{}
+	sql        *string
+	values     []interface{}
+	connection Connection
 }
 
 func (builder *DefaultConnectionBuilder) Values(value ...interface{}) ConnectionBuilder {
@@ -48,7 +89,7 @@ func (builder *DefaultConnectionBuilder) Values(value ...interface{}) Connection
 }
 
 func (builder *DefaultConnectionBuilder) Update(ctx context.Context) error {
-	statement, err := builder.database.PrepareContext(ctx, *builder.sql)
+	statement, err := builder.connection.PrepareContext(ctx, *builder.sql)
 	if err != nil {
 		return err
 	}
@@ -58,7 +99,7 @@ func (builder *DefaultConnectionBuilder) Update(ctx context.Context) error {
 }
 
 func (builder *DefaultConnectionBuilder) FindOne(ctx context.Context, values ...interface{}) (bool, error) {
-	statement, err := builder.database.PrepareContext(ctx, *builder.sql)
+	statement, err := builder.connection.PrepareContext(ctx, *builder.sql)
 	if err != nil {
 		return false, err
 	}
@@ -74,7 +115,7 @@ func (builder *DefaultConnectionBuilder) FindOne(ctx context.Context, values ...
 }
 
 func (builder *DefaultConnectionBuilder) Exists(ctx context.Context) (bool, error) {
-	statement, err := builder.database.PrepareContext(ctx, *builder.sql)
+	statement, err := builder.connection.PrepareContext(ctx, *builder.sql)
 	if err != nil {
 		return false, err
 	}
@@ -86,8 +127,8 @@ func (builder *DefaultConnectionBuilder) Exists(ctx context.Context) (bool, erro
 	return rows.Next(), nil
 }
 
-func (builder *DefaultConnectionBuilder) List(ctx context.Context, mapper Mapper) error {
-	statement, err := builder.database.PrepareContext(ctx, *builder.sql)
+func (builder *DefaultConnectionBuilder) List(ctx context.Context, mapper RowMapper) error {
+	statement, err := builder.connection.PrepareContext(ctx, *builder.sql)
 	if err != nil {
 		return err
 	}

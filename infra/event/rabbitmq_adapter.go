@@ -13,11 +13,16 @@ var eventExchanges map[string]string
 func init() {
 	eventExchanges = map[string]string{
 		"PRODUCT_CREATED": "PRODUCTS",
+		"ORDER_CREATED":   "ORDERS",
 	}
 }
 
 type RabbitMqAdapter struct {
-	channel *amqp.Channel
+	connection *amqp.Connection
+}
+
+func (adapter *RabbitMqAdapter) Close() {
+	adapter.connection.Close()
 }
 
 func NewRabbitMqAdapter(server string) *RabbitMqAdapter {
@@ -25,25 +30,7 @@ func NewRabbitMqAdapter(server string) *RabbitMqAdapter {
 	if err != nil {
 		panic(err)
 	}
-	go func() {
-		<-connection.NotifyClose(make(chan *amqp.Error))
-	}()
-	channel, err := connection.Channel()
-	if err != nil {
-		slog.Error("Error on open rabbitmq channel", err)
-		panic(err)
-	}
-	err = channel.Qos(
-		10,
-		0,
-		false,
-	)
-	if err != nil {
-		slog.Error("Error on open rabbitmq channel", err)
-		panic(err)
-		return nil
-	}
-	return &RabbitMqAdapter{channel: channel}
+	return &RabbitMqAdapter{connection: connection}
 }
 
 func (adapter *RabbitMqAdapter) Emit(context context.Context, event *event.Event) error {
@@ -54,7 +41,12 @@ func (adapter *RabbitMqAdapter) Emit(context context.Context, event *event.Event
 	}
 	slog.Info("Emitting event", "event", event)
 	exchange := eventExchanges[event.Name]
-	err = adapter.channel.PublishWithContext(
+	channel, err := adapter.connection.Channel()
+	if err != nil {
+		slog.Error("Error on open rabbitmq channel", err)
+		return err
+	}
+	err = channel.PublishWithContext(
 		context,
 		exchange,
 		event.Name,
@@ -74,13 +66,17 @@ func (adapter *RabbitMqAdapter) Emit(context context.Context, event *event.Event
 }
 
 func (adapter *RabbitMqAdapter) Consume(queue string, handler func(event event.Event) error) {
-	go func() {
-		_, err := adapter.channel.QueueDeclarePassive(queue, true, false, false, false, nil)
-		if err != nil {
-			slog.Error("Error on declare queue", "queue", queue, "error", err)
-		}
-	}()
-	messages, err := adapter.channel.Consume(
+	channel, err := adapter.connection.Channel()
+	defer channel.Close()
+	if err != nil {
+		slog.Error("Error on open rabbitmq channel", err)
+		return
+	}
+	_, err = channel.QueueDeclarePassive(queue, true, false, false, false, nil)
+	if err != nil {
+		slog.Error("Error on declare queue", "queue", queue, "error", err)
+	}
+	messages, err := channel.Consume(
 		queue,
 		"",
 		false,

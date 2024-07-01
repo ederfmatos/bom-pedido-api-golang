@@ -1,7 +1,15 @@
 package entity
 
 import (
+	"bom-pedido-api/domain/errors"
 	"bom-pedido-api/domain/value_object"
+	"time"
+)
+
+var (
+	ShoppingCartEmptyError      = errors.New("Your shopping cart is empty")
+	CardTokenIsRequiredError    = errors.New("The card token is required")
+	ChangeShouldBePositiveError = errors.New("The change should be positive")
 )
 
 type ShoppingCart struct {
@@ -10,8 +18,8 @@ type ShoppingCart struct {
 }
 
 type ShoppingCartItem struct {
-	Id          string
-	ProductId   string
+	Id        string
+	ProductId string
 	Quantity    int
 	Observation string
 	Price       float64
@@ -34,7 +42,7 @@ func (shoppingCart *ShoppingCart) AddItem(product *Product, quantity int, observ
 	}
 	item := ShoppingCartItem{
 		Id:          value_object.NewID(),
-		ProductId:   product.ID,
+		ProductId:   product.Id,
 		Quantity:    quantity,
 		Observation: observation,
 		Price:       product.Price,
@@ -53,4 +61,33 @@ func (shoppingCart *ShoppingCart) GetPrice() float64 {
 
 func (shoppingCart *ShoppingCart) GetItems() []ShoppingCartItem {
 	return shoppingCart.Items
+}
+
+func (shoppingCart *ShoppingCart) Checkout(
+	paymentMethodString, deliveryModeString, paymentModeString, cardToken string,
+	change float64,
+	products map[string]*Product,
+	deliveryTime time.Duration,
+) (*Order, error) {
+	if shoppingCart.IsEmpty() {
+		return nil, ShoppingCartEmptyError
+	}
+	order, err := NewOrder(shoppingCart.CustomerId, paymentMethodString, paymentModeString, deliveryModeString, cardToken, change, time.Now().Add(deliveryTime))
+	if err != nil {
+		return nil, err
+	}
+	compositeError := errors.NewCompositeError()
+	for _, item := range shoppingCart.Items {
+		product := products[item.ProductId]
+		err := order.AddProduct(product, item.Quantity, item.Observation)
+		compositeError.Append(err)
+	}
+	if compositeError.HasError() {
+		return nil, compositeError
+	}
+	return order, nil
+}
+
+func (shoppingCart *ShoppingCart) IsEmpty() bool {
+	return len(shoppingCart.Items) == 0
 }

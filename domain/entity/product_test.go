@@ -16,23 +16,23 @@ func TestProduct_Validate(t *testing.T) {
 		Errors  []error
 	}{
 		{
-			Product: &Product{ID: value_object.NewID(), Name: "", Price: 0.0, Status: "RANDOM"},
+			Product: &Product{Id: value_object.NewID(), Name: "", Price: 0.0, Status: "RANDOM"},
 			Errors:  []error{ProductNameIsRequiredError, ProductPriceIsRequiredError, InvalidProductStatusError},
 		},
 		{
-			Product: &Product{ID: value_object.NewID(), Name: "", Price: -1.0, Status: "RANDOM"},
+			Product: &Product{Id: value_object.NewID(), Name: "", Price: -1.0, Status: "RANDOM"},
 			Errors:  []error{ProductNameIsRequiredError, ProductPriceShouldPositiveError, InvalidProductStatusError},
 		},
 		{
-			Product: &Product{ID: value_object.NewID(), Name: "", Price: 5.0, Status: "RANDOM"},
+			Product: &Product{Id: value_object.NewID(), Name: "", Price: 5.0, Status: "RANDOM"},
 			Errors:  []error{ProductNameIsRequiredError, InvalidProductStatusError},
 		},
 		{
-			Product: &Product{ID: value_object.NewID(), Name: "", Price: -1.0, Status: "ACTIVE"},
+			Product: &Product{Id: value_object.NewID(), Name: "", Price: -1.0, Status: "ACTIVE"},
 			Errors:  []error{ProductNameIsRequiredError, ProductPriceShouldPositiveError},
 		},
 		{
-			Product: &Product{ID: value_object.NewID(), Name: faker.Name(), Price: 10.0, Status: "ACTIVE"},
+			Product: &Product{Id: value_object.NewID(), Name: faker.Name(), Price: 10.0, Status: "ACTIVE"},
 			Errors:  []error{},
 		},
 	}
@@ -40,7 +40,7 @@ func TestProduct_Validate(t *testing.T) {
 		t.Run(fmt.Sprintf("should return errors %v", test.Errors), func(t *testing.T) {
 			err := test.Product.Validate()
 			if len(test.Errors) == 0 {
-				assert.Nil(t, err)
+				assert.NoError(t, err)
 				return
 			}
 
