@@ -1,8 +1,8 @@
 package usecase
 
 import (
-	"bom-pedido-api/application/factory"
 	"bom-pedido-api/domain/entity"
+	"bom-pedido-api/infra/factory"
 	"context"
 	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/assert"

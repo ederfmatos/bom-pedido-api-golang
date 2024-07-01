@@ -1,8 +1,8 @@
 package http
 
 import (
-	"bom-pedido-api/application/factory"
 	"bom-pedido-api/application/usecase"
+	"bom-pedido-api/infra/factory"
 	"bytes"
 	"context"
 	"encoding/json"

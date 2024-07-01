@@ -1,10 +1,10 @@
 package usecase
 
 import (
-	"bom-pedido-api/application/factory"
 	"bom-pedido-api/domain/entity"
 	"bom-pedido-api/domain/errors"
 	"bom-pedido-api/domain/value_object"
+	"bom-pedido-api/infra/factory"
 	"context"
 	"fmt"
 	"github.com/go-faker/faker/v4"

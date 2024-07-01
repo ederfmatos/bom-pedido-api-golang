@@ -28,9 +28,7 @@ func NewApplicationFactory(database *sql.DB, environment *env.Environment) *fact
 }
 
 func queryFactory(connection repository.SqlConnection) *factory.QueryFactory {
-	return &factory.QueryFactory{
-		ProductQuery: query.NewProductSqlQuery(connection),
-	}
+	return factory.NewQueryFactory(query.NewProductSqlQuery(connection))
 }
 
 func eventFactory(environment *env.Environment) *factory.EventFactory {
