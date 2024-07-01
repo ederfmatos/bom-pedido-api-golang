@@ -1,7 +1,14 @@
 package entity
 
 import (
+	"bom-pedido-api/domain/enums"
+	"bom-pedido-api/domain/errors"
 	"bom-pedido-api/domain/value_object"
+)
+
+var (
+	ShoppingCartNotFoundError      = errors.New("Produto não encontrado")
+	CreditCardTokenIsRequiredError = errors.New("The credit card token is required")
 )
 
 type ShoppingCart struct {
@@ -53,4 +60,21 @@ func (shoppingCart *ShoppingCart) GetPrice() float64 {
 
 func (shoppingCart *ShoppingCart) GetItems() []ShoppingCartItem {
 	return shoppingCart.Items
+}
+
+func (shoppingCart *ShoppingCart) Checkout(paymentMethod enums.PaymentMethod, deliveryMode enums.DeliveryMode, paymentMode enums.PaymentMode, change float64, cardToken string, products map[string]*Product) (*Order, error) {
+	composite := errors.NewCompositeError()
+	if paymentMethod.IsCreditCard() && paymentMode.IsValid() && cardToken == "" {
+		composite.Append(CreditCardTokenIsRequiredError)
+	}
+	order := NewOrder(shoppingCart.CustomerId, paymentMethod, paymentMode, deliveryMode, cardToken, change)
+	for _, item := range shoppingCart.Items {
+		product := products[item.ProductId]
+		err := order.AddProduct(product, item.Quantity, item.Observation)
+		composite.Append(err)
+	}
+	if composite.HasError() {
+		return nil, composite.AsError()
+	}
+	return order, nil
 }

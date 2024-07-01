@@ -15,7 +15,9 @@ func NewCompositeWithError(err error) *CompositeError {
 }
 
 func (composite *CompositeError) Append(err *DomainError) {
-	composite.Errors = append(composite.Errors, err)
+	if err != nil {
+		composite.Errors = append(composite.Errors, err)
+	}
 }
 
 func (composite *CompositeError) AsError() error {
@@ -23,6 +25,10 @@ func (composite *CompositeError) AsError() error {
 		return nil
 	}
 	return composite
+}
+
+func (composite *CompositeError) HasError() bool {
+	return len(composite.Errors) > 0
 }
 
 func (composite *CompositeError) Error() string {
