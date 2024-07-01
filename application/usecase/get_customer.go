@@ -3,7 +3,7 @@ package usecase
 import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/application/repository"
-	"bom-pedido-api/domain/errors"
+	"bom-pedido-api/domain/entity"
 	"context"
 )
 
@@ -34,7 +34,7 @@ func (useCase GetCustomerUseCase) Execute(input GetCustomerInput) (*GetCustomerO
 		return nil, err
 	}
 	if customer == nil {
-		return nil, errors.CustomerNotFoundError
+		return nil, entity.CustomerNotFoundError
 	}
 	return &GetCustomerOutput{
 		Name:        customer.Name,

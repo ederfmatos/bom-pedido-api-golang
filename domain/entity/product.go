@@ -13,6 +13,16 @@ var (
 	ProductStatusUnAvailable = ProductStatus("UNAVAILABLE")
 )
 
+var (
+	ProductNameIsRequiredError      = errors.New("product name is required")
+	ProductPriceIsRequiredError     = errors.New("product price is required")
+	ProductPriceShouldPositiveError = errors.New("product price should positive")
+	InvalidProductStatusError       = errors.New("invalid product status")
+	ProductWithSameNameError        = errors.New("product with this name already exists")
+	ProductUnAvailableError         = errors.New("Produto indisponível")
+	ProductNotFoundError            = errors.New("Produto não encontrado")
+)
+
 type Product struct {
 	ID          string
 	Name        string
@@ -46,16 +56,16 @@ func RestoreProduct(ID, name, description string, price float64, status string) 
 func (product *Product) Validate() error {
 	compositeError := errors.NewCompositeError()
 	if product.Name == "" {
-		compositeError.Append(errors.ProductNameIsRequired)
+		compositeError.Append(ProductNameIsRequiredError)
 	}
 	if product.Price == 0.0 {
-		compositeError.Append(errors.ProductPriceIsRequired)
+		compositeError.Append(ProductPriceIsRequiredError)
 	}
 	if product.Price < 0.0 {
-		compositeError.Append(errors.ProductPriceShouldPositive)
+		compositeError.Append(ProductPriceShouldPositiveError)
 	}
 	if product.Status != ProductStatusActive && product.Status != ProductStatusInactive {
-		compositeError.Append(errors.InvalidProductStatus)
+		compositeError.Append(InvalidProductStatusError)
 	}
 	return compositeError.AsError()
 }

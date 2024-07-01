@@ -14,7 +14,7 @@ func NewCompositeWithError(err error) *CompositeError {
 	return &CompositeError{Errors: []error{err}}
 }
 
-func (composite *CompositeError) Append(err error) {
+func (composite *CompositeError) Append(err *DomainError) {
 	composite.Errors = append(composite.Errors, err)
 }
 

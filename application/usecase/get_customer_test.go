@@ -3,7 +3,6 @@ package usecase
 import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/domain/entity"
-	"bom-pedido-api/domain/errors"
 	"context"
 	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/assert"
@@ -20,7 +19,7 @@ func TestGetCustomerUseCase_Execute(t *testing.T) {
 		output, err := useCase.Execute(input)
 
 		assert.Nil(t, output)
-		assert.ErrorIs(t, errors.CustomerNotFoundError, err)
+		assert.ErrorIs(t, entity.CustomerNotFoundError, err)
 	})
 
 	t.Run("should return a customer", func(t *testing.T) {

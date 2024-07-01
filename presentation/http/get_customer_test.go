@@ -4,7 +4,6 @@ import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/application/usecase"
 	"bom-pedido-api/domain/entity"
-	"bom-pedido-api/domain/errors"
 	"bom-pedido-api/domain/value_object"
 	"encoding/json"
 	"github.com/go-faker/faker/v4"
@@ -29,7 +28,7 @@ func Test_GetCustomer(t *testing.T) {
 		request := httptest.NewRequest(http.MethodGet, "/v1/customers/me", nil)
 		response := httptest.NewRecorder()
 		echoContext := e.NewContext(request, response)
-		echoContext.Set("currentUserId", customer.Id)
+		echoContext.Set("customerId", customer.Id)
 
 		err := HandleGetAuthenticatedCustomer(applicationFactory)(echoContext)
 		assert.NoError(t, err)
@@ -47,9 +46,9 @@ func Test_GetCustomer(t *testing.T) {
 		request := httptest.NewRequest(http.MethodGet, "/v1/customers/me", nil)
 		response := httptest.NewRecorder()
 		echoContext := instance.NewContext(request, response)
-		echoContext.Set("currentUserId", value_object.NewID())
+		echoContext.Set("customerId", value_object.NewID())
 
 		err := HandleGetAuthenticatedCustomer(applicationFactory)(echoContext)
-		assert.Equal(t, errors.CustomerNotFoundError, err)
+		assert.Equal(t, entity.CustomerNotFoundError, err)
 	})
 }

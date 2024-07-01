@@ -17,19 +17,19 @@ func TestProduct_Validate(t *testing.T) {
 	}{
 		{
 			Product: &Product{ID: value_object.NewID(), Name: "", Price: 0.0, Status: "RANDOM"},
-			Errors:  []error{errors.ProductNameIsRequired, errors.ProductPriceIsRequired, errors.InvalidProductStatus},
+			Errors:  []error{ProductNameIsRequiredError, ProductPriceIsRequiredError, InvalidProductStatusError},
 		},
 		{
 			Product: &Product{ID: value_object.NewID(), Name: "", Price: -1.0, Status: "RANDOM"},
-			Errors:  []error{errors.ProductNameIsRequired, errors.ProductPriceShouldPositive, errors.InvalidProductStatus},
+			Errors:  []error{ProductNameIsRequiredError, ProductPriceShouldPositiveError, InvalidProductStatusError},
 		},
 		{
 			Product: &Product{ID: value_object.NewID(), Name: "", Price: 5.0, Status: "RANDOM"},
-			Errors:  []error{errors.ProductNameIsRequired, errors.InvalidProductStatus},
+			Errors:  []error{ProductNameIsRequiredError, InvalidProductStatusError},
 		},
 		{
 			Product: &Product{ID: value_object.NewID(), Name: "", Price: -1.0, Status: "ACTIVE"},
-			Errors:  []error{errors.ProductNameIsRequired, errors.ProductPriceShouldPositive},
+			Errors:  []error{ProductNameIsRequiredError, ProductPriceShouldPositiveError},
 		},
 		{
 			Product: &Product{ID: value_object.NewID(), Name: faker.Name(), Price: 10.0, Status: "ACTIVE"},

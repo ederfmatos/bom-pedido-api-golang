@@ -5,6 +5,7 @@ import (
 	gateway2 "bom-pedido-api/application/gateway"
 	"bom-pedido-api/domain/entity"
 	"bom-pedido-api/domain/errors"
+	"bom-pedido-api/domain/value_object"
 	"bom-pedido-api/infra/gateway"
 	"bom-pedido-api/infra/repository"
 	"bom-pedido-api/infra/token"
@@ -55,7 +56,7 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 		output, err := googleAuthenticateCustomerUseCase.Execute(input)
 
 		assert.Error(t, err, "expected error when using GoogleAuthenticateCustomerUseCase")
-		assert.ErrorIs(t, err, errors.InvalidEmailError)
+		assert.ErrorIs(t, err, value_object.InvalidEmailError)
 		assert.Nil(t, output)
 	})
 

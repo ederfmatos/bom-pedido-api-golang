@@ -3,7 +3,6 @@ package usecase
 import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/domain/entity"
-	"bom-pedido-api/domain/errors"
 	"bom-pedido-api/domain/value_object"
 	"context"
 	"github.com/go-faker/faker/v4"
@@ -21,7 +20,7 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 			ProductId: value_object.NewID(),
 		}
 		err := useCase.Execute(input)
-		assert.ErrorIs(t, err, errors.ProductNotFoundError)
+		assert.ErrorIs(t, err, entity.ProductNotFoundError)
 	})
 
 	t.Run("should return error is product is unavailable", func(t *testing.T) {
@@ -40,7 +39,7 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 			Observation: faker.Word(),
 		}
 		err = useCase.Execute(input)
-		assert.ErrorIs(t, err, errors.ProductUnAvailable)
+		assert.ErrorIs(t, err, entity.ProductUnAvailableError)
 
 		shoppingCart, _ := applicationFactory.ShoppingCartRepository.FindByCustomerId(input.Context, input.CustomerId)
 		assert.Nil(t, shoppingCart)

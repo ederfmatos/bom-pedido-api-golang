@@ -1,7 +1,13 @@
 package errors
 
-import "errors"
+type DomainError struct {
+	message string
+}
 
-func New(text string) error {
-	return errors.New(text)
+func New(message string) *DomainError {
+	return &DomainError{message: message}
+}
+
+func (error *DomainError) Error() string {
+	return error.message
 }

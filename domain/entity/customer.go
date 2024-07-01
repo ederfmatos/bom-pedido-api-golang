@@ -1,10 +1,17 @@
 package entity
 
-import "bom-pedido-api/domain/value_object"
+import (
+	"bom-pedido-api/domain/errors"
+	"bom-pedido-api/domain/value_object"
+)
 
 const (
 	ACTIVE   string = "ACTIVE"
 	INACTIVE string = "INACTIVE"
+)
+
+var (
+	CustomerNotFoundError = errors.New("customer not found")
 )
 
 type Customer struct {

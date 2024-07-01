@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"bom-pedido-api/domain/errors"
 	"bom-pedido-api/domain/value_object"
 )
 
@@ -31,7 +30,7 @@ func NewShoppingCart(customerId string) *ShoppingCart {
 
 func (shoppingCart *ShoppingCart) AddItem(product *Product, quantity int, observation string) error {
 	if product.IsUnAvailable() {
-		return errors.ProductUnAvailable
+		return ProductUnAvailableError
 	}
 	item := ShoppingCartItem{
 		Id:          value_object.NewID(),

@@ -4,7 +4,6 @@ import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/application/repository"
 	"bom-pedido-api/domain/entity"
-	"bom-pedido-api/domain/errors"
 	"context"
 )
 
@@ -34,7 +33,7 @@ func (useCase *AddItemToShoppingCartUseCase) Execute(input AddItemToShoppingCart
 		return err
 	}
 	if product == nil {
-		return errors.ProductNotFoundError
+		return entity.ProductNotFoundError
 	}
 	shoppingCart, err := useCase.shoppingCartRepository.FindByCustomerId(input.Context, input.CustomerId)
 	if err != nil {

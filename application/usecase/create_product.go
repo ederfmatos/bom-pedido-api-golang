@@ -5,7 +5,6 @@ import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/application/repository"
 	"bom-pedido-api/domain/entity"
-	"bom-pedido-api/domain/errors"
 	"bom-pedido-api/domain/events"
 	"context"
 )
@@ -39,7 +38,7 @@ func (useCase CreateProductUseCase) Execute(input CreateProductInput) (*CreatePr
 		return nil, err
 	}
 	if existsByName {
-		return nil, errors.ProductWithSameName
+		return nil, entity.ProductWithSameNameError
 	}
 	product, err := entity.NewProduct(input.Name, input.Description, input.Price)
 	if err != nil {
