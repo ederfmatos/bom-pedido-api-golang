@@ -40,9 +40,9 @@ func Test_CreateProduct(t *testing.T) {
 
 	var output usecase.CreateProductOutput
 	_ = json.NewDecoder(response.Body).Decode(&output)
-	assert.NotEmpty(t, output.ID)
+	assert.NotEmpty(t, output.Id)
 
-	savedProduct, err := applicationFactory.ProductRepository.FindById(context.Background(), output.ID)
+	savedProduct, err := applicationFactory.ProductRepository.FindById(context.Background(), output.Id)
 	assert.NoError(t, err)
 	assert.NotNil(t, savedProduct)
 	assert.Equal(t, body.Name, savedProduct.Name)

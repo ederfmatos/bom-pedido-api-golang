@@ -70,7 +70,7 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 
 		output, err := googleAuthenticateCustomerUseCase.Execute(input)
 
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.NotNil(t, output)
 		assert.Equal(t, "token", output.Token)
 	})
@@ -86,7 +86,7 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 
 		output, err := googleAuthenticateCustomerUseCase.Execute(input)
 
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.NotNil(t, output)
 		assert.Equal(t, "token", output.Token)
 	})

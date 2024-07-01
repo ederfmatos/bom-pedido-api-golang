@@ -15,12 +15,12 @@ func NewProductMemoryRepository() repository.ProductRepository {
 }
 
 func (repository *ProductMemoryRepository) Create(_ context.Context, product *entity.Product) error {
-	repository.products[product.ID] = product
+	repository.products[product.Id] = product
 	return nil
 }
 
 func (repository *ProductMemoryRepository) Update(_ context.Context, product *entity.Product) error {
-	repository.products[product.ID] = product
+	repository.products[product.Id] = product
 	return nil
 }
 
@@ -35,4 +35,15 @@ func (repository *ProductMemoryRepository) ExistsByName(_ context.Context, name 
 		}
 	}
 	return false, nil
+}
+
+func (repository *ProductMemoryRepository) FindAllById(ctx context.Context, ids []string) (map[string]*entity.Product, error) {
+	products := make(map[string]*entity.Product)
+	for _, id := range ids {
+		product := repository.products[id]
+		if product != nil {
+			products[id] = product
+		}
+	}
+	return products, nil
 }

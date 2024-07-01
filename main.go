@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	environment := env.LoadEnvironment(".environment")
+	environment := env.LoadEnvironment(".env")
 	database, err := sql.Open(environment.DatabaseDriver, environment.DatabaseUrl)
 	if err != nil {
 		panic(err)
@@ -23,6 +23,7 @@ func main() {
 	defer database.Close()
 
 	applicationFactory := factory.NewApplicationFactory(database, environment)
+	defer applicationFactory.EventHandler.Close()
 
 	server := echo.New()
 	server.Use(middleware.Logger())
@@ -35,6 +36,7 @@ func main() {
 	slog.SetDefault(logger)
 
 	group := server.Group("/api")
+	group.POST("/v1/shopping-cart/checkout", http.HandleCheckoutShoppingCart(applicationFactory))
 	group.PATCH("/v1/shopping-cart/items", http.HandleAddItemToShoppingCart(applicationFactory))
 	group.POST("/v1/products", http.HandleCreateProduct(applicationFactory))
 	group.GET("/v1/products", http.HandleListProducts(applicationFactory))
@@ -44,6 +46,7 @@ func main() {
 
 	eventHandler := applicationFactory.EventHandler
 	go eventHandler.Consume("CREATE_PRODUCT_PROJECTION", messaging.HandleCreateProductProjection())
+	go eventHandler.Consume("ORDERS::DELETE_SHOPPING_CART", messaging.HandleCreateProductProjection())
 
 	err = server.Start(":8080")
 	server.Logger.Fatal(err)

@@ -15,8 +15,8 @@ type ProductCreatedData struct {
 
 func NewProductCreatedEvent(product *entity.Product) *event.Event {
 	return &event.Event{
-		Id:   product.ID,
+		Id:   product.Id,
 		Name: ProductCreatedEventName,
-		Data: ProductCreatedData{ProductId: product.ID},
+		Data: ProductCreatedData{ProductId: product.Id},
 	}
 }

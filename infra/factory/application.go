@@ -18,13 +18,13 @@ import (
 
 func NewApplicationFactory(database *sql.DB, environment *env.Environment) *factory.ApplicationFactory {
 	connection := repository.NewDefaultSqlConnection(database)
-	return &factory.ApplicationFactory{
-		GatewayFactory:    gatewayFactory(environment),
-		RepositoryFactory: repositoryFactory(connection, environment),
-		TokenFactory:      tokenFactory(environment),
-		EventFactory:      eventFactory(environment),
-		QueryFactory:      queryFactory(connection),
-	}
+	return factory.NewApplicationFactory(
+		gatewayFactory(environment),
+		repositoryFactory(connection, environment),
+		tokenFactory(environment),
+		eventFactory(environment),
+		queryFactory(connection),
+	)
 }
 
 func queryFactory(connection repository.SqlConnection) *factory.QueryFactory {
@@ -72,6 +72,7 @@ func repositoryFactory(connection repository.SqlConnection, environment *env.Env
 	redisClient := redis.NewClient(options)
 	customerRepository := repository.NewDefaultCustomerRepository(connection)
 	productRepository := repository.NewDefaultProductRepository(connection)
+	orderRepository := repository.NewDefaultOrderRepository(connection)
 	shoppingCartRepository := repository.NewShoppingCartRedisRepository(redisClient)
-	return factory.NewRepositoryFactory(customerRepository, productRepository, shoppingCartRepository)
+	return factory.NewRepositoryFactory(customerRepository, productRepository, shoppingCartRepository, orderRepository)
 }

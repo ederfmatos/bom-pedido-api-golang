@@ -19,7 +19,7 @@ func (sqlQuery *ProductSqlQuery) List(context context.Context) ([]query.Product,
 	err := sqlQuery.Sql("select id, name, description, price from products").
 		List(context, func(getValues func(dest ...any) error) error {
 			var product query.Product
-			err := getValues(&product.ID, &product.Name, &product.Description, &product.Price)
+			err := getValues(&product.Id, &product.Name, &product.Description, &product.Price)
 			if err != nil {
 				return err
 			}

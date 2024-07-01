@@ -24,7 +24,7 @@ var (
 )
 
 type Product struct {
-	ID          string
+	Id          string
 	Name        string
 	Description string
 	Price       float64
@@ -33,7 +33,7 @@ type Product struct {
 
 func NewProduct(name, description string, price float64) (*Product, error) {
 	product := &Product{
-		ID:          value_object.NewID(),
+		Id:          value_object.NewID(),
 		Name:        name,
 		Price:       price,
 		Description: description,
@@ -42,9 +42,9 @@ func NewProduct(name, description string, price float64) (*Product, error) {
 	return product, product.Validate()
 }
 
-func RestoreProduct(ID, name, description string, price float64, status string) (*Product, error) {
+func RestoreProduct(id, name, description string, price float64, status string) (*Product, error) {
 	product := &Product{
-		ID:          ID,
+		Id:          id,
 		Name:        name,
 		Price:       price,
 		Description: description,

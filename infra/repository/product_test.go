@@ -39,9 +39,9 @@ func TestDefaultProductRepository_Create(t *testing.T) {
 		err = productRepository.Create(ctx, product)
 		assert.NoError(t, err)
 
-		savedProduct, err := productRepository.FindById(ctx, product.ID)
+		savedProduct, err := productRepository.FindById(ctx, product.Id)
 		assert.NoError(t, err)
-		assert.Equal(t, product.ID, savedProduct.ID)
+		assert.Equal(t, product.Id, savedProduct.Id)
 		assert.Equal(t, product.Name, savedProduct.Name)
 		assert.Equal(t, product.Description, savedProduct.Description)
 		assert.Equal(t, product.Price, savedProduct.Price)

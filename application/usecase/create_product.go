@@ -17,7 +17,7 @@ type CreateProductInput struct {
 }
 
 type CreateProductOutput struct {
-	ID string `json:"id"`
+	Id string `json:"id"`
 }
 
 type CreateProductUseCase struct {
@@ -52,5 +52,5 @@ func (useCase CreateProductUseCase) Execute(input CreateProductInput) (*CreatePr
 	if err != nil {
 		return nil, err
 	}
-	return &CreateProductOutput{ID: product.ID}, nil
+	return &CreateProductOutput{Id: product.Id}, nil
 }

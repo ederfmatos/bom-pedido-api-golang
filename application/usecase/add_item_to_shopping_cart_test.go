@@ -34,7 +34,7 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 		input := AddItemToShoppingCartInput{
 			Context:     context.Background(),
 			CustomerId:  value_object.NewID(),
-			ProductId:   product.ID,
+			ProductId:   product.Id,
 			Quantity:    2,
 			Observation: faker.Word(),
 		}
@@ -55,7 +55,7 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 		input := AddItemToShoppingCartInput{
 			Context:     context.Background(),
 			CustomerId:  value_object.NewID(),
-			ProductId:   product.ID,
+			ProductId:   product.Id,
 			Quantity:    2,
 			Observation: faker.Word(),
 		}
@@ -69,7 +69,7 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 		items := shoppingCart.GetItems()
 		assert.Equal(t, 1, len(items))
 		item := items[0]
-		assert.Equal(t, product.ID, item.ProductId)
+		assert.Equal(t, product.Id, item.ProductId)
 		assert.Equal(t, input.Quantity, item.Quantity)
 		assert.Equal(t, input.Observation, item.Observation)
 		assert.Equal(t, 10.0, item.Price)

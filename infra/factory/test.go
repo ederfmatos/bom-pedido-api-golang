@@ -9,14 +9,16 @@ import (
 )
 
 func NewTestApplicationFactory() *factory.ApplicationFactory {
-	return &factory.ApplicationFactory{
-		GatewayFactory: factory.NewGatewayFactory(gateway.NewFakeGoogleGateway()),
-		RepositoryFactory: factory.NewRepositoryFactory(
+	return factory.NewApplicationFactory(
+		factory.NewGatewayFactory(gateway.NewFakeGoogleGateway()),
+		factory.NewRepositoryFactory(
 			repository.NewCustomerMemoryRepository(),
 			repository.NewProductMemoryRepository(),
 			repository.NewShoppingCartMemoryRepository(),
+			repository.NewOrderMemoryRepository(),
 		),
-		TokenFactory: factory.NewTokenFactory(token.NewFakeCustomerTokenManager()),
-		EventFactory: factory.NewEventFactory(event.NewMemoryEventEmitter(), nil),
-	}
+		factory.NewTokenFactory(token.NewFakeCustomerTokenManager()),
+		factory.NewEventFactory(event.NewMemoryEventEmitter(), nil),
+		nil,
+	)
 }
