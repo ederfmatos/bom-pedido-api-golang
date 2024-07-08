@@ -1,8 +1,8 @@
-package http
+package create_product
 
 import (
 	"bom-pedido-api/application/factory"
-	"bom-pedido-api/application/usecase"
+	"bom-pedido-api/application/usecase/product/create_product"
 	"github.com/labstack/echo/v4"
 )
 
@@ -13,14 +13,14 @@ type createProductRequest struct {
 }
 
 func HandleCreateProduct(factory *factory.ApplicationFactory) func(context echo.Context) error {
-	createProductUseCase := usecase.NewCreateProductUseCase(factory)
+	createProductUseCase := create_product.New(factory)
 	return func(context echo.Context) error {
 		var request createProductRequest
 		err := context.Bind(&request)
 		if err != nil {
 			return err
 		}
-		input := usecase.CreateProductInput{
+		input := create_product.Input{
 			Context:     context.Request().Context(),
 			Name:        request.Name,
 			Description: request.Description,

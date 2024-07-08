@@ -2,7 +2,7 @@ package http
 
 import (
 	"bom-pedido-api/application/factory"
-	"bom-pedido-api/application/usecase"
+	"bom-pedido-api/application/usecase/shopping_cart/add_item_to_shopping_cart"
 	"github.com/labstack/echo/v4"
 )
 
@@ -13,14 +13,14 @@ type addItemToShoppingCartRequest struct {
 }
 
 func HandleAddItemToShoppingCart(factory *factory.ApplicationFactory) func(context echo.Context) error {
-	useCase := usecase.NewAddItemToShoppingCartUseCase(factory)
+	useCase := add_item_to_shopping_cart.New(factory)
 	return func(context echo.Context) error {
 		var request addItemToShoppingCartRequest
 		err := context.Bind(&request)
 		if err != nil {
 			return err
 		}
-		input := usecase.AddItemToShoppingCartInput{
+		input := add_item_to_shopping_cart.Input{
 			Context:     context.Request().Context(),
 			CustomerId:  context.Get("customerId").(string),
 			ProductId:   request.ProductId,

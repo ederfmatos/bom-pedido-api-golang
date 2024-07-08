@@ -4,6 +4,10 @@ import (
 	"bom-pedido-api/infra/env"
 	"bom-pedido-api/infra/factory"
 	"bom-pedido-api/presentation/http"
+	"bom-pedido-api/presentation/http/create_product"
+	"bom-pedido-api/presentation/http/get_customer"
+	"bom-pedido-api/presentation/http/health"
+	"bom-pedido-api/presentation/http/list_products"
 	middleware2 "bom-pedido-api/presentation/http/middleware"
 	"bom-pedido-api/presentation/messaging"
 	"database/sql"
@@ -38,11 +42,11 @@ func main() {
 	group := server.Group("/api")
 	group.POST("/v1/shopping-cart/checkout", http.HandleCheckoutShoppingCart(applicationFactory))
 	group.PATCH("/v1/shopping-cart/items", http.HandleAddItemToShoppingCart(applicationFactory))
-	group.POST("/v1/products", http.HandleCreateProduct(applicationFactory))
-	group.GET("/v1/products", http.HandleListProducts(applicationFactory))
+	group.POST("/v1/products", create_product.HandleCreateProduct(applicationFactory))
+	group.GET("/v1/products", list_products.HandleListProducts(applicationFactory))
 	group.POST("/v1/auth/google/customer", http.HandleGoogleAuthCustomer(applicationFactory))
-	group.GET("/v1/customers/me", http.HandleGetAuthenticatedCustomer(applicationFactory))
-	group.GET("/health", http.HandleHealth)
+	group.GET("/v1/customers/me", get_customer.HandleGetAuthenticatedCustomer(applicationFactory))
+	group.GET("/health", health.HandleHealth)
 
 	eventHandler := applicationFactory.EventHandler
 	go eventHandler.Consume("CREATE_PRODUCT_PROJECTION", messaging.HandleCreateProductProjection())

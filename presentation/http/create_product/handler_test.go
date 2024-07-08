@@ -1,7 +1,7 @@
-package http
+package create_product
 
 import (
-	"bom-pedido-api/application/usecase"
+	"bom-pedido-api/application/usecase/product/create_product"
 	"bom-pedido-api/infra/factory"
 	"bytes"
 	"context"
@@ -38,7 +38,7 @@ func Test_CreateProduct(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusCreated, response.Code)
 
-	var output usecase.CreateProductOutput
+	var output create_product.Output
 	_ = json.NewDecoder(response.Body).Decode(&output)
 	assert.NotEmpty(t, output.Id)
 

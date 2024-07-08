@@ -1,40 +1,49 @@
-package entity
+package order
 
 import (
+	"bom-pedido-api/domain/entity/product"
 	"bom-pedido-api/domain/enums"
 	"bom-pedido-api/domain/errors"
 	"bom-pedido-api/domain/value_object"
 	"time"
 )
 
-type OrderStatus string
-type OrderItemStatus string
+type Status string
+type ItemStatus string
 
 const (
-	OrderStatusAwaitingApproval OrderStatus = "AWAITING_APPROVAL"
+	AwaitingApproval         Status     = "AWAITING_APPROVAL"
+	OrderItemStatusOk        ItemStatus = "OK"
+	OrderItemStatusCancelled ItemStatus = "CANCELLED"
 )
 
-const (
-	OrderItemStatusOk        OrderItemStatus = "OK"
-	OrderItemStatusCancelled OrderItemStatus = "CANCELLED"
+type (
+	Order struct {
+		Id              string
+		CustomerID      string
+		PaymentMethod   enums.PaymentMethod
+		PaymentMode     enums.PaymentMode
+		DeliveryMode    enums.DeliveryMode
+		CreatedAt       time.Time
+		CreditCardToken string
+		Change          float64
+		Code            int32
+		DeliveryTime    time.Time
+		Status          Status
+		Items           []Item
+	}
+
+	Item struct {
+		Id          string
+		ProductId   string
+		Quantity    int
+		Observation string
+		Status      ItemStatus
+		Price       float64
+	}
 )
 
-type Order struct {
-	Id         string
-	CustomerID string
-	PaymentMethod   enums.PaymentMethod
-	PaymentMode     enums.PaymentMode
-	DeliveryMode    enums.DeliveryMode
-	CreatedAt       time.Time
-	CreditCardToken string
-	Change          float64
-	Code            int32
-	DeliveryTime    time.Time
-	Status          OrderStatus
-	Items           []OrderItem
-}
-
-func NewOrder(customerID, paymentMethodString, paymentModeString, deliveryModeString, creditCardToken string, change float64, deliveryTime time.Time) (*Order, error) {
+func New(customerID, paymentMethodString, paymentModeString, deliveryModeString, creditCardToken string, change float64, deliveryTime time.Time) (*Order, error) {
 	paymentMethod, deliveryMode, paymentMode, err := validateOrder(paymentMethodString, deliveryModeString, paymentModeString, creditCardToken, change)
 	if err != nil {
 		return nil, err
@@ -50,18 +59,18 @@ func NewOrder(customerID, paymentMethodString, paymentModeString, deliveryModeSt
 		Change:          change,
 		Code:            0,
 		DeliveryTime:    deliveryTime,
-		Status:          OrderStatusAwaitingApproval,
-		Items:           []OrderItem{},
+		Status:          AwaitingApproval,
+		Items:           []Item{},
 	}, nil
 }
 
-func RestoreOrder(
+func Restore(
 	Id, customerID, paymentMethodString, paymentModeString, deliveryModeString, creditCardToken, status string,
 	createdAt time.Time,
 	change float64,
 	code int32,
 	deliveryTime time.Time,
-	items []OrderItem,
+	items []Item,
 ) (*Order, error) {
 	paymentMethod, deliveryMode, paymentMode, err := validateOrder(paymentMethodString, deliveryModeString, paymentModeString, creditCardToken, change)
 	if err != nil {
@@ -78,7 +87,7 @@ func RestoreOrder(
 		Change:          change,
 		Code:            code,
 		DeliveryTime:    deliveryTime,
-		Status:          OrderStatus(status),
+		Status:          Status(status),
 		Items:           items,
 	}, nil
 }
@@ -97,32 +106,22 @@ func validateOrder(paymentMethodString, deliveryModeString, paymentModeString, c
 
 	cardTokenIsRequired := paymentMethod.IsCreditCard() && paymentMode.IsInApp()
 	if cardTokenIsRequired && cardToken == "" {
-		compositeError.Append(CardTokenIsRequiredError)
+		compositeError.Append(errors.CardTokenIsRequiredError)
 	}
-
 	if change < 0 {
-		compositeError.Append(ChangeShouldBePositiveError)
+		compositeError.Append(errors.ChangeShouldBePositiveError)
 	}
 	return paymentMethod, deliveryMode, paymentMode, compositeError.AsError()
 }
 
-type OrderItem struct {
-	Id        string
-	ProductId string
-	Quantity    int
-	Observation string
-	Status      OrderItemStatus
-	Price       float64
-}
-
-func (order *Order) AddProduct(product *Product, quantity int, observation string) *errors.DomainError {
+func (order *Order) AddProduct(product *product.Product, quantity int, observation string) *errors.DomainError {
 	if product == nil {
-		return ProductNotFoundError
+		return errors.ProductNotFoundError
 	}
 	if product.IsUnAvailable() {
-		return ProductUnAvailableError
+		return errors.ProductUnAvailableError
 	}
-	order.Items = append(order.Items, OrderItem{
+	order.Items = append(order.Items, Item{
 		Id:          value_object.NewID(),
 		ProductId:   product.Id,
 		Quantity:    quantity,

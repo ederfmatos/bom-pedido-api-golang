@@ -1,15 +1,15 @@
-package http
+package get_customer
 
 import (
 	"bom-pedido-api/application/factory"
-	"bom-pedido-api/application/usecase"
+	"bom-pedido-api/application/usecase/customer/get_customer"
 	"github.com/labstack/echo/v4"
 )
 
 func HandleGetAuthenticatedCustomer(factory *factory.ApplicationFactory) func(context echo.Context) error {
-	useCase := usecase.NewGetCustomerUseCase(factory)
+	useCase := get_customer.New(factory)
 	return func(context echo.Context) error {
-		input := usecase.GetCustomerInput{
+		input := get_customer.Input{
 			Id:      context.Get("customerId").(string),
 			Context: context.Request().Context(),
 		}

@@ -1,4 +1,4 @@
-package http
+package list_products
 
 import (
 	"bom-pedido-api/application/factory"

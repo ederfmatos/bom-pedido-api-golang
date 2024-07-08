@@ -1,44 +1,37 @@
-package entity
+package shopping_cart
 
 import (
+	"bom-pedido-api/domain/entity/order"
+	"bom-pedido-api/domain/entity/product"
 	"bom-pedido-api/domain/errors"
 	"bom-pedido-api/domain/value_object"
 	"time"
 )
 
-var (
-	ShoppingCartEmptyError      = errors.New("Your shopping cart is empty")
-	CardTokenIsRequiredError    = errors.New("The card token is required")
-	ChangeShouldBePositiveError = errors.New("The change should be positive")
+type (
+	ShoppingCart struct {
+		CustomerId string
+		Items      []ShoppingCartItem
+	}
+	ShoppingCartItem struct {
+		Id          string
+		ProductId   string
+		Quantity    int
+		Observation string
+		Price       float64
+	}
 )
 
-type ShoppingCart struct {
-	CustomerId string
-	Items      []ShoppingCartItem
-}
-
-type ShoppingCartItem struct {
-	Id        string
-	ProductId string
-	Quantity    int
-	Observation string
-	Price       float64
-}
-
-func (item *ShoppingCartItem) GetTotalPrice() float64 {
-	return float64(item.Quantity) * item.Price
-}
-
-func NewShoppingCart(customerId string) *ShoppingCart {
+func New(customerId string) *ShoppingCart {
 	return &ShoppingCart{
 		CustomerId: customerId,
 		Items:      []ShoppingCartItem{},
 	}
 }
 
-func (shoppingCart *ShoppingCart) AddItem(product *Product, quantity int, observation string) error {
+func (shoppingCart *ShoppingCart) AddItem(product *product.Product, quantity int, observation string) error {
 	if product.IsUnAvailable() {
-		return ProductUnAvailableError
+		return errors.ProductUnAvailableError
 	}
 	item := ShoppingCartItem{
 		Id:          value_object.NewID(),
@@ -59,6 +52,10 @@ func (shoppingCart *ShoppingCart) GetPrice() float64 {
 	return totalPrice
 }
 
+func (item *ShoppingCartItem) GetTotalPrice() float64 {
+	return float64(item.Quantity) * item.Price
+}
+
 func (shoppingCart *ShoppingCart) GetItems() []ShoppingCartItem {
 	return shoppingCart.Items
 }
@@ -66,13 +63,13 @@ func (shoppingCart *ShoppingCart) GetItems() []ShoppingCartItem {
 func (shoppingCart *ShoppingCart) Checkout(
 	paymentMethodString, deliveryModeString, paymentModeString, cardToken string,
 	change float64,
-	products map[string]*Product,
+	products map[string]*product.Product,
 	deliveryTime time.Duration,
-) (*Order, error) {
+) (*order.Order, error) {
 	if shoppingCart.IsEmpty() {
-		return nil, ShoppingCartEmptyError
+		return nil, errors.ShoppingCartEmptyError
 	}
-	order, err := NewOrder(shoppingCart.CustomerId, paymentMethodString, paymentModeString, deliveryModeString, cardToken, change, time.Now().Add(deliveryTime))
+	order, err := order.New(shoppingCart.CustomerId, paymentMethodString, paymentModeString, deliveryModeString, cardToken, change, time.Now().Add(deliveryTime))
 	if err != nil {
 		return nil, err
 	}

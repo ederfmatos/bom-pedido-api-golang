@@ -1,24 +1,39 @@
-package usecase
+package checkout
 
 import (
 	"bom-pedido-api/application/event"
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/application/repository"
-	"bom-pedido-api/domain/entity"
+	"bom-pedido-api/domain/errors"
 	"bom-pedido-api/domain/events"
 	"context"
 	"time"
 )
 
-type CheckoutShoppingCartUseCase struct {
-	shoppingCartRepository repository.ShoppingCartRepository
-	productRepository      repository.ProductRepository
-	orderRepository        repository.OrderRepository
-	eventEmitter           event.EventEmitter
-}
+type (
+	UseCase struct {
+		shoppingCartRepository repository.ShoppingCartRepository
+		productRepository      repository.ProductRepository
+		orderRepository        repository.OrderRepository
+		eventEmitter           event.EventEmitter
+	}
+	Input struct {
+		Context         context.Context
+		CustomerId      string
+		PaymentMethod   string
+		DeliveryMode    string
+		PaymentMode     string
+		AddressId       string // TODO
+		Change          float64
+		CreditCardToken string
+	}
+	Output struct {
+		Id string `json:"id"`
+	}
+)
 
-func NewCheckoutShoppingCartUseCase(factory *factory.ApplicationFactory) *CheckoutShoppingCartUseCase {
-	return &CheckoutShoppingCartUseCase{
+func New(factory *factory.ApplicationFactory) *UseCase {
+	return &UseCase{
 		shoppingCartRepository: factory.ShoppingCartRepository,
 		productRepository:      factory.ProductRepository,
 		orderRepository:        factory.OrderRepository,
@@ -26,28 +41,13 @@ func NewCheckoutShoppingCartUseCase(factory *factory.ApplicationFactory) *Checko
 	}
 }
 
-type CheckoutShoppingCartInput struct {
-	Context         context.Context
-	CustomerId      string
-	PaymentMethod   string
-	DeliveryMode    string
-	PaymentMode     string
-	AddressId       string // TODO
-	Change          float64
-	CreditCardToken string
-}
-
-type CheckoutShoppingCartOutput struct {
-	Id string `json:"id"`
-}
-
-func (useCase CheckoutShoppingCartUseCase) Execute(input CheckoutShoppingCartInput) (*CheckoutShoppingCartOutput, error) {
+func (useCase *UseCase) Execute(input Input) (*Output, error) {
 	shoppingCart, err := useCase.shoppingCartRepository.FindByCustomerId(input.Context, input.CustomerId)
 	if err != nil {
 		return nil, err
 	}
 	if shoppingCart == nil || shoppingCart.IsEmpty() {
-		return nil, entity.ShoppingCartEmptyError
+		return nil, errors.ShoppingCartEmptyError
 	}
 	var productIds []string
 	for _, item := range shoppingCart.GetItems() {
@@ -79,5 +79,5 @@ func (useCase CheckoutShoppingCartUseCase) Execute(input CheckoutShoppingCartInp
 	if err != nil {
 		return nil, err
 	}
-	return &CheckoutShoppingCartOutput{Id: order.Id}, nil
+	return &Output{Id: order.Id}, nil
 }

@@ -1,7 +1,7 @@
-package usecase
+package create_product
 
 import (
-	"bom-pedido-api/domain/entity"
+	"bom-pedido-api/domain/entity/product"
 	"bom-pedido-api/domain/errors"
 	"bom-pedido-api/domain/value_object"
 	"bom-pedido-api/infra/factory"
@@ -14,16 +14,16 @@ import (
 
 func TestCreateProductUseCase_Execute(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
-	useCase := NewCreateProductUseCase(applicationFactory)
+	useCase := New(applicationFactory)
 
 	t.Run("should return ProductWithSameNameError error", func(t *testing.T) {
-		input := CreateProductInput{
+		input := Input{
 			Context:     context.Background(),
 			Name:        faker.Name(),
 			Description: faker.Word(),
 			Price:       10.0,
 		}
-		product, err := entity.RestoreProduct(value_object.NewID(), input.Name, faker.Word(), 10.0, "ACTIVE")
+		product, err := product.Restore(value_object.NewID(), input.Name, faker.Word(), 10.0, "ACTIVE")
 		if err != nil {
 			t.Fatalf("failed to restore product: %v", err)
 		}
@@ -31,7 +31,7 @@ func TestCreateProductUseCase_Execute(t *testing.T) {
 
 		output, err := useCase.Execute(input)
 
-		assert.ErrorIs(t, err, entity.ProductWithSameNameError)
+		assert.ErrorIs(t, err, errors.ProductWithSameNameError)
 		assert.Nil(t, output)
 	})
 
@@ -42,13 +42,13 @@ func TestCreateProductUseCase_Execute(t *testing.T) {
 			price       float64
 			wantErr     error
 		}{
-			{name: "", description: "", price: 10, wantErr: errors.NewCompositeWithError(entity.ProductNameIsRequiredError)},
-			{name: faker.Name(), description: "", price: 0, wantErr: errors.NewCompositeWithError(entity.ProductPriceIsRequiredError)},
-			{name: faker.Name(), description: "", price: -1, wantErr: errors.NewCompositeWithError(entity.ProductPriceShouldPositiveError)},
+			{name: "", description: "", price: 10, wantErr: errors.NewCompositeWithError(errors.ProductNameIsRequiredError)},
+			{name: faker.Name(), description: "", price: 0, wantErr: errors.NewCompositeWithError(errors.ProductPriceIsRequiredError)},
+			{name: faker.Name(), description: "", price: -1, wantErr: errors.NewCompositeWithError(errors.ProductPriceShouldPositiveError)},
 		}
 		for _, tt := range tests {
 			t.Run(fmt.Sprintf("should return %s error", tt.wantErr.Error()), func(t *testing.T) {
-				input := CreateProductInput{
+				input := Input{
 					Context:     context.Background(),
 					Name:        tt.name,
 					Description: tt.description,
@@ -64,7 +64,7 @@ func TestCreateProductUseCase_Execute(t *testing.T) {
 	})
 
 	t.Run("should create a product", func(t *testing.T) {
-		input := CreateProductInput{
+		input := Input{
 			Context:     context.Background(),
 			Name:        faker.Name(),
 			Description: faker.Word(),

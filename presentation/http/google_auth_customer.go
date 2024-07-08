@@ -2,7 +2,7 @@ package http
 
 import (
 	"bom-pedido-api/application/factory"
-	"bom-pedido-api/application/usecase"
+	"bom-pedido-api/application/usecase/customer/google_authenticate_customer"
 	"github.com/labstack/echo/v4"
 )
 
@@ -11,14 +11,14 @@ type GoogleAuthCustomerRequest struct {
 }
 
 func HandleGoogleAuthCustomer(factory *factory.ApplicationFactory) func(context echo.Context) error {
-	useCase := usecase.NewGoogleAuthenticateCustomerUseCase(factory)
+	useCase := google_authenticate_customer.New(factory)
 	return func(context echo.Context) error {
 		var request GoogleAuthCustomerRequest
 		err := context.Bind(&request)
 		if err != nil {
 			return err
 		}
-		input := usecase.GoogleAuthenticateCustomerInput{
+		input := google_authenticate_customer.Input{
 			Token:   request.Token,
 			Context: context.Request().Context(),
 		}
