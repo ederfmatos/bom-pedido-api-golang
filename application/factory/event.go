@@ -5,13 +5,11 @@ import (
 )
 
 type EventFactory struct {
-	EventEmitter event.EventEmitter
-	EventHandler event.EventHandler
+	EventDispatcher event.Dispatcher
 }
 
-func NewEventFactory(EventEmitter event.EventEmitter, EventHandler event.EventHandler) *EventFactory {
+func NewEventFactory(EventDispatcher event.Dispatcher) *EventFactory {
 	return &EventFactory{
-		EventEmitter: EventEmitter,
-		EventHandler: EventHandler,
+		EventDispatcher: EventDispatcher,
 	}
 }
