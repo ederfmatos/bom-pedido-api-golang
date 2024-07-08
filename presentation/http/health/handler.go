@@ -1,4 +1,4 @@
-package http
+package health
 
 import (
 	"github.com/labstack/echo/v4"

@@ -1,11 +1,11 @@
 package repository
 
 import (
-	"bom-pedido-api/domain/entity"
+	"bom-pedido-api/domain/entity/shopping_cart"
 	"context"
 )
 
 type ShoppingCartRepository interface {
-	Upsert(ctx context.Context, shoppingCart *entity.ShoppingCart) error
-	FindByCustomerId(ctx context.Context, id string) (*entity.ShoppingCart, error)
+	Upsert(ctx context.Context, shoppingCart *shopping_cart.ShoppingCart) error
+	FindByCustomerId(ctx context.Context, id string) (*shopping_cart.ShoppingCart, error)
 }

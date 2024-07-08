@@ -2,23 +2,23 @@ package repository
 
 import (
 	"bom-pedido-api/application/repository"
-	"bom-pedido-api/domain/entity"
+	"bom-pedido-api/domain/entity/shopping_cart"
 	"context"
 )
 
 type ShoppingCartMemoryRepository struct {
-	shoppingCarts map[string]*entity.ShoppingCart
+	shoppingCarts map[string]*shopping_cart.ShoppingCart
 }
 
 func NewShoppingCartMemoryRepository() repository.ShoppingCartRepository {
-	return &ShoppingCartMemoryRepository{shoppingCarts: make(map[string]*entity.ShoppingCart)}
+	return &ShoppingCartMemoryRepository{shoppingCarts: make(map[string]*shopping_cart.ShoppingCart)}
 }
 
-func (repository *ShoppingCartMemoryRepository) Upsert(_ context.Context, shoppingCart *entity.ShoppingCart) error {
+func (repository *ShoppingCartMemoryRepository) Upsert(_ context.Context, shoppingCart *shopping_cart.ShoppingCart) error {
 	repository.shoppingCarts[shoppingCart.CustomerId] = shoppingCart
 	return nil
 }
 
-func (repository *ShoppingCartMemoryRepository) FindByCustomerId(_ context.Context, id string) (*entity.ShoppingCart, error) {
+func (repository *ShoppingCartMemoryRepository) FindByCustomerId(_ context.Context, id string) (*shopping_cart.ShoppingCart, error) {
 	return repository.shoppingCarts[id], nil
 }

@@ -1,8 +1,10 @@
-package usecase
+package checkout
 
 import (
-	"bom-pedido-api/domain/entity"
+	"bom-pedido-api/domain/entity/product"
+	"bom-pedido-api/domain/entity/shopping_cart"
 	"bom-pedido-api/domain/enums"
+	"bom-pedido-api/domain/errors"
 	"bom-pedido-api/domain/value_object"
 	"bom-pedido-api/infra/factory"
 	"context"
@@ -16,25 +18,25 @@ func Test_CheckoutShoppingCart(t *testing.T) {
 	shoppingCartRepository := applicationFactory.ShoppingCartRepository
 	orderRepository := applicationFactory.OrderRepository
 	productRepository := applicationFactory.ProductRepository
-	useCase := NewCheckoutShoppingCartUseCase(applicationFactory)
+	useCase := New(applicationFactory)
 
 	t.Run("should return ShoppingCartEmptyError is shopping cart is empty", func(t *testing.T) {
-		input := CheckoutShoppingCartInput{Context: context.Background(), CustomerId: value_object.NewID()}
+		input := Input{Context: context.Background(), CustomerId: value_object.NewID()}
 		output, err := useCase.Execute(input)
 		assert.Nil(t, output)
-		assert.ErrorIs(t, err, entity.ShoppingCartEmptyError)
+		assert.ErrorIs(t, err, errors.ShoppingCartEmptyError)
 
-		shoppingCart := entity.NewShoppingCart(input.CustomerId)
+		shoppingCart := shopping_cart.New(input.CustomerId)
 		err = shoppingCartRepository.Upsert(input.Context, shoppingCart)
 		assert.NoError(t, err)
 
 		output, err = useCase.Execute(input)
 		assert.Nil(t, output)
-		assert.ErrorIs(t, err, entity.ShoppingCartEmptyError)
+		assert.ErrorIs(t, err, errors.ShoppingCartEmptyError)
 	})
 
 	t.Run("should create a order", func(t *testing.T) {
-		input := CheckoutShoppingCartInput{
+		input := Input{
 			Context:         context.Background(),
 			CustomerId:      value_object.NewID(),
 			PaymentMethod:   enums.CreditCard,
@@ -44,11 +46,11 @@ func Test_CheckoutShoppingCart(t *testing.T) {
 			Change:          0,
 			CreditCardToken: "",
 		}
-		product, _ := entity.NewProduct(faker.Name(), faker.Word(), 11.0)
+		product, _ := product.New(faker.Name(), faker.Word(), 11.0)
 		err := productRepository.Create(input.Context, product)
 		assert.NoError(t, err)
 
-		shoppingCart := entity.NewShoppingCart(input.CustomerId)
+		shoppingCart := shopping_cart.New(input.CustomerId)
 		err = shoppingCart.AddItem(product, 1, "")
 		assert.NoError(t, err)
 

@@ -1,9 +1,9 @@
-package usecase
+package google_authenticate_customer
 
 import (
 	"bom-pedido-api/application/factory"
 	gateway2 "bom-pedido-api/application/gateway"
-	"bom-pedido-api/domain/entity"
+	"bom-pedido-api/domain/entity/customer"
 	"bom-pedido-api/domain/errors"
 	"bom-pedido-api/domain/value_object"
 	"bom-pedido-api/infra/gateway"
@@ -33,13 +33,13 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 	}
 
 	t.Run("ShouldReturnsErrorIfGoogleReturnsError", func(t *testing.T) {
-		googleAuthenticateCustomerUseCase := NewGoogleAuthenticateCustomerUseCase(applicationFactory)
-		input := GoogleAuthenticateCustomerInput{Token: "error", Context: context.Background()}
+		googleAuthenticateCustomerUseCase := New(applicationFactory)
+		input := Input{Token: "error", Context: context.Background()}
 		googleGateway.On("GetUserByToken", "error").Return(nil, errors.New("any token"))
 
 		output, err := googleAuthenticateCustomerUseCase.Execute(input)
 
-		assert.Error(t, err, "expected error when using GoogleAuthenticateCustomerUseCase")
+		assert.Error(t, err, "expected error when using UseCase")
 		assert.Nil(t, output)
 	})
 
@@ -49,13 +49,13 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 			Email: "invalid_email",
 		}
 
-		googleAuthenticateCustomerUseCase := NewGoogleAuthenticateCustomerUseCase(applicationFactory)
-		input := GoogleAuthenticateCustomerInput{Token: "token", Context: context.Background()}
+		googleAuthenticateCustomerUseCase := New(applicationFactory)
+		input := Input{Token: "token", Context: context.Background()}
 		googleGateway.On("GetUserByToken", "token").Return(googleUser, nil).Once()
 
 		output, err := googleAuthenticateCustomerUseCase.Execute(input)
 
-		assert.Error(t, err, "expected error when using GoogleAuthenticateCustomerUseCase")
+		assert.Error(t, err, "expected error when using UseCase")
 		assert.ErrorIs(t, err, value_object.InvalidEmailError)
 		assert.Nil(t, output)
 	})
@@ -65,8 +65,8 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 		googleGateway.On("GetUserByToken", "google Token").Return(googleUser, nil).Once()
 		tokenManager.On("Encrypt", mock.Anything).Return("token", nil).Once()
 
-		googleAuthenticateCustomerUseCase := NewGoogleAuthenticateCustomerUseCase(applicationFactory)
-		input := GoogleAuthenticateCustomerInput{Token: "google Token", Context: context.Background()}
+		googleAuthenticateCustomerUseCase := New(applicationFactory)
+		input := Input{Token: "google Token", Context: context.Background()}
 
 		output, err := googleAuthenticateCustomerUseCase.Execute(input)
 
@@ -79,10 +79,10 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 		googleGateway.On("GetUserByToken", "google Token").Return(googleUser, nil).Once()
 		tokenManager.On("Encrypt", mock.Anything).Return("token", nil).Once()
 
-		googleAuthenticateCustomerUseCase := NewGoogleAuthenticateCustomerUseCase(applicationFactory)
-		customer, _ := entity.NewCustomer(faker.Name(), faker.Email())
+		googleAuthenticateCustomerUseCase := New(applicationFactory)
+		customer, _ := customer.New(faker.Name(), faker.Email())
 		_ = applicationFactory.CustomerRepository.Create(context.TODO(), customer)
-		input := GoogleAuthenticateCustomerInput{Token: "google Token", Context: context.Background()}
+		input := Input{Token: "google Token", Context: context.Background()}
 
 		output, err := googleAuthenticateCustomerUseCase.Execute(input)
 

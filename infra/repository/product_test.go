@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"bom-pedido-api/domain/entity"
+	"bom-pedido-api/domain/entity/product"
 	"context"
 	"database/sql"
 	"github.com/go-faker/faker/v4"
@@ -33,7 +33,7 @@ func TestDefaultProductRepository_Create(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("should create a product", func(t *testing.T) {
-		product, err := entity.NewProduct(faker.Name(), faker.Word(), 10.0)
+		product, err := product.New(faker.Name(), faker.Word(), 10.0)
 		assert.NoError(t, err)
 
 		err = productRepository.Create(ctx, product)
@@ -49,7 +49,7 @@ func TestDefaultProductRepository_Create(t *testing.T) {
 	})
 
 	t.Run("should not create duplicated product", func(t *testing.T) {
-		product, err := entity.NewProduct(faker.Name(), faker.Word(), 10.0)
+		product, err := product.New(faker.Name(), faker.Word(), 10.0)
 		assert.NoError(t, err)
 
 		err = productRepository.Create(ctx, product)

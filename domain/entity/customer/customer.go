@@ -1,17 +1,12 @@
-package entity
+package customer
 
 import (
-	"bom-pedido-api/domain/errors"
 	"bom-pedido-api/domain/value_object"
 )
 
 const (
 	ACTIVE   string = "ACTIVE"
 	INACTIVE string = "INACTIVE"
-)
-
-var (
-	CustomerNotFoundError = errors.New("customer not found")
 )
 
 type Customer struct {
@@ -22,7 +17,7 @@ type Customer struct {
 	Status      string
 }
 
-func NewCustomer(name, email string) (*Customer, error) {
+func New(name, email string) (*Customer, error) {
 	newEmail, err := value_object.NewEmail(email)
 	if err != nil {
 		return nil, err
@@ -35,7 +30,7 @@ func NewCustomer(name, email string) (*Customer, error) {
 	}, nil
 }
 
-func RestoreCustomer(id, name, email, phoneNumber, status string) (*Customer, error) {
+func Restore(id, name, email, phoneNumber, status string) (*Customer, error) {
 	newEmail, err := value_object.NewEmail(email)
 	if err != nil {
 		return nil, err

@@ -1,7 +1,8 @@
-package usecase
+package add_item_to_shopping_cart
 
 import (
-	"bom-pedido-api/domain/entity"
+	"bom-pedido-api/domain/entity/product"
+	"bom-pedido-api/domain/errors"
 	"bom-pedido-api/domain/value_object"
 	"bom-pedido-api/infra/factory"
 	"context"
@@ -12,26 +13,26 @@ import (
 
 func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
-	useCase := NewAddItemToShoppingCartUseCase(applicationFactory)
+	useCase := New(applicationFactory)
 
 	t.Run("should return ProductNotFoundError", func(t *testing.T) {
-		input := AddItemToShoppingCartInput{
+		input := Input{
 			Context:   context.Background(),
 			ProductId: value_object.NewID(),
 		}
 		err := useCase.Execute(input)
-		assert.ErrorIs(t, err, entity.ProductNotFoundError)
+		assert.ErrorIs(t, err, errors.ProductNotFoundError)
 	})
 
 	t.Run("should return error is product is unavailable", func(t *testing.T) {
-		product, err := entity.NewProduct(faker.Name(), faker.Word(), 10.0)
+		product, err := product.New(faker.Name(), faker.Word(), 10.0)
 		product.MarkUnAvailable()
 		if err != nil {
 			t.Fatalf("failed to restore product: %v", err)
 		}
 		_ = applicationFactory.ProductRepository.Create(context.Background(), product)
 
-		input := AddItemToShoppingCartInput{
+		input := Input{
 			Context:     context.Background(),
 			CustomerId:  value_object.NewID(),
 			ProductId:   product.Id,
@@ -39,20 +40,20 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 			Observation: faker.Word(),
 		}
 		err = useCase.Execute(input)
-		assert.ErrorIs(t, err, entity.ProductUnAvailableError)
+		assert.ErrorIs(t, err, errors.ProductUnAvailableError)
 
 		shoppingCart, _ := applicationFactory.ShoppingCartRepository.FindByCustomerId(input.Context, input.CustomerId)
 		assert.Nil(t, shoppingCart)
 	})
 
 	t.Run("should create a shopping cart with one item", func(t *testing.T) {
-		product, err := entity.NewProduct(faker.Name(), faker.Word(), 10.0)
+		product, err := product.New(faker.Name(), faker.Word(), 10.0)
 		if err != nil {
 			t.Fatalf("failed to restore product: %v", err)
 		}
 		_ = applicationFactory.ProductRepository.Create(context.Background(), product)
 
-		input := AddItemToShoppingCartInput{
+		input := Input{
 			Context:     context.Background(),
 			CustomerId:  value_object.NewID(),
 			ProductId:   product.Id,

@@ -1,7 +1,8 @@
-package usecase
+package get_customer
 
 import (
-	"bom-pedido-api/domain/entity"
+	"bom-pedido-api/domain/entity/customer"
+	"bom-pedido-api/domain/errors"
 	"bom-pedido-api/infra/factory"
 	"context"
 	"github.com/go-faker/faker/v4"
@@ -13,22 +14,22 @@ func TestGetCustomerUseCase_Execute(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
 
 	t.Run("it should return CustomerNotFoundError when the customer does not exist", func(t *testing.T) {
-		useCase := NewGetCustomerUseCase(applicationFactory)
-		input := GetCustomerInput{Id: faker.UUIDDigit(), Context: context.Background()}
+		useCase := New(applicationFactory)
+		input := Input{Id: faker.UUIDDigit(), Context: context.Background()}
 
 		output, err := useCase.Execute(input)
 
 		assert.Nil(t, output)
-		assert.ErrorIs(t, entity.CustomerNotFoundError, err)
+		assert.ErrorIs(t, errors.CustomerNotFoundError, err)
 	})
 
 	t.Run("should return a customer", func(t *testing.T) {
-		customer, _ := entity.NewCustomer(faker.Name(), faker.Email())
+		customer, _ := customer.New(faker.Name(), faker.Email())
 		_ = customer.SetPhoneNumber(faker.Phonenumber())
 		_ = applicationFactory.CustomerRepository.Create(context.Background(), customer)
 
-		useCase := NewGetCustomerUseCase(applicationFactory)
-		input := GetCustomerInput{Id: customer.Id, Context: context.Background()}
+		useCase := New(applicationFactory)
+		input := Input{Id: customer.Id, Context: context.Background()}
 
 		output, err := useCase.Execute(input)
 

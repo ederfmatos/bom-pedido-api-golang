@@ -1,4 +1,4 @@
-package entity
+package product
 
 import (
 	"bom-pedido-api/domain/errors"
@@ -17,19 +17,19 @@ func TestProduct_Validate(t *testing.T) {
 	}{
 		{
 			Product: &Product{Id: value_object.NewID(), Name: "", Price: 0.0, Status: "RANDOM"},
-			Errors:  []error{ProductNameIsRequiredError, ProductPriceIsRequiredError, InvalidProductStatusError},
+			Errors:  []error{errors.ProductNameIsRequiredError, errors.ProductPriceIsRequiredError, errors.ProductInvalidProductStatusError},
 		},
 		{
 			Product: &Product{Id: value_object.NewID(), Name: "", Price: -1.0, Status: "RANDOM"},
-			Errors:  []error{ProductNameIsRequiredError, ProductPriceShouldPositiveError, InvalidProductStatusError},
+			Errors:  []error{errors.ProductNameIsRequiredError, errors.ProductPriceShouldPositiveError, errors.ProductInvalidProductStatusError},
 		},
 		{
 			Product: &Product{Id: value_object.NewID(), Name: "", Price: 5.0, Status: "RANDOM"},
-			Errors:  []error{ProductNameIsRequiredError, InvalidProductStatusError},
+			Errors:  []error{errors.ProductNameIsRequiredError, errors.ProductInvalidProductStatusError},
 		},
 		{
 			Product: &Product{Id: value_object.NewID(), Name: "", Price: -1.0, Status: "ACTIVE"},
-			Errors:  []error{ProductNameIsRequiredError, ProductPriceShouldPositiveError},
+			Errors:  []error{errors.ProductNameIsRequiredError, errors.ProductPriceShouldPositiveError},
 		},
 		{
 			Product: &Product{Id: value_object.NewID(), Name: faker.Name(), Price: 10.0, Status: "ACTIVE"},

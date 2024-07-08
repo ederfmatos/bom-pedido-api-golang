@@ -1,8 +1,9 @@
-package http
+package get_customer
 
 import (
-	"bom-pedido-api/application/usecase"
-	"bom-pedido-api/domain/entity"
+	"bom-pedido-api/application/usecase/customer/get_customer"
+	"bom-pedido-api/domain/entity/customer"
+	"bom-pedido-api/domain/errors"
 	"bom-pedido-api/domain/value_object"
 	"bom-pedido-api/infra/factory"
 	"encoding/json"
@@ -20,7 +21,7 @@ func Test_GetCustomer(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
 
 	t.Run("should success get customer", func(t *testing.T) {
-		customer, _ := entity.NewCustomer(faker.Name(), faker.Email())
+		customer, _ := customer.New(faker.Name(), faker.Email())
 		_ = customer.SetPhoneNumber(faker.Phonenumber())
 		_ = applicationFactory.CustomerRepository.Create(context.Background(), customer)
 
@@ -34,7 +35,7 @@ func Test_GetCustomer(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, response.Code)
 
-		var output usecase.GetCustomerOutput
+		var output get_customer.Output
 		_ = json.NewDecoder(response.Body).Decode(&output)
 		assert.Equal(t, customer.Name, output.Name)
 		assert.Equal(t, customer.GetEmail(), output.Email)
@@ -49,6 +50,6 @@ func Test_GetCustomer(t *testing.T) {
 		echoContext.Set("customerId", value_object.NewID())
 
 		err := HandleGetAuthenticatedCustomer(applicationFactory)(echoContext)
-		assert.Equal(t, entity.CustomerNotFoundError, err)
+		assert.Equal(t, errors.CustomerNotFoundError, err)
 	})
 }

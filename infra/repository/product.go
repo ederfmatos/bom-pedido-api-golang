@@ -2,9 +2,17 @@ package repository
 
 import (
 	"bom-pedido-api/application/repository"
-	"bom-pedido-api/domain/entity"
+	"bom-pedido-api/domain/entity/product"
 	"context"
 	"strings"
+)
+
+const (
+	sqlCreateProduct       = "INSERT INTO products (id, name, description, price, status) VALUES (?, ?, ?, ?, ?)"
+	sqlUpdateProduct       = "UPDATE products SET name = ?, description = ?, price = ?, status = ? WHERE id = ?"
+	sqlFindProductById     = "SELECT id, name, description, price, status FROM products WHERE id = ?"
+	sqlExistsProductByName = "SELECT 1 FROM products WHERE name = ? LIMIT 1"
+	sqlListProducts        = "select id, name, description, price, status from products WHERE id IN (?)"
 )
 
 type DefaultProductRepository struct {
@@ -15,22 +23,22 @@ func NewDefaultProductRepository(sqlConnection SqlConnection) repository.Product
 	return &DefaultProductRepository{SqlConnection: sqlConnection}
 }
 
-func (repository *DefaultProductRepository) Create(ctx context.Context, product *entity.Product) error {
-	return repository.Sql("INSERT INTO products (id, name, description, price, status) VALUES (?, ?, ?, ?, ?)").
+func (repository *DefaultProductRepository) Create(ctx context.Context, product *product.Product) error {
+	return repository.Sql(sqlCreateProduct).
 		Values(product.Id, product.Name, product.Description, product.Price, product.Status).
 		Update(ctx)
 }
 
-func (repository *DefaultProductRepository) Update(ctx context.Context, product *entity.Product) error {
-	return repository.Sql("UPDATE products SET name = ?, description = ?, price = ?, status = ? WHERE id = ?").
+func (repository *DefaultProductRepository) Update(ctx context.Context, product *product.Product) error {
+	return repository.Sql(sqlUpdateProduct).
 		Values(product.Name, product.Description, product.Price, product.Status, product.Id).
 		Update(ctx)
 }
 
-func (repository *DefaultProductRepository) FindById(ctx context.Context, id string) (*entity.Product, error) {
+func (repository *DefaultProductRepository) FindById(ctx context.Context, id string) (*product.Product, error) {
 	var name, description, status string
 	var price float64
-	found, err := repository.Sql("SELECT id, name, description, price, status FROM products WHERE id = ?").
+	found, err := repository.Sql(sqlFindProductById).
 		Values(id).
 		FindOne(ctx, &id, &name, &description, &price, &status)
 	if err != nil {
@@ -39,18 +47,18 @@ func (repository *DefaultProductRepository) FindById(ctx context.Context, id str
 	if !found {
 		return nil, nil
 	}
-	return entity.RestoreProduct(id, name, description, price, status)
+	return product.Restore(id, name, description, price, status)
 }
 
 func (repository *DefaultProductRepository) ExistsByName(ctx context.Context, name string) (bool, error) {
-	return repository.Sql("SELECT 1 FROM products WHERE name = ? LIMIT 1").
+	return repository.Sql(sqlExistsProductByName).
 		Values(name).
 		Exists(ctx)
 }
 
-func (repository *DefaultProductRepository) FindAllById(ctx context.Context, ids []string) (map[string]*entity.Product, error) {
-	products := make(map[string]*entity.Product)
-	err := repository.Sql("select id, name, description, price, status from products WHERE id IN (?)").
+func (repository *DefaultProductRepository) FindAllById(ctx context.Context, ids []string) (map[string]*product.Product, error) {
+	products := make(map[string]*product.Product)
+	err := repository.Sql(sqlListProducts).
 		Values(strings.Join(ids, "','")).
 		List(ctx, func(getValues func(dest ...any) error) error {
 			var id, name, description, status string
@@ -59,7 +67,7 @@ func (repository *DefaultProductRepository) FindAllById(ctx context.Context, ids
 			if err != nil {
 				return err
 			}
-			product, err := entity.RestoreProduct(id, name, description, price, status)
+			product, err := product.Restore(id, name, description, price, status)
 			if err != nil {
 				return err
 			}
