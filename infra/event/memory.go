@@ -15,12 +15,10 @@ func (dispatcher *MemoryEventDispatcher) Emit(context context.Context, event *ev
 	return nil
 }
 
-func (dispatcher *MemoryEventDispatcher) Consume(id string, handler event.Handler) {
-	//TODO implement me
-	panic("implement me")
+func (dispatcher *MemoryEventDispatcher) Close() {
 }
 
-func (dispatcher *MemoryEventDispatcher) Close() {
+func (dispatcher *MemoryEventDispatcher) Consume(options *event.ConsumerOptions, handler event.Handler) {
 	//TODO implement me
 	panic("implement me")
 }

@@ -73,15 +73,14 @@ func (adapter *RabbitMqAdapter) Emit(context context.Context, event *event.Event
 	return nil
 }
 
-func (adapter *RabbitMqAdapter) Consume(queue string, handler event.Handler) {
-	channel := adapter.consumerChannel
-	_, err := channel.QueueDeclare(queue, true, false, false, false, nil)
+func (adapter *RabbitMqAdapter) Consume(options *event.ConsumerOptions, handler event.Handler) {
+	_, err := adapter.consumerChannel.QueueDeclare(options.Id, true, false, false, false, nil)
 	if err != nil {
-		slog.Error("Error on declare queue", "queue", queue, "error", err)
+		slog.Error("Error on declare queue", "queue", options.Id, "error", err)
 	}
-	messages, err := channel.Consume(
-		queue,
-		"BOM_PEDIDO_API_"+queue,
+	messages, err := adapter.consumerChannel.Consume(
+		options.Id,
+		"BOM_PEDIDO_API_"+options.Id,
 		false,
 		false,
 		false,
@@ -93,23 +92,35 @@ func (adapter *RabbitMqAdapter) Consume(queue string, handler event.Handler) {
 		return
 	}
 
-	go func() {
-		select {
-		case message := <-messages:
-			var messageEvent event.Event
-			slog.Info("Message received", "exchange", message.Exchange, "routingKey", message.RoutingKey)
-			err := json.Unmarshal(message.Body, &messageEvent)
-			if err != nil {
-				_ = message.Nack(false, true)
-				return
-			}
+	for range options.WorkerPoolSize {
+		go adapter.handleMessages(messages, handler)
+	}
+}
 
-			err = handler(messageEvent)
-			if err == nil {
-				_ = message.Ack(false)
-				return
-			}
-			_ = message.Nack(false, true)
+func (adapter *RabbitMqAdapter) handleMessages(messages <-chan amqp.Delivery, handler event.Handler) {
+	for message := range messages {
+		messageEvent := &RabbitMqMessageEvent{message}
+		err := handler(messageEvent)
+		if err != nil {
+			messageEvent.Nack()
 		}
-	}()
+	}
+}
+
+type RabbitMqMessageEvent struct {
+	message amqp.Delivery
+}
+
+func (ev *RabbitMqMessageEvent) Ack() error {
+	return ev.message.Ack(false)
+}
+
+func (ev *RabbitMqMessageEvent) Nack() {
+	_ = ev.message.Nack(false, true)
+}
+
+func (ev *RabbitMqMessageEvent) AsEvent() *event.Event {
+	var messageEvent event.Event
+	_ = json.Unmarshal(ev.message.Body, &messageEvent)
+	return &messageEvent
 }

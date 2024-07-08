@@ -7,8 +7,8 @@ import (
 )
 
 func HandleShoppingCart(factory *factory.ApplicationFactory) {
-	go factory.EventDispatcher.Consume("SHOPPING_CART::DELETE_SHOPPING_CART", func(event event.Event) error {
-		slog.Info("Handling DELETE_SHOPPING_CART event", "id", event.Data)
-		return nil
+	go factory.EventDispatcher.Consume(event.OptionsForQueue("SHOPPING_CART::DELETE_SHOPPING_CART"), func(message event.MessageEvent) error {
+		slog.Info("Handling DELETE_SHOPPING_CART event", "id", message.AsEvent())
+		return message.Ack()
 	})
 }
