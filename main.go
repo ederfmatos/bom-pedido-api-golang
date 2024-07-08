@@ -27,7 +27,9 @@ func main() {
 	defer database.Close()
 
 	applicationFactory := factory.NewApplicationFactory(database, environment)
-	defer applicationFactory.EventHandler.Close()
+	defer applicationFactory.EventDispatcher.Close()
+
+	go messaging.HandleEvents(applicationFactory)
 
 	server := echo.New()
 	server.Use(middleware.Logger())
@@ -47,10 +49,6 @@ func main() {
 	group.POST("/v1/auth/google/customer", http.HandleGoogleAuthCustomer(applicationFactory))
 	group.GET("/v1/customers/me", get_customer.HandleGetAuthenticatedCustomer(applicationFactory))
 	group.GET("/health", health.HandleHealth)
-
-	eventHandler := applicationFactory.EventHandler
-	go eventHandler.Consume("CREATE_PRODUCT_PROJECTION", messaging.HandleCreateProductProjection())
-	go eventHandler.Consume("ORDERS::DELETE_SHOPPING_CART", messaging.HandleCreateProductProjection())
 
 	err = server.Start(":8080")
 	server.Logger.Fatal(err)

@@ -33,7 +33,7 @@ func queryFactory(connection repository.SqlConnection) *factory.QueryFactory {
 
 func eventFactory(environment *env.Environment) *factory.EventFactory {
 	rabbitMqAdapter := event.NewRabbitMqAdapter(environment.RabbitMqServer)
-	return factory.NewEventFactory(rabbitMqAdapter, rabbitMqAdapter)
+	return factory.NewEventFactory(rabbitMqAdapter)
 }
 
 func tokenFactory(environment *env.Environment) *factory.TokenFactory {

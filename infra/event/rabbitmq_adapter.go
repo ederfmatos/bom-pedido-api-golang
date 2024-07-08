@@ -18,19 +18,35 @@ func init() {
 }
 
 type RabbitMqAdapter struct {
-	connection *amqp.Connection
+	connection      *amqp.Connection
+	producerChannel *amqp.Channel
+	consumerChannel *amqp.Channel
 }
 
 func (adapter *RabbitMqAdapter) Close() {
+	adapter.producerChannel.Close()
+	adapter.consumerChannel.Close()
 	adapter.connection.Close()
 }
 
-func NewRabbitMqAdapter(server string) *RabbitMqAdapter {
+func NewRabbitMqAdapter(server string) event.Dispatcher {
 	connection, err := amqp.Dial(server)
 	if err != nil {
 		panic(err)
 	}
-	return &RabbitMqAdapter{connection: connection}
+	producerChannel, err := connection.Channel()
+	if err != nil {
+		panic(err)
+	}
+	consumerChannel, err := connection.Channel()
+	if err != nil {
+		panic(err)
+	}
+	return &RabbitMqAdapter{
+		connection:      connection,
+		producerChannel: producerChannel,
+		consumerChannel: consumerChannel,
+	}
 }
 
 func (adapter *RabbitMqAdapter) Emit(context context.Context, event *event.Event) error {
@@ -41,21 +57,13 @@ func (adapter *RabbitMqAdapter) Emit(context context.Context, event *event.Event
 	}
 	slog.Info("Emitting event", "event", event)
 	exchange := eventExchanges[event.Name]
-	channel, err := adapter.connection.Channel()
-	if err != nil {
-		slog.Error("Error on open rabbitmq channel", err)
-		return err
-	}
-	err = channel.PublishWithContext(
+	err = adapter.producerChannel.PublishWithContext(
 		context,
 		exchange,
 		event.Name,
 		false,
 		false,
-		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        eventBytes,
-		},
+		amqp.Publishing{ContentType: "text/plain", Body: eventBytes},
 	)
 	if err != nil {
 		slog.Error("Error on publish event", "event", event, "exchange", exchange, "error", err)
@@ -65,20 +73,15 @@ func (adapter *RabbitMqAdapter) Emit(context context.Context, event *event.Event
 	return nil
 }
 
-func (adapter *RabbitMqAdapter) Consume(queue string, handler func(event event.Event) error) {
-	channel, err := adapter.connection.Channel()
-	defer channel.Close()
-	if err != nil {
-		slog.Error("Error on open rabbitmq channel", err)
-		return
-	}
-	_, err = channel.QueueDeclarePassive(queue, true, false, false, false, nil)
+func (adapter *RabbitMqAdapter) Consume(queue string, handler event.Handler) {
+	channel := adapter.consumerChannel
+	_, err := channel.QueueDeclare(queue, true, false, false, false, nil)
 	if err != nil {
 		slog.Error("Error on declare queue", "queue", queue, "error", err)
 	}
 	messages, err := channel.Consume(
 		queue,
-		"",
+		"BOM_PEDIDO_API_"+queue,
 		false,
 		false,
 		false,
@@ -90,18 +93,23 @@ func (adapter *RabbitMqAdapter) Consume(queue string, handler func(event event.E
 		return
 	}
 
-	for message := range messages {
-		var messageEvent event.Event
-		slog.Info("Message received", "exchange", message.Exchange, "routingKey", message.RoutingKey)
-		err := json.Unmarshal(message.Body, &messageEvent)
-		if err != nil {
-			return
-		}
-		go func() {
-			err := handler(messageEvent)
-			if err := message.Ack(err == nil); err != nil {
-				slog.Error("Error on handle message", err)
+	go func() {
+		select {
+		case message := <-messages:
+			var messageEvent event.Event
+			slog.Info("Message received", "exchange", message.Exchange, "routingKey", message.RoutingKey)
+			err := json.Unmarshal(message.Body, &messageEvent)
+			if err != nil {
+				_ = message.Nack(false, true)
+				return
 			}
-		}()
-	}
+
+			err = handler(messageEvent)
+			if err == nil {
+				_ = message.Ack(false)
+				return
+			}
+			_ = message.Nack(false, true)
+		}
+	}()
 }

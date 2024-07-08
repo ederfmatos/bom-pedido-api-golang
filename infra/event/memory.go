@@ -5,12 +5,22 @@ import (
 	"context"
 )
 
-type MemoryEventEmitter struct{}
+type MemoryEventDispatcher struct{}
 
-func NewMemoryEventEmitter() *MemoryEventEmitter {
-	return &MemoryEventEmitter{}
+func NewMemoryEventDispatcher() event.Dispatcher {
+	return &MemoryEventDispatcher{}
 }
 
-func (emitter *MemoryEventEmitter) Emit(context context.Context, event *event.Event) error {
+func (dispatcher *MemoryEventDispatcher) Emit(context context.Context, event *event.Event) error {
 	return nil
+}
+
+func (dispatcher *MemoryEventDispatcher) Consume(id string, handler event.Handler) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (dispatcher *MemoryEventDispatcher) Close() {
+	//TODO implement me
+	panic("implement me")
 }

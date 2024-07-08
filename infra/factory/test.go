@@ -2,7 +2,6 @@ package factory
 
 import (
 	"bom-pedido-api/application/factory"
-	"bom-pedido-api/infra/event"
 	"bom-pedido-api/infra/gateway"
 	"bom-pedido-api/infra/repository"
 	"bom-pedido-api/infra/token"
@@ -18,7 +17,7 @@ func NewTestApplicationFactory() *factory.ApplicationFactory {
 			repository.NewOrderMemoryRepository(),
 		),
 		factory.NewTokenFactory(token.NewFakeCustomerTokenManager()),
-		factory.NewEventFactory(event.NewMemoryEventEmitter(), nil),
+		factory.NewEventFactory(nil),
 		nil,
 	)
 }
