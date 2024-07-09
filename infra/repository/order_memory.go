@@ -23,3 +23,8 @@ func (repository *OrderMemoryRepository) Create(_ context.Context, order *order.
 func (repository *OrderMemoryRepository) FindById(_ context.Context, id string) (*order.Order, error) {
 	return repository.orders[id], nil
 }
+
+func (repository *OrderMemoryRepository) Update(_ context.Context, order *order.Order) error {
+	repository.orders[order.Id] = order
+	return nil
+}

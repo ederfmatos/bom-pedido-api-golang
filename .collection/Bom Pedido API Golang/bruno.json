@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Bom Pedido API Golang",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

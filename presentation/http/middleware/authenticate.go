@@ -13,6 +13,7 @@ func AuthenticateMiddleware(factory *factory.ApplicationFactory) echo.Middleware
 			token := c.Request().Header.Get("Authorization")
 			if token == "" {
 				c.Set("customerId", "019078bc-cab8-789a-a1e7-4ba2a09561a6")
+				c.Set("adminId", "019078bc-cab8-789a-a1e7-4ba2a09561a6")
 				return next(c)
 			}
 			customerId, err := customerTokenManager.Decrypt(token)
@@ -20,6 +21,7 @@ func AuthenticateMiddleware(factory *factory.ApplicationFactory) echo.Middleware
 				return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
 			}
 			c.Set("customerId", customerId)
+			c.Set("adminId", customerId)
 			return next(c)
 		}
 	}

@@ -5,21 +5,27 @@ import (
 )
 
 var (
-	OrderCreatedEventName = "ORDER_CREATED"
+	OrderCreatedEventName  = "ORDER_CREATED"
+	OrderApprovedEventName = "ORDER_APPROVED"
 )
 
-type OrderCreatedEventData struct {
+type OrderEventData struct {
 	OrderId    string `json:"orderId"`
 	CustomerId string `json:"customerId"`
 }
 
-func NewOrderCreatedEvent(order *order.Order) *Event {
+func newOrderEvent(order *order.Order, name string) *Event {
 	return &Event{
 		Id:   order.Id,
-		Name: OrderCreatedEventName,
-		Data: OrderCreatedEventData{
-			OrderId:    order.Id,
-			CustomerId: order.CustomerID,
-		},
+		Name: name,
+		Data: OrderEventData{OrderId: order.Id, CustomerId: order.CustomerID},
 	}
+}
+
+func NewOrderCreatedEvent(order *order.Order) *Event {
+	return newOrderEvent(order, OrderCreatedEventName)
+}
+
+func NewOrderApprovedEvent(order *order.Order) *Event {
+	return newOrderEvent(order, OrderApprovedEventName)
 }

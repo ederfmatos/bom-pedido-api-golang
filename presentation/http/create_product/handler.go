@@ -12,7 +12,7 @@ type createProductRequest struct {
 	Price       float64 `body:"price" json:"price,omitempty"`
 }
 
-func HandleCreateProduct(factory *factory.ApplicationFactory) func(context echo.Context) error {
+func Handle(factory *factory.ApplicationFactory) func(context echo.Context) error {
 	createProductUseCase := create_product.New(factory)
 	return func(context echo.Context) error {
 		var request createProductRequest

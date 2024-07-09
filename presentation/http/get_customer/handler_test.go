@@ -31,7 +31,7 @@ func Test_GetCustomer(t *testing.T) {
 		echoContext := e.NewContext(request, response)
 		echoContext.Set("customerId", customer.Id)
 
-		err := HandleGetAuthenticatedCustomer(applicationFactory)(echoContext)
+		err := Handle(applicationFactory)(echoContext)
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, response.Code)
 
@@ -49,7 +49,7 @@ func Test_GetCustomer(t *testing.T) {
 		echoContext := instance.NewContext(request, response)
 		echoContext.Set("customerId", value_object.NewID())
 
-		err := HandleGetAuthenticatedCustomer(applicationFactory)(echoContext)
+		err := Handle(applicationFactory)(echoContext)
 		assert.Equal(t, errors.CustomerNotFoundError, err)
 	})
 }
