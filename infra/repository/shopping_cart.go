@@ -36,3 +36,7 @@ func (repository *ShoppingCartRedisRepository) FindByCustomerId(context context.
 	err = json.Unmarshal([]byte(value), &shoppingCart)
 	return &shoppingCart, err
 }
+
+func (repository *ShoppingCartRedisRepository) DeleteByCustomerId(ctx context.Context, id string) error {
+	return repository.Del(ctx, "SHOPPING_CART::"+id).Err()
+}

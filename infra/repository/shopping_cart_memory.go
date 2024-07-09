@@ -19,6 +19,11 @@ func (repository *ShoppingCartMemoryRepository) Upsert(_ context.Context, shoppi
 	return nil
 }
 
+func (repository *ShoppingCartMemoryRepository) DeleteByCustomerId(ctx context.Context, id string) error {
+	delete(repository.shoppingCarts, id)
+	return nil
+}
+
 func (repository *ShoppingCartMemoryRepository) FindByCustomerId(_ context.Context, id string) (*shopping_cart.ShoppingCart, error) {
 	return repository.shoppingCarts[id], nil
 }

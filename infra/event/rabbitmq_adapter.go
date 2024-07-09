@@ -2,6 +2,7 @@ package event
 
 import (
 	"bom-pedido-api/application/event"
+	"bom-pedido-api/domain/events"
 	"context"
 	"encoding/json"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -49,7 +50,7 @@ func NewRabbitMqAdapter(server string) event.Dispatcher {
 	}
 }
 
-func (adapter *RabbitMqAdapter) Emit(context context.Context, event *event.Event) error {
+func (adapter *RabbitMqAdapter) Emit(context context.Context, event *events.Event) error {
 	eventBytes, err := json.Marshal(event)
 	if err != nil {
 		slog.Error("Error on emit event", "event", event, "error", err)
@@ -111,6 +112,13 @@ type RabbitMqMessageEvent struct {
 	message amqp.Delivery
 }
 
+func (ev *RabbitMqMessageEvent) AckIfNoError(err error) error {
+	if err == nil {
+		return ev.Ack()
+	}
+	return err
+}
+
 func (ev *RabbitMqMessageEvent) Ack() error {
 	return ev.message.Ack(false)
 }
@@ -119,8 +127,9 @@ func (ev *RabbitMqMessageEvent) Nack() {
 	_ = ev.message.Nack(false, true)
 }
 
-func (ev *RabbitMqMessageEvent) AsEvent() *event.Event {
-	var messageEvent event.Event
+func (ev *RabbitMqMessageEvent) ParseData(event interface{}) {
+	var messageEvent events.Event
 	_ = json.Unmarshal(ev.message.Body, &messageEvent)
-	return &messageEvent
+	data, _ := json.Marshal(messageEvent.Data)
+	_ = json.Unmarshal(data, event)
 }
