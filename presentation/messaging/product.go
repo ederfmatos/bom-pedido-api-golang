@@ -7,7 +7,7 @@ import (
 )
 
 func HandleProductEvents(factory *factory.ApplicationFactory) {
-	factory.EventDispatcher.Consume(event.OptionsForQueue("PRODUCTS::CREATE_PRODUCT_PROJECTION"), func(message event.MessageEvent) error {
+	factory.EventHandler.Consume(event.OptionsForQueue("PRODUCTS::CREATE_PRODUCT_PROJECTION"), func(message event.MessageEvent) error {
 		slog.Info("Received product message")
 		return message.Ack()
 	})

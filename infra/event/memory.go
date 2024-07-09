@@ -6,20 +6,20 @@ import (
 	"context"
 )
 
-type MemoryEventDispatcher struct{}
+type MemoryEventHandler struct{}
 
-func NewMemoryEventDispatcher() event.Dispatcher {
-	return &MemoryEventDispatcher{}
+func NewMemoryEventHandler() event.Handler {
+	return &MemoryEventHandler{}
 }
 
-func (dispatcher *MemoryEventDispatcher) Emit(context context.Context, event *events.Event) error {
+func (handler *MemoryEventHandler) Emit(context context.Context, event *events.Event) error {
 	return nil
 }
 
-func (dispatcher *MemoryEventDispatcher) Close() {
+func (handler *MemoryEventHandler) Close() {
 }
 
-func (dispatcher *MemoryEventDispatcher) Consume(options *event.ConsumerOptions, handler event.Handler) {
+func (handler *MemoryEventHandler) Consume(options *event.ConsumerOptions, handlerFunc event.HandlerFunc) {
 	//TODO implement me
 	panic("implement me")
 }

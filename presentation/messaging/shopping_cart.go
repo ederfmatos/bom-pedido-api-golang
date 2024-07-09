@@ -9,7 +9,7 @@ import (
 )
 
 func HandleShoppingCart(factory *factory.ApplicationFactory) {
-	factory.EventDispatcher.Consume(event.OptionsForQueue("SHOPPING_CART::DELETE_SHOPPING_CART"), handleDeleteShoppingCart(factory))
+	factory.EventHandler.Consume(event.OptionsForQueue("SHOPPING_CART::DELETE_SHOPPING_CART"), handleDeleteShoppingCart(factory))
 }
 
 func handleDeleteShoppingCart(factory *factory.ApplicationFactory) func(message event.MessageEvent) error {

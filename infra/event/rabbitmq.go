@@ -31,7 +31,7 @@ func (adapter *RabbitMqAdapter) Close() {
 	adapter.connection.Close()
 }
 
-func NewRabbitMqAdapter(server string) event.Dispatcher {
+func NewRabbitMqAdapter(server string) event.Handler {
 	connection, err := amqp.Dial(server)
 	if err != nil {
 		panic(err)
@@ -57,7 +57,6 @@ func (adapter *RabbitMqAdapter) Emit(context context.Context, event *events.Even
 		slog.Error("Error on emit event", "event", event, "error", err)
 		return err
 	}
-	slog.Info("Emitting event", "event", event)
 	exchange := eventExchanges[event.Name]
 	err = adapter.producerChannel.PublishWithContext(
 		context,
@@ -71,11 +70,10 @@ func (adapter *RabbitMqAdapter) Emit(context context.Context, event *events.Even
 		slog.Error("Error on publish event", "event", event, "exchange", exchange, "error", err)
 		return err
 	}
-	slog.Info("Event emitted", "event", event)
 	return nil
 }
 
-func (adapter *RabbitMqAdapter) Consume(options *event.ConsumerOptions, handler event.Handler) {
+func (adapter *RabbitMqAdapter) Consume(options *event.ConsumerOptions, handler event.HandlerFunc) {
 	_, err := adapter.consumerChannel.QueueDeclare(options.Id, true, false, false, false, nil)
 	if err != nil {
 		slog.Error("Error on declare queue", "queue", options.Id, "error", err)
@@ -99,7 +97,7 @@ func (adapter *RabbitMqAdapter) Consume(options *event.ConsumerOptions, handler 
 	}
 }
 
-func (adapter *RabbitMqAdapter) handleMessages(messages <-chan amqp.Delivery, handler event.Handler) {
+func (adapter *RabbitMqAdapter) handleMessages(messages <-chan amqp.Delivery, handler event.HandlerFunc) {
 	for message := range messages {
 		messageEvent := &RabbitMqMessageEvent{message}
 		err := handler(messageEvent)

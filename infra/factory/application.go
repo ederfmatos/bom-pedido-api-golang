@@ -7,11 +7,16 @@ import (
 	"bom-pedido-api/infra/gateway"
 	"bom-pedido-api/infra/query"
 	"bom-pedido-api/infra/repository"
+	"bom-pedido-api/infra/repository/outbox"
 	"bom-pedido-api/infra/token"
 	"crypto/rsa"
 	"crypto/x509"
 	"database/sql"
 	"encoding/pem"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/redis/go-redis/v9"
 	"os"
 )
@@ -33,7 +38,21 @@ func queryFactory(connection repository.SqlConnection) *factory.QueryFactory {
 
 func eventFactory(environment *env.Environment) *factory.EventFactory {
 	rabbitMqAdapter := event.NewRabbitMqAdapter(environment.RabbitMqServer)
-	return factory.NewEventFactory(rabbitMqAdapter)
+	config := &aws.Config{
+		Region:           aws.String(environment.AwsRegion),
+		Credentials:      credentials.NewStaticCredentials(environment.AwsClientId, environment.AwsClientSecret, ""),
+		Endpoint:         environment.AwsEndpoint,
+		S3ForcePathStyle: aws.Bool(true),
+	}
+	awsSession, err := session.NewSession(config)
+	if err != nil {
+		panic(err)
+	}
+	dynamoClient := dynamodb.New(awsSession)
+	outboxRepository := outbox.NewDynamoOutboxRepository(dynamoClient, environment.TransactionOutboxTableName)
+	dynamoStream := event.NewDynamoStream(awsSession, environment.TransactionOutboxTableName, dynamoClient)
+	handler := event.NewDynamoStreamsEventHandler(rabbitMqAdapter, outboxRepository, dynamoStream)
+	return factory.NewEventFactory(handler)
 }
 
 func tokenFactory(environment *env.Environment) *factory.TokenFactory {

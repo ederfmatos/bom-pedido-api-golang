@@ -3,6 +3,7 @@ module bom-pedido-api
 go 1.22
 
 require (
+	github.com/aws/aws-sdk-go v1.54.16
 	github.com/go-faker/faker/v4 v4.4.2
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/golang-jwt/jwe v0.0.0-20220815104040-b2647e820b90
@@ -14,6 +15,7 @@ require (
 	github.com/redis/go-redis/v9 v9.5.3
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
+	github.com/urakozz/go-dynamodb-stream-subscriber v0.0.0-20181123094412-d1f372e41da2
 	golang.org/x/net v0.27.0
 )
 
@@ -24,6 +26,7 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect

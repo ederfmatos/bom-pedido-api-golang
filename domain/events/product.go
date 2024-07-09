@@ -2,6 +2,7 @@ package events
 
 import (
 	"bom-pedido-api/domain/entity/product"
+	"bom-pedido-api/domain/value_object"
 )
 
 var (
@@ -14,8 +15,9 @@ type ProductCreatedData struct {
 
 func NewProductCreatedEvent(product *product.Product) *Event {
 	return &Event{
-		Id:   product.Id,
-		Name: ProductCreatedEventName,
-		Data: ProductCreatedData{ProductId: product.Id},
+		Id:            value_object.NewID(),
+		CorrelationId: product.Id,
+		Name:          ProductCreatedEventName,
+		Data:          ProductCreatedData{ProductId: product.Id},
 	}
 }

@@ -13,7 +13,7 @@ import (
 type (
 	UseCase struct {
 		orderRepository repository.OrderRepository
-		eventDispatcher event.Dispatcher
+		eventEmitter    event.Emitter
 	}
 	Input struct {
 		Context    context.Context
@@ -25,7 +25,7 @@ type (
 func New(factory *factory.ApplicationFactory) *UseCase {
 	return &UseCase{
 		orderRepository: factory.OrderRepository,
-		eventDispatcher: factory.EventDispatcher,
+		eventEmitter:    factory.EventEmitter,
 	}
 }
 
@@ -45,5 +45,5 @@ func (useCase *UseCase) Execute(input Input) error {
 	if err != nil {
 		return err
 	}
-	return useCase.eventDispatcher.Emit(input.Context, events.NewOrderApprovedEvent(order))
+	return useCase.eventEmitter.Emit(input.Context, events.NewOrderApprovedEvent(order))
 }

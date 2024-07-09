@@ -33,6 +33,9 @@ func (shoppingCart *ShoppingCart) AddItem(product *product.Product, quantity int
 	if product.IsUnAvailable() {
 		return errors.ProductUnAvailableError
 	}
+	if quantity < 1 {
+		return errors.New("quantity must be greater than 0")
+	}
 	item := ShoppingCartItem{
 		Id:          value_object.NewID(),
 		ProductId:   product.Id,

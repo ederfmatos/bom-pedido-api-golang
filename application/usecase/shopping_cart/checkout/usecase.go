@@ -15,7 +15,7 @@ type (
 		shoppingCartRepository repository.ShoppingCartRepository
 		productRepository      repository.ProductRepository
 		orderRepository        repository.OrderRepository
-		eventDispatcher        event.Dispatcher
+		eventEmitter           event.Emitter
 	}
 	Input struct {
 		Context         context.Context
@@ -37,7 +37,7 @@ func New(factory *factory.ApplicationFactory) *UseCase {
 		shoppingCartRepository: factory.ShoppingCartRepository,
 		productRepository:      factory.ProductRepository,
 		orderRepository:        factory.OrderRepository,
-		eventDispatcher:        factory.EventDispatcher,
+		eventEmitter:           factory.EventEmitter,
 	}
 }
 
@@ -75,7 +75,7 @@ func (useCase *UseCase) Execute(input Input) (*Output, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = useCase.eventDispatcher.Emit(input.Context, events.NewOrderCreatedEvent(order))
+	err = useCase.eventEmitter.Emit(input.Context, events.NewOrderCreatedEvent(order))
 	if err != nil {
 		return nil, err
 	}

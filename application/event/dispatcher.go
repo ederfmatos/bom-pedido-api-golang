@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-type Handler func(message MessageEvent) error
+type HandlerFunc func(message MessageEvent) error
 
 type MessageEvent interface {
 	Ack() error
@@ -40,8 +40,12 @@ func OptionsForQueue(queue string) *ConsumerOptions {
 	return NewConsumerOptions(queue, defaultWorkerPoolSize)
 }
 
-type Dispatcher interface {
+type Emitter interface {
 	Emit(ctx context.Context, event *events.Event) error
-	Consume(options *ConsumerOptions, handler Handler)
+}
+
+type Handler interface {
+	Emitter
+	Consume(options *ConsumerOptions, handler HandlerFunc)
 	Close()
 }

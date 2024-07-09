@@ -28,7 +28,7 @@ func main() {
 	defer database.Close()
 
 	applicationFactory := factory.NewApplicationFactory(database, environment)
-	defer applicationFactory.EventDispatcher.Close()
+	defer applicationFactory.EventHandler.Close()
 
 	go messaging.HandleEvents(applicationFactory)
 
