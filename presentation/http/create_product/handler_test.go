@@ -34,7 +34,7 @@ func Test_CreateProduct(t *testing.T) {
 	response := httptest.NewRecorder()
 	echoContext := e.NewContext(request, response)
 
-	err = HandleCreateProduct(applicationFactory)(echoContext)
+	err = Handle(applicationFactory)(echoContext)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusCreated, response.Code)
 

@@ -15,6 +15,7 @@ func init() {
 	eventExchanges = map[string]string{
 		"PRODUCT_CREATED": "PRODUCTS",
 		"ORDER_CREATED":   "ORDERS",
+		"ORDER_APPROVED":  "ORDERS",
 	}
 }
 

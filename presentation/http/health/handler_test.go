@@ -15,7 +15,7 @@ func Test_Health(t *testing.T) {
 	response := httptest.NewRecorder()
 	context := instance.NewContext(request, response)
 
-	err := HandleHealth(context)
+	err := Handle(context)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, response.Code)
 

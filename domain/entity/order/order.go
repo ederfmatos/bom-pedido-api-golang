@@ -8,11 +8,9 @@ import (
 	"time"
 )
 
-type Status string
 type ItemStatus string
 
 const (
-	AwaitingApproval         Status     = "AWAITING_APPROVAL"
 	OrderItemStatusOk        ItemStatus = "OK"
 	OrderItemStatusCancelled ItemStatus = "CANCELLED"
 )
@@ -29,8 +27,9 @@ type (
 		Change          float64
 		Code            int32
 		DeliveryTime    time.Time
-		Status          Status
+		status          *Status
 		Items           []Item
+		History         []*StatusHistory
 	}
 
 	Item struct {
@@ -59,8 +58,9 @@ func New(customerID, paymentMethodString, paymentModeString, deliveryModeString,
 		Change:          change,
 		Code:            0,
 		DeliveryTime:    deliveryTime,
-		Status:          AwaitingApproval,
+		status:          AwaitingApproval,
 		Items:           []Item{},
+		History:         []*StatusHistory{},
 	}, nil
 }
 
@@ -76,6 +76,10 @@ func Restore(
 	if err != nil {
 		return nil, err
 	}
+	orderStatus, err := ParseStatus(status)
+	if err != nil {
+		return nil, err
+	}
 	return &Order{
 		Id:              Id,
 		CustomerID:      customerID,
@@ -87,8 +91,9 @@ func Restore(
 		Change:          change,
 		Code:            code,
 		DeliveryTime:    deliveryTime,
-		Status:          Status(status),
+		status:          orderStatus,
 		Items:           items,
+		History:         []*StatusHistory{},
 	}, nil
 }
 
@@ -130,4 +135,18 @@ func (order *Order) AddProduct(product *product.Product, quantity int, observati
 		Status:      OrderItemStatusOk,
 	})
 	return nil
+}
+
+func (order *Order) Approve(approvedAt time.Time, approvedBy string) error {
+	approval, err := order.status.approve(approvedAt, approvedBy)
+	if err != nil {
+		return err
+	}
+	order.status = Approved
+	order.History = append(order.History, approval)
+	return nil
+}
+
+func (order *Order) GetStatus() string {
+	return order.status.name
 }

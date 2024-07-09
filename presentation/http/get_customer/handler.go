@@ -6,7 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func HandleGetAuthenticatedCustomer(factory *factory.ApplicationFactory) func(context echo.Context) error {
+func Handle(factory *factory.ApplicationFactory) func(context echo.Context) error {
 	useCase := get_customer.New(factory)
 	return func(context echo.Context) error {
 		input := get_customer.Input{

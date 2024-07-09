@@ -15,7 +15,7 @@ type checkoutShoppingCartRequest struct {
 	CreditCardToken string  `body:"creditCardToken" json:"creditCardToken,omitempty"`
 }
 
-func HandleCheckoutShoppingCart(factory *factory.ApplicationFactory) func(context echo.Context) error {
+func Handle(factory *factory.ApplicationFactory) func(context echo.Context) error {
 	useCase := checkout.New(factory)
 	return func(context echo.Context) error {
 		var request checkoutShoppingCartRequest

@@ -8,13 +8,11 @@ import (
 )
 
 const (
-	sqlCreateOrder     = "INSERT INTO orders (id, customer_id, payment_method, payment_mode, delivery_mode, credit_card_token, `change`, delivery_time, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-	sqlInsertOrderItem = "INSERT INTO order_items (id, order_id, product_id, quantity, observation, price, status) VALUES (?, ?, ?, ?, ?, ?, ?)"
-	sqlFindOrderById   = `
-		SELECT code, customer_id, payment_method, payment_mode, delivery_mode, credit_card_token, change, delivery_time, status, created_at
-		FROM orders WHERE id = ? LIMIT 1
-	`
-	sqlListItemsFromOrderId = `SELECT id, product_id, quantity, observation, price, status FROM order_items WHERE order_id = ?`
+	sqlCreateOrder          = "INSERT INTO orders (id, customer_id, payment_method, payment_mode, delivery_mode, credit_card_token, `change`, delivery_time, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+	sqlUpdateOrder          = "UPDATE orders SET status = ? WHERE id = ?"
+	sqlInsertOrderItem      = "INSERT INTO order_items (id, order_id, product_id, quantity, observation, price, status) VALUES (?, ?, ?, ?, ?, ?, ?)"
+	sqlFindOrderById        = "SELECT code, customer_id, payment_method, payment_mode, delivery_mode, credit_card_token, `change`, delivery_time, status, created_at FROM orders WHERE id = ? LIMIT 1"
+	sqlListItemsFromOrderId = "SELECT id, product_id, quantity, observation, price, status FROM order_items WHERE order_id = ?"
 )
 
 type DefaultOrderRepository struct {
@@ -28,7 +26,7 @@ func NewDefaultOrderRepository(sqlConnection SqlConnection) repository.OrderRepo
 func (repository *DefaultOrderRepository) Create(ctx context.Context, order *order.Order) error {
 	return repository.InTransaction(ctx, func(transaction SqlTransaction) error {
 		err := transaction.Sql(sqlCreateOrder).
-			Values(order.Id, order.CustomerID, order.PaymentMethod, order.PaymentMode, order.DeliveryMode, order.CreditCardToken, order.Change, order.DeliveryTime, order.Status, order.CreatedAt).
+			Values(order.Id, order.CustomerID, order.PaymentMethod, order.PaymentMode, order.DeliveryMode, order.CreditCardToken, order.Change, order.DeliveryTime, order.GetStatus(), order.CreatedAt).
 			Update(ctx)
 		if err != nil {
 			return err
@@ -85,4 +83,17 @@ func (repository *DefaultOrderRepository) FindById(ctx context.Context, id strin
 		deliveryTime,
 		[]order.Item{},
 	)
+}
+
+func (repository *DefaultOrderRepository) Update(ctx context.Context, order *order.Order) error {
+	return repository.InTransaction(ctx, func(transaction SqlTransaction) error {
+		err := transaction.Sql(sqlUpdateOrder).
+			Values(order.GetStatus(), order.Id).
+			Update(ctx)
+		if err != nil {
+			return err
+		}
+		// TODO: Atualizar historico do pedido
+		return nil
+	})
 }
