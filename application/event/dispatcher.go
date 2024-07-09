@@ -1,6 +1,7 @@
 package event
 
 import (
+	"bom-pedido-api/domain/events"
 	"context"
 	"os"
 	"strconv"
@@ -10,8 +11,9 @@ type Handler func(message MessageEvent) error
 
 type MessageEvent interface {
 	Ack() error
+	AckIfNoError(err error) error
 	Nack()
-	AsEvent() *Event
+	ParseData(event interface{})
 }
 
 var defaultWorkerPoolSize int
@@ -39,7 +41,7 @@ func OptionsForQueue(queue string) *ConsumerOptions {
 }
 
 type Dispatcher interface {
-	Emit(ctx context.Context, event *Event) error
+	Emit(ctx context.Context, event *events.Event) error
 	Consume(options *ConsumerOptions, handler Handler)
 	Close()
 }

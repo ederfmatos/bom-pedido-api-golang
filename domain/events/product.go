@@ -1,7 +1,6 @@
 package events
 
 import (
-	"bom-pedido-api/application/event"
 	"bom-pedido-api/domain/entity/product"
 )
 
@@ -13,8 +12,8 @@ type ProductCreatedData struct {
 	ProductId string `json:"productId"`
 }
 
-func NewProductCreatedEvent(product *product.Product) *event.Event {
-	return &event.Event{
+func NewProductCreatedEvent(product *product.Product) *Event {
+	return &Event{
 		Id:   product.Id,
 		Name: ProductCreatedEventName,
 		Data: ProductCreatedData{ProductId: product.Id},

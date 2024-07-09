@@ -1,7 +1,6 @@
 package events
 
 import (
-	"bom-pedido-api/application/event"
 	"bom-pedido-api/domain/entity/order"
 )
 
@@ -9,14 +8,18 @@ var (
 	OrderCreatedEventName = "ORDER_CREATED"
 )
 
-type OrderCreatedData struct {
-	OrderId string `json:"orderId"`
+type OrderCreatedEventData struct {
+	OrderId    string `json:"orderId"`
+	CustomerId string `json:"customerId"`
 }
 
-func NewOrderCreatedEvent(order *order.Order) *event.Event {
-	return &event.Event{
+func NewOrderCreatedEvent(order *order.Order) *Event {
+	return &Event{
 		Id:   order.Id,
 		Name: OrderCreatedEventName,
-		Data: OrderCreatedData{OrderId: order.Id},
+		Data: OrderCreatedEventData{
+			OrderId:    order.Id,
+			CustomerId: order.CustomerID,
+		},
 	}
 }
