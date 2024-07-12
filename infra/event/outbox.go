@@ -59,7 +59,7 @@ func (handler *OutboxEventHandler) handleStream() {
 func (handler *OutboxEventHandler) processEvent(id string) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	_ = handler.locker.Lock(ctx, id, time.Minute, func() {
+	_ = handler.locker.LockFunc(ctx, id, time.Minute, func() {
 		entry, err := handler.outboxRepository.Get(ctx, id)
 		if err != nil {
 			return

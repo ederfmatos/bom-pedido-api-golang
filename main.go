@@ -52,16 +52,14 @@ func main() {
 	slog.SetDefault(logger)
 
 	group := server.Group("/api")
-	group.POST("/v1/shopping-cart/checkout", http.Handle(applicationFactory))
-	group.PATCH("/v1/shopping-cart/items", http.HandleAddItemToShoppingCart(applicationFactory))
+	group.POST("/v1/shopping-cart/checkout", http.Handle(applicationFactory), middleware2.LockByCustomerId(applicationFactory))
+	group.PATCH("/v1/shopping-cart/items", http.HandleAddItemToShoppingCart(applicationFactory), middleware2.LockByCustomerId(applicationFactory))
 	group.POST("/v1/products", create_product.Handle(applicationFactory))
 	group.GET("/v1/products", list_products.Handle(applicationFactory))
 	group.POST("/v1/auth/google/customer", http.HandleGoogleAuthCustomer(applicationFactory))
 	group.GET("/v1/customers/me", get_customer.Handle(applicationFactory))
-	group.POST("/v1/orders/:id/approve", approve_order.Handle(applicationFactory))
+	group.POST("/v1/orders/:id/approve", approve_order.Handle(applicationFactory), middleware2.LockByParam("id", applicationFactory))
 	group.GET("/health", health.Handle)
-
-	slog.Info(os.Getenv("PORT"))
 
 	err = server.Start(fmt.Sprintf(":%s", environment.Port))
 	server.Logger.Fatal(err)

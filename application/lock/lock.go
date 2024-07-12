@@ -6,5 +6,7 @@ import (
 )
 
 type Locker interface {
-	Lock(ctx context.Context, key string, ttl time.Duration, lockedFunc func()) error
+	LockFunc(ctx context.Context, key string, ttl time.Duration, lockedFunc func()) error
+	Lock(ctx context.Context, key string, ttl time.Duration) error
+	Release(ctx context.Context, key string) error
 }

@@ -18,6 +18,6 @@ func NewTestApplicationFactory() *factory.ApplicationFactory {
 		),
 		factory.NewTokenFactory(token.NewFakeCustomerTokenManager()),
 		factory.NewEventFactory(nil),
-		nil,
+		nil, nil,
 	)
 }
