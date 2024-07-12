@@ -10,23 +10,23 @@ import (
 	"time"
 )
 
-type DynamoStreamsEventHandler struct {
+type OutboxEventHandler struct {
 	handler          event.Handler
 	outboxRepository outbox.Repository
-	dynamoStream     *DynamoStream
+	stream           Stream
 }
 
-func NewDynamoStreamsEventHandler(handler event.Handler, outboxRepository outbox.Repository, dynamoStream *DynamoStream) *DynamoStreamsEventHandler {
-	dynamoEventHandler := &DynamoStreamsEventHandler{
+func NewOutboxEventHandler(handler event.Handler, outboxRepository outbox.Repository, stream Stream) *OutboxEventHandler {
+	eventHandler := &OutboxEventHandler{
 		handler:          handler,
 		outboxRepository: outboxRepository,
-		dynamoStream:     dynamoStream,
+		stream:           stream,
 	}
-	dynamoEventHandler.handleStream()
-	return dynamoEventHandler
+	eventHandler.handleStream()
+	return eventHandler
 }
 
-func (handler *DynamoStreamsEventHandler) Emit(ctx context.Context, event *events.Event) error {
+func (handler *OutboxEventHandler) Emit(ctx context.Context, event *events.Event) error {
 	eventData, err := json.Marshal(event)
 	if err != nil {
 		return err
@@ -38,17 +38,16 @@ func (handler *DynamoStreamsEventHandler) Emit(ctx context.Context, event *event
 		CreatedAt: time.Now(),
 		Status:    "NEW",
 	}
-	return handler.outboxRepository.Store(ctx, entry)
+	return handler.outboxRepository.Save(ctx, entry)
 }
 
-func (handler *DynamoStreamsEventHandler) handleStream() {
-	fetchEvents, err := handler.dynamoStream.FetchEvents()
+func (handler *OutboxEventHandler) handleStream() {
+	fetchEvents, err := handler.stream.FetchStream()
 	if err != nil {
 		panic(err)
 	}
 	go func() {
-		for record := range fetchEvents {
-			id := *record.Dynamodb.NewImage["id"].S
+		for id := range fetchEvents {
 			entry, err := handler.outboxRepository.Get(context.Background(), id)
 			if err != nil {
 				continue
@@ -61,29 +60,32 @@ func (handler *DynamoStreamsEventHandler) handleStream() {
 	}()
 }
 
-func (handler *DynamoStreamsEventHandler) processEntry(entry *outbox.Entry) error {
+func (handler *OutboxEventHandler) processEntry(entry *outbox.Entry) error {
 	if entry == nil || entry.Status == "PROCESSED" {
 		return nil
 	}
 	var messageEvent events.Event
 	err := json.Unmarshal([]byte(entry.Data), &messageEvent)
 	if err != nil {
-		_ = handler.outboxRepository.MarkAsError(context.Background(), entry)
+		entry.MarkAsError()
+		_ = handler.outboxRepository.Update(context.Background(), entry)
 		return err
 	}
 	err = handler.handler.Emit(context.Background(), &messageEvent)
 	if err != nil {
-		_ = handler.outboxRepository.MarkAsError(context.Background(), entry)
+		entry.MarkAsError()
+		_ = handler.outboxRepository.Update(context.Background(), entry)
 		return err
 	}
-	_ = handler.outboxRepository.MarkAsProcessed(context.Background(), entry)
+	entry.MarkAsProcessed()
+	_ = handler.outboxRepository.Update(context.Background(), entry)
 	return nil
 }
 
-func (handler *DynamoStreamsEventHandler) Consume(options *event.ConsumerOptions, handlerFunc event.HandlerFunc) {
+func (handler *OutboxEventHandler) Consume(options *event.ConsumerOptions, handlerFunc event.HandlerFunc) {
 	handler.handler.Consume(options, handlerFunc)
 }
 
-func (handler *DynamoStreamsEventHandler) Close() {
+func (handler *OutboxEventHandler) Close() {
 	handler.handler.Close()
 }

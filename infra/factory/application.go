@@ -9,15 +9,14 @@ import (
 	"bom-pedido-api/infra/repository"
 	"bom-pedido-api/infra/repository/outbox"
 	"bom-pedido-api/infra/token"
+	"context"
 	"crypto/rsa"
 	"crypto/x509"
 	"database/sql"
 	"encoding/pem"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/redis/go-redis/v9"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"os"
 )
 
@@ -38,20 +37,15 @@ func queryFactory(connection repository.SqlConnection) *factory.QueryFactory {
 
 func eventFactory(environment *env.Environment) *factory.EventFactory {
 	rabbitMqAdapter := event.NewRabbitMqAdapter(environment.RabbitMqServer)
-	config := &aws.Config{
-		Region:           aws.String(environment.AwsRegion),
-		Credentials:      credentials.NewStaticCredentials(environment.AwsClientId, environment.AwsClientSecret, ""),
-		Endpoint:         environment.AwsEndpoint,
-		S3ForcePathStyle: aws.Bool(true),
-	}
-	awsSession, err := session.NewSession(config)
+	clientOptions := options.Client().ApplyURI(environment.MongoUrl)
+	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
 		panic(err)
 	}
-	dynamoClient := dynamodb.New(awsSession)
-	outboxRepository := outbox.NewDynamoOutboxRepository(dynamoClient, environment.TransactionOutboxTableName)
-	dynamoStream := event.NewDynamoStream(awsSession, environment.TransactionOutboxTableName, dynamoClient)
-	handler := event.NewDynamoStreamsEventHandler(rabbitMqAdapter, outboxRepository, dynamoStream)
+	collection := client.Database(environment.MongoDatabaseName).Collection(environment.MongoOutboxCollectionName)
+	outboxRepository := outbox.NewMongoOutboxRepository(collection)
+	mongoStream := event.NewMongoStream(collection)
+	handler := event.NewOutboxEventHandler(rabbitMqAdapter, outboxRepository, mongoStream)
 	return factory.NewEventFactory(handler)
 }
 
