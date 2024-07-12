@@ -1,6 +1,9 @@
 package env
 
-import "github.com/spf13/viper"
+import (
+	"github.com/spf13/viper"
+	"os"
+)
 
 type Environment struct {
 	DatabaseUrl               string `mapstructure:"DATABASE_URL"`
@@ -12,6 +15,7 @@ type Environment struct {
 	MongoUrl                  string `mapstructure:"MONGO_URL"`
 	MongoDatabaseName         string `mapstructure:"MONGO_DATABASE_NAME"`
 	MongoOutboxCollectionName string `mapstructure:"MONGO_OUTBOX_COLLECTION_NAME"`
+	Port                      string `mapstructure:"PORT"`
 }
 
 func LoadEnvironment(path string) *Environment {
@@ -28,6 +32,12 @@ func LoadEnvironment(path string) *Environment {
 	err = viper.Unmarshal(&environment)
 	if err != nil {
 		panic(err)
+	}
+	if environment.Port == "" {
+		environment.Port = os.Getenv("PORT")
+	}
+	if environment.Port == "" {
+		environment.Port = "8080"
 	}
 	return &environment
 }

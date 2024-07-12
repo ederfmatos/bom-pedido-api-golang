@@ -12,9 +12,11 @@ import (
 	middleware2 "bom-pedido-api/presentation/http/middleware"
 	"bom-pedido-api/presentation/messaging"
 	"database/sql"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/redis/go-redis/v9"
 	"log/slog"
 	"os"
 )
@@ -27,13 +29,20 @@ func main() {
 	}
 	defer database.Close()
 
-	applicationFactory := factory.NewApplicationFactory(database, environment)
+	redisUrl, err := redis.ParseURL(environment.RedisUrl)
+	if err != nil {
+		panic(err)
+	}
+	redisClient := redis.NewClient(redisUrl)
+	defer redisClient.Close()
+
+	applicationFactory := factory.NewApplicationFactory(database, environment, redisClient)
 	defer applicationFactory.EventHandler.Close()
 
 	go messaging.HandleEvents(applicationFactory)
 
 	server := echo.New()
-	server.Use(middleware.Logger())
+	//server.Use(middleware.Logger())
 	server.Use(middleware.Recover())
 	server.Use(middleware.RequestID())
 	server.Use(middleware2.AuthenticateMiddleware(applicationFactory))
@@ -52,6 +61,8 @@ func main() {
 	group.POST("/v1/orders/:id/approve", approve_order.Handle(applicationFactory))
 	group.GET("/health", health.Handle)
 
-	err = server.Start(":8080")
+	slog.Info(os.Getenv("PORT"))
+
+	err = server.Start(fmt.Sprintf(":%s", environment.Port))
 	server.Logger.Fatal(err)
 }

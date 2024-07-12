@@ -2,6 +2,7 @@ package event
 
 import (
 	"bom-pedido-api/application/event"
+	"bom-pedido-api/application/lock"
 	"bom-pedido-api/domain/events"
 	"bom-pedido-api/infra/repository/outbox"
 	"bom-pedido-api/infra/retry"
@@ -14,13 +15,15 @@ type OutboxEventHandler struct {
 	handler          event.Handler
 	outboxRepository outbox.Repository
 	stream           Stream
+	locker           lock.Locker
 }
 
-func NewOutboxEventHandler(handler event.Handler, outboxRepository outbox.Repository, stream Stream) *OutboxEventHandler {
+func NewOutboxEventHandler(handler event.Handler, outboxRepository outbox.Repository, stream Stream, locker lock.Locker) *OutboxEventHandler {
 	eventHandler := &OutboxEventHandler{
 		handler:          handler,
 		outboxRepository: outboxRepository,
 		stream:           stream,
+		locker:           locker,
 	}
 	eventHandler.handleStream()
 	return eventHandler
@@ -48,19 +51,27 @@ func (handler *OutboxEventHandler) handleStream() {
 	}
 	go func() {
 		for id := range fetchEvents {
-			entry, err := handler.outboxRepository.Get(context.Background(), id)
-			if err != nil {
-				continue
-			}
-			retryable := retry.NewRetry(5, time.Second*2, time.Minute)
-			go retryable.Execute(func() error {
-				return handler.processEntry(entry)
-			})
+			handler.processEvent(id)
 		}
 	}()
 }
 
-func (handler *OutboxEventHandler) processEntry(entry *outbox.Entry) error {
+func (handler *OutboxEventHandler) processEvent(id string) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	_ = handler.locker.Lock(ctx, id, time.Minute, func() {
+		entry, err := handler.outboxRepository.Get(ctx, id)
+		if err != nil {
+			return
+		}
+		retryable := retry.NewRetry(5, time.Second, time.Second*30)
+		_ = retryable.Execute(func() error {
+			return handler.processEntry(ctx, entry)
+		})
+	})
+}
+
+func (handler *OutboxEventHandler) processEntry(ctx context.Context, entry *outbox.Entry) error {
 	if entry == nil || entry.Status == "PROCESSED" {
 		return nil
 	}
@@ -68,17 +79,17 @@ func (handler *OutboxEventHandler) processEntry(entry *outbox.Entry) error {
 	err := json.Unmarshal([]byte(entry.Data), &messageEvent)
 	if err != nil {
 		entry.MarkAsError()
-		_ = handler.outboxRepository.Update(context.Background(), entry)
+		_ = handler.outboxRepository.Update(ctx, entry)
 		return err
 	}
-	err = handler.handler.Emit(context.Background(), &messageEvent)
+	err = handler.handler.Emit(ctx, &messageEvent)
 	if err != nil {
 		entry.MarkAsError()
-		_ = handler.outboxRepository.Update(context.Background(), entry)
+		_ = handler.outboxRepository.Update(ctx, entry)
 		return err
 	}
 	entry.MarkAsProcessed()
-	_ = handler.outboxRepository.Update(context.Background(), entry)
+	_ = handler.outboxRepository.Update(ctx, entry)
 	return nil
 }
 
