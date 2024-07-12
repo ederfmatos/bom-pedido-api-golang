@@ -147,6 +147,16 @@ func (order *Order) Approve(approvedAt time.Time, approvedBy string) error {
 	return nil
 }
 
+func (order *Order) Reject(rejectedAt time.Time, rejectedBy, reason string) error {
+	rejection, err := order.status.reject(rejectedAt, rejectedBy, reason)
+	if err != nil {
+		return err
+	}
+	order.status = Rejected
+	order.History = append(order.History, rejection)
+	return nil
+}
+
 func (order *Order) GetStatus() string {
 	return order.status.name
 }

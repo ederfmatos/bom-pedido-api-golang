@@ -32,6 +32,7 @@ type (
 		Time      time.Time
 		Status    *Status
 		ChangedBy string
+		Data      map[string]string
 	}
 )
 
@@ -45,6 +46,29 @@ func (s *Status) approve(approvedAt time.Time, approvedBy string) (*StatusHistor
 			Time:      approvedAt,
 			Status:    Approved,
 			ChangedBy: approvedBy,
+		}, nil
+	}
+	switch s {
+	case InProgress, Approved:
+		return nil, AlreadyApprovedError
+	case Cancelled:
+		return nil, AlreadyCancelledError
+	case Rejected:
+		return nil, AlreadyRejectedError
+	case Finished:
+		return nil, AlreadyFinishedError
+	default:
+		return nil, ApprovalNotAllowed
+	}
+}
+
+func (s *Status) reject(rejectedAt time.Time, rejectedBy string, reason string) (*StatusHistory, error) {
+	if s == AwaitingApproval {
+		return &StatusHistory{
+			Time:      rejectedAt,
+			Status:    Rejected,
+			ChangedBy: rejectedBy,
+			Data:      map[string]string{"reason": reason},
 		}, nil
 	}
 	switch s {

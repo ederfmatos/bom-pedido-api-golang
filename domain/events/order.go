@@ -8,6 +8,7 @@ import (
 var (
 	OrderCreatedEventName  = "ORDER_CREATED"
 	OrderApprovedEventName = "ORDER_APPROVED"
+	OrderRejectedEventName = "ORDER_REJECTED"
 )
 
 type OrderEventData struct {
@@ -30,4 +31,8 @@ func NewOrderCreatedEvent(order *order.Order) *Event {
 
 func NewOrderApprovedEvent(order *order.Order) *Event {
 	return newOrderEvent(order, OrderApprovedEventName)
+}
+
+func NewOrderRejectedEvent(order *order.Order) *Event {
+	return newOrderEvent(order, OrderRejectedEventName)
 }

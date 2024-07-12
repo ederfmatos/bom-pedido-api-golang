@@ -33,7 +33,7 @@ func New(factory *factory.ApplicationFactory) *UseCase {
 }
 
 func (useCase *UseCase) Execute(input Input) (*Output, error) {
-	googleUser, err := useCase.googleGateway.GetUserByToken(input.Token)
+	googleUser, err := useCase.googleGateway.GetUserByToken(input.Context, input.Token)
 	if err != nil {
 		return nil, err
 	}

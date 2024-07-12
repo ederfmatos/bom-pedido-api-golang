@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"bom-pedido-api/application/gateway"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -15,8 +16,12 @@ func NewDefaultGoogleGateway(baseUrl string) gateway.GoogleGateway {
 	return &DefaultGoogleGateway{baseUrl: baseUrl}
 }
 
-func (googleGateway *DefaultGoogleGateway) GetUserByToken(token string) (*gateway.GoogleUser, error) {
-	response, err := http.Get(googleGateway.baseUrl + "?access_token=" + token)
+func (googleGateway *DefaultGoogleGateway) GetUserByToken(ctx context.Context, token string) (*gateway.GoogleUser, error) {
+	request, err := http.NewRequestWithContext(ctx, "GET", googleGateway.baseUrl+"?access_token="+token, nil)
+	if err != nil {
+		return nil, err
+	}
+	response, err := http.DefaultClient.Do(request)
 	if err != nil {
 		return nil, err
 	}
