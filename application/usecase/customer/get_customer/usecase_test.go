@@ -15,9 +15,9 @@ func TestGetCustomerUseCase_Execute(t *testing.T) {
 
 	t.Run("it should return CustomerNotFoundError when the customer does not exist", func(t *testing.T) {
 		useCase := New(applicationFactory)
-		input := Input{Id: faker.UUIDDigit(), Context: context.Background()}
+		input := Input{Id: faker.UUIDDigit()}
 
-		output, err := useCase.Execute(input)
+		output, err := useCase.Execute(context.TODO(), input)
 
 		assert.Nil(t, output)
 		assert.ErrorIs(t, errors.CustomerNotFoundError, err)
@@ -26,12 +26,12 @@ func TestGetCustomerUseCase_Execute(t *testing.T) {
 	t.Run("should return a customer", func(t *testing.T) {
 		customer, _ := customer.New(faker.Name(), faker.Email())
 		_ = customer.SetPhoneNumber(faker.Phonenumber())
-		_ = applicationFactory.CustomerRepository.Create(context.Background(), customer)
+		_ = applicationFactory.CustomerRepository.Create(context.TODO(), customer)
 
 		useCase := New(applicationFactory)
-		input := Input{Id: customer.Id, Context: context.Background()}
+		input := Input{Id: customer.Id}
 
-		output, err := useCase.Execute(input)
+		output, err := useCase.Execute(context.TODO(), input)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, output)

@@ -10,10 +10,9 @@ func Handle(factory *factory.ApplicationFactory) func(context echo.Context) erro
 	useCase := get_customer.New(factory)
 	return func(context echo.Context) error {
 		input := get_customer.Input{
-			Id:      context.Get("customerId").(string),
-			Context: context.Request().Context(),
+			Id: context.Get("customerId").(string),
 		}
-		output, err := useCase.Execute(input)
+		output, err := useCase.Execute(context.Request().Context(), input)
 		if err != nil {
 			return err
 		}

@@ -16,7 +16,6 @@ type (
 		eventEmitter    event.Emitter
 	}
 	Input struct {
-		Context    context.Context
 		OrderId    string
 		RejectedBy string
 		Reason     string
@@ -30,8 +29,8 @@ func New(factory *factory.ApplicationFactory) *UseCase {
 	}
 }
 
-func (useCase *UseCase) Execute(input Input) error {
-	order, err := useCase.orderRepository.FindById(input.Context, input.OrderId)
+func (useCase *UseCase) Execute(ctx context.Context, input Input) error {
+	order, err := useCase.orderRepository.FindById(ctx, input.OrderId)
 	if err != nil {
 		return err
 	}
@@ -42,9 +41,9 @@ func (useCase *UseCase) Execute(input Input) error {
 	if err != nil {
 		return err
 	}
-	err = useCase.orderRepository.Update(input.Context, order)
+	err = useCase.orderRepository.Update(ctx, order)
 	if err != nil {
 		return err
 	}
-	return useCase.eventEmitter.Emit(input.Context, events.NewOrderRejectedEvent(order))
+	return useCase.eventEmitter.Emit(ctx, events.NewOrderRejectedEvent(order))
 }

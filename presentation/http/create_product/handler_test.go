@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"github.com/go-faker/faker/v4"
 	"github.com/labstack/echo/v4"
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -42,7 +41,7 @@ func Test_CreateProduct(t *testing.T) {
 	_ = json.NewDecoder(response.Body).Decode(&output)
 	assert.NotEmpty(t, output.Id)
 
-	savedProduct, err := applicationFactory.ProductRepository.FindById(context.Background(), output.Id)
+	savedProduct, err := applicationFactory.ProductRepository.FindById(context.TODO(), output.Id)
 	assert.NoError(t, err)
 	assert.NotNil(t, savedProduct)
 	assert.Equal(t, body.Name, savedProduct.Name)

@@ -30,16 +30,15 @@ func TestDefaultProductRepository_Create(t *testing.T) {
 	assert.NoError(t, err)
 	sqlConnection := NewDefaultSqlConnection(database)
 	productRepository := NewDefaultProductRepository(sqlConnection)
-	ctx := context.Background()
 
 	t.Run("should create a product", func(t *testing.T) {
 		product, err := product.New(faker.Name(), faker.Word(), 10.0)
 		assert.NoError(t, err)
 
-		err = productRepository.Create(ctx, product)
+		err = productRepository.Create(context.Background(), product)
 		assert.NoError(t, err)
 
-		savedProduct, err := productRepository.FindById(ctx, product.Id)
+		savedProduct, err := productRepository.FindById(context.Background(), product.Id)
 		assert.NoError(t, err)
 		assert.Equal(t, product.Id, savedProduct.Id)
 		assert.Equal(t, product.Name, savedProduct.Name)
@@ -52,10 +51,10 @@ func TestDefaultProductRepository_Create(t *testing.T) {
 		product, err := product.New(faker.Name(), faker.Word(), 10.0)
 		assert.NoError(t, err)
 
-		err = productRepository.Create(ctx, product)
+		err = productRepository.Create(context.Background(), product)
 		assert.NoError(t, err)
 
-		err = productRepository.Create(ctx, product)
+		err = productRepository.Create(context.Background(), product)
 		assert.Error(t, err)
 	})
 }

@@ -16,7 +16,6 @@ type (
 		eventEmitter      event.Emitter
 	}
 	Input struct {
-		Context     context.Context
 		Name        string
 		Description string
 		Price       float64
@@ -33,8 +32,8 @@ func New(factory *factory.ApplicationFactory) *UseCase {
 	}
 }
 
-func (useCase *UseCase) Execute(input Input) (*Output, error) {
-	existsByName, err := useCase.productRepository.ExistsByName(input.Context, input.Name)
+func (useCase *UseCase) Execute(ctx context.Context, input Input) (*Output, error) {
+	existsByName, err := useCase.productRepository.ExistsByName(ctx, input.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -45,11 +44,11 @@ func (useCase *UseCase) Execute(input Input) (*Output, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = useCase.productRepository.Create(input.Context, product)
+	err = useCase.productRepository.Create(ctx, product)
 	if err != nil {
 		return nil, err
 	}
-	err = useCase.eventEmitter.Emit(input.Context, events.NewProductCreatedEvent(product))
+	err = useCase.eventEmitter.Emit(ctx, events.NewProductCreatedEvent(product))
 	if err != nil {
 		return nil, err
 	}

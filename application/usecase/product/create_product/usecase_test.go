@@ -15,10 +15,10 @@ import (
 func TestCreateProductUseCase_Execute(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
 	useCase := New(applicationFactory)
+	ctx := context.TODO()
 
 	t.Run("should return ProductWithSameNameError error", func(t *testing.T) {
 		input := Input{
-			Context:     context.Background(),
 			Name:        faker.Name(),
 			Description: faker.Word(),
 			Price:       10.0,
@@ -27,9 +27,9 @@ func TestCreateProductUseCase_Execute(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to restore product: %v", err)
 		}
-		_ = applicationFactory.ProductRepository.Create(input.Context, product)
+		_ = applicationFactory.ProductRepository.Create(ctx, product)
 
-		output, err := useCase.Execute(input)
+		output, err := useCase.Execute(ctx, input)
 
 		assert.ErrorIs(t, err, errors.ProductWithSameNameError)
 		assert.Nil(t, output)
@@ -49,13 +49,12 @@ func TestCreateProductUseCase_Execute(t *testing.T) {
 		for _, tt := range tests {
 			t.Run(fmt.Sprintf("should return %s error", tt.wantErr.Error()), func(t *testing.T) {
 				input := Input{
-					Context:     context.Background(),
 					Name:        tt.name,
 					Description: tt.description,
 					Price:       tt.price,
 				}
 
-				output, err := useCase.Execute(input)
+				output, err := useCase.Execute(ctx, input)
 
 				assert.Equal(t, err.Error(), tt.wantErr.Error())
 				assert.Nil(t, output)
@@ -65,18 +64,17 @@ func TestCreateProductUseCase_Execute(t *testing.T) {
 
 	t.Run("should create a product", func(t *testing.T) {
 		input := Input{
-			Context:     context.Background(),
 			Name:        faker.Name(),
 			Description: faker.Word(),
 			Price:       10.0,
 		}
 
-		output, err := useCase.Execute(input)
+		output, err := useCase.Execute(ctx, input)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, output)
 		assert.NotEmpty(t, output.Id)
-		savedProduct, _ := applicationFactory.ProductRepository.FindById(input.Context, output.Id)
+		savedProduct, _ := applicationFactory.ProductRepository.FindById(ctx, output.Id)
 		assert.NotNil(t, savedProduct)
 		assert.Equal(t, input.Name, savedProduct.Name)
 		assert.Equal(t, input.Description, savedProduct.Description)

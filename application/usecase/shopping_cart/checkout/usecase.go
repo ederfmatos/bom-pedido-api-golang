@@ -18,7 +18,6 @@ type (
 		eventEmitter           event.Emitter
 	}
 	Input struct {
-		Context         context.Context
 		CustomerId      string
 		PaymentMethod   string
 		DeliveryMode    string
@@ -41,8 +40,8 @@ func New(factory *factory.ApplicationFactory) *UseCase {
 	}
 }
 
-func (useCase *UseCase) Execute(input Input) (*Output, error) {
-	shoppingCart, err := useCase.shoppingCartRepository.FindByCustomerId(input.Context, input.CustomerId)
+func (useCase *UseCase) Execute(ctx context.Context, input Input) (*Output, error) {
+	shoppingCart, err := useCase.shoppingCartRepository.FindByCustomerId(ctx, input.CustomerId)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +52,7 @@ func (useCase *UseCase) Execute(input Input) (*Output, error) {
 	for _, item := range shoppingCart.GetItems() {
 		productIds = append(productIds, item.ProductId)
 	}
-	products, err := useCase.productRepository.FindAllById(input.Context, productIds)
+	products, err := useCase.productRepository.FindAllById(ctx, productIds)
 	if err != nil {
 		return nil, err
 	}
@@ -71,11 +70,11 @@ func (useCase *UseCase) Execute(input Input) (*Output, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = useCase.orderRepository.Create(input.Context, order)
+	err = useCase.orderRepository.Create(ctx, order)
 	if err != nil {
 		return nil, err
 	}
-	err = useCase.eventEmitter.Emit(input.Context, events.NewOrderCreatedEvent(order))
+	err = useCase.eventEmitter.Emit(ctx, events.NewOrderCreatedEvent(order))
 	if err != nil {
 		return nil, err
 	}

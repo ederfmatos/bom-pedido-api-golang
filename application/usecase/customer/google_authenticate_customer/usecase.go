@@ -16,8 +16,7 @@ type (
 		customerTokenManager token.CustomerTokenManager
 	}
 	Input struct {
-		Token   string
-		Context context.Context
+		Token string
 	}
 	Output struct {
 		Token string
@@ -32,12 +31,12 @@ func New(factory *factory.ApplicationFactory) *UseCase {
 	}
 }
 
-func (useCase *UseCase) Execute(input Input) (*Output, error) {
-	googleUser, err := useCase.googleGateway.GetUserByToken(input.Context, input.Token)
+func (useCase *UseCase) Execute(ctx context.Context, input Input) (*Output, error) {
+	googleUser, err := useCase.googleGateway.GetUserByToken(ctx, input.Token)
 	if err != nil {
 		return nil, err
 	}
-	customer, err := useCase.customerRepository.FindByEmail(input.Context, googleUser.Email)
+	customer, err := useCase.customerRepository.FindByEmail(ctx, googleUser.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +45,7 @@ func (useCase *UseCase) Execute(input Input) (*Output, error) {
 		if err != nil {
 			return nil, err
 		}
-		err := useCase.customerRepository.Create(input.Context, customer)
+		err := useCase.customerRepository.Create(ctx, customer)
 		if err != nil {
 			return nil, err
 		}

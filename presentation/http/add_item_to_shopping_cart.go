@@ -21,13 +21,12 @@ func HandleAddItemToShoppingCart(factory *factory.ApplicationFactory) func(conte
 			return err
 		}
 		input := add_item_to_shopping_cart.Input{
-			Context:     context.Request().Context(),
 			CustomerId:  context.Get("customerId").(string),
 			ProductId:   request.ProductId,
 			Quantity:    request.Quantity,
 			Observation: request.Observation,
 		}
-		err = useCase.Execute(input)
+		err = useCase.Execute(context.Request().Context(), input)
 		if err != nil {
 			return err
 		}

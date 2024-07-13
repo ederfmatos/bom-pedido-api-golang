@@ -19,10 +19,9 @@ func HandleGoogleAuthCustomer(factory *factory.ApplicationFactory) func(context 
 			return err
 		}
 		input := google_authenticate_customer.Input{
-			Token:   request.Token,
-			Context: context.Request().Context(),
+			Token: request.Token,
 		}
-		output, err := useCase.Execute(input)
+		output, err := useCase.Execute(context.Request().Context(), input)
 		if err != nil {
 			return err
 		}

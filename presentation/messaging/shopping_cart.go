@@ -17,7 +17,7 @@ func handleDeleteShoppingCart(factory *factory.ApplicationFactory) func(message 
 	return func(message event.MessageEvent) error {
 		var orderCreatedEvent events.OrderEventData
 		message.ParseData(&orderCreatedEvent)
-		err := useCase.Execute(delete_shopping_cart.Input{Context: context.Background(), CustomerId: orderCreatedEvent.CustomerId})
+		err := useCase.Execute(context.Background(), delete_shopping_cart.Input{CustomerId: orderCreatedEvent.CustomerId})
 		return message.AckIfNoError(err)
 	}
 }

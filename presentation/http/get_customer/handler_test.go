@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"github.com/go-faker/faker/v4"
 	"github.com/labstack/echo/v4"
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
 	"net/http"
@@ -23,7 +22,7 @@ func Test_GetCustomer(t *testing.T) {
 	t.Run("should success get customer", func(t *testing.T) {
 		customer, _ := customer.New(faker.Name(), faker.Email())
 		_ = customer.SetPhoneNumber(faker.Phonenumber())
-		_ = applicationFactory.CustomerRepository.Create(context.Background(), customer)
+		_ = applicationFactory.CustomerRepository.Create(context.TODO(), customer)
 
 		e := echo.New()
 		request := httptest.NewRequest(http.MethodGet, "/v1/customers/me", nil)

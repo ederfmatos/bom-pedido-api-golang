@@ -24,7 +24,6 @@ func Handle(factory *factory.ApplicationFactory) func(context echo.Context) erro
 			return err
 		}
 		input := checkout.Input{
-			Context:         context.Request().Context(),
 			CustomerId:      context.Get("customerId").(string),
 			PaymentMethod:   request.PaymentMethod,
 			DeliveryMode:    request.DeliveryMode,
@@ -33,7 +32,7 @@ func Handle(factory *factory.ApplicationFactory) func(context echo.Context) erro
 			Change:          request.Change,
 			CreditCardToken: request.CreditCardToken,
 		}
-		output, err := useCase.Execute(input)
+		output, err := useCase.Execute(context.Request().Context(), input)
 		if err != nil {
 			return err
 		}

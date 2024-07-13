@@ -34,10 +34,10 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 
 	t.Run("ShouldReturnsErrorIfGoogleReturnsError", func(t *testing.T) {
 		googleAuthenticateCustomerUseCase := New(applicationFactory)
-		input := Input{Token: "error", Context: context.Background()}
+		input := Input{Token: "error"}
 		googleGateway.On("GetUserByToken", "error").Return(nil, errors.New("any token"))
 
-		output, err := googleAuthenticateCustomerUseCase.Execute(input)
+		output, err := googleAuthenticateCustomerUseCase.Execute(nil, input)
 
 		assert.Error(t, err, "expected error when using UseCase")
 		assert.Nil(t, output)
@@ -50,10 +50,10 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 		}
 
 		googleAuthenticateCustomerUseCase := New(applicationFactory)
-		input := Input{Token: "token", Context: context.Background()}
+		input := Input{Token: "token"}
 		googleGateway.On("GetUserByToken", "token").Return(googleUser, nil).Once()
 
-		output, err := googleAuthenticateCustomerUseCase.Execute(input)
+		output, err := googleAuthenticateCustomerUseCase.Execute(nil, input)
 
 		assert.Error(t, err, "expected error when using UseCase")
 		assert.ErrorIs(t, err, value_object.InvalidEmailError)
@@ -66,9 +66,9 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 		tokenManager.On("Encrypt", mock.Anything).Return("token", nil).Once()
 
 		googleAuthenticateCustomerUseCase := New(applicationFactory)
-		input := Input{Token: "google Token", Context: context.Background()}
+		input := Input{Token: "google Token"}
 
-		output, err := googleAuthenticateCustomerUseCase.Execute(input)
+		output, err := googleAuthenticateCustomerUseCase.Execute(nil, input)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, output)
@@ -82,9 +82,9 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 		googleAuthenticateCustomerUseCase := New(applicationFactory)
 		customer, _ := customer.New(faker.Name(), faker.Email())
 		_ = applicationFactory.CustomerRepository.Create(context.TODO(), customer)
-		input := Input{Token: "google Token", Context: context.Background()}
+		input := Input{Token: "google Token"}
 
-		output, err := googleAuthenticateCustomerUseCase.Execute(input)
+		output, err := googleAuthenticateCustomerUseCase.Execute(nil, input)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, output)

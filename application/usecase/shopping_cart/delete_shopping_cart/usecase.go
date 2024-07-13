@@ -11,7 +11,6 @@ type (
 		shoppingCartRepository repository.ShoppingCartRepository
 	}
 	Input struct {
-		Context    context.Context
 		CustomerId string
 	}
 )
@@ -22,6 +21,6 @@ func New(factory *factory.ApplicationFactory) *UseCase {
 	}
 }
 
-func (useCase *UseCase) Execute(input Input) error {
-	return useCase.shoppingCartRepository.DeleteByCustomerId(input.Context, input.CustomerId)
+func (useCase *UseCase) Execute(ctx context.Context, input Input) error {
+	return useCase.shoppingCartRepository.DeleteByCustomerId(ctx, input.CustomerId)
 }

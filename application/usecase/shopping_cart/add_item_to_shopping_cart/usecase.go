@@ -14,7 +14,6 @@ type (
 		shoppingCartRepository repository.ShoppingCartRepository
 	}
 	Input struct {
-		Context     context.Context
 		CustomerId  string
 		ProductId   string
 		Quantity    int
@@ -29,15 +28,15 @@ func New(factory *factory.ApplicationFactory) *UseCase {
 	}
 }
 
-func (useCase *UseCase) Execute(input Input) error {
-	product, err := useCase.productRepository.FindById(input.Context, input.ProductId)
+func (useCase *UseCase) Execute(ctx context.Context, input Input) error {
+	product, err := useCase.productRepository.FindById(ctx, input.ProductId)
 	if err != nil {
 		return err
 	}
 	if product == nil {
 		return errors.ProductNotFoundError
 	}
-	shoppingCart, err := useCase.shoppingCartRepository.FindByCustomerId(input.Context, input.CustomerId)
+	shoppingCart, err := useCase.shoppingCartRepository.FindByCustomerId(ctx, input.CustomerId)
 	if err != nil {
 		return err
 	}
@@ -48,5 +47,5 @@ func (useCase *UseCase) Execute(input Input) error {
 	if err != nil {
 		return err
 	}
-	return useCase.shoppingCartRepository.Upsert(input.Context, shoppingCart)
+	return useCase.shoppingCartRepository.Upsert(ctx, shoppingCart)
 }

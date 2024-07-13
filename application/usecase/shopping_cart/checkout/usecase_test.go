@@ -20,24 +20,24 @@ func Test_CheckoutShoppingCart(t *testing.T) {
 	productRepository := applicationFactory.ProductRepository
 	useCase := New(applicationFactory)
 
+	ctx := context.TODO()
 	t.Run("should return ShoppingCartEmptyError is shopping cart is empty", func(t *testing.T) {
-		input := Input{Context: context.Background(), CustomerId: value_object.NewID()}
-		output, err := useCase.Execute(input)
+		input := Input{CustomerId: value_object.NewID()}
+		output, err := useCase.Execute(ctx, input)
 		assert.Nil(t, output)
 		assert.ErrorIs(t, err, errors.ShoppingCartEmptyError)
 
 		shoppingCart := shopping_cart.New(input.CustomerId)
-		err = shoppingCartRepository.Upsert(input.Context, shoppingCart)
+		err = shoppingCartRepository.Upsert(ctx, shoppingCart)
 		assert.NoError(t, err)
 
-		output, err = useCase.Execute(input)
+		output, err = useCase.Execute(ctx, input)
 		assert.Nil(t, output)
 		assert.ErrorIs(t, err, errors.ShoppingCartEmptyError)
 	})
 
 	t.Run("should create a order", func(t *testing.T) {
 		input := Input{
-			Context:         context.Background(),
 			CustomerId:      value_object.NewID(),
 			PaymentMethod:   enums.CreditCard,
 			DeliveryMode:    enums.Withdraw,
@@ -47,21 +47,21 @@ func Test_CheckoutShoppingCart(t *testing.T) {
 			CreditCardToken: "",
 		}
 		product, _ := product.New(faker.Name(), faker.Word(), 11.0)
-		err := productRepository.Create(input.Context, product)
+		err := productRepository.Create(ctx, product)
 		assert.NoError(t, err)
 
 		shoppingCart := shopping_cart.New(input.CustomerId)
 		err = shoppingCart.AddItem(product, 1, "")
 		assert.NoError(t, err)
 
-		err = shoppingCartRepository.Upsert(input.Context, shoppingCart)
+		err = shoppingCartRepository.Upsert(ctx, shoppingCart)
 		assert.NoError(t, err)
 
-		output, err := useCase.Execute(input)
+		output, err := useCase.Execute(ctx, input)
 		assert.NoError(t, err)
 		assert.NotNil(t, output)
 
-		order, err := orderRepository.FindById(input.Context, output.Id)
+		order, err := orderRepository.FindById(ctx, output.Id)
 		assert.NoError(t, err)
 		assert.NotNil(t, order)
 

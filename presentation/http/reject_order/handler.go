@@ -19,12 +19,11 @@ func Handle(factory *factory.ApplicationFactory) func(context echo.Context) erro
 			return err
 		}
 		input := reject_order.Input{
-			Context:    context.Request().Context(),
 			OrderId:    context.Param("id"),
 			RejectedBy: context.Get("adminId").(string),
 			Reason:     request.Reason,
 		}
-		err = useCase.Execute(input)
+		err = useCase.Execute(context.Request().Context(), input)
 		if err != nil {
 			return err
 		}

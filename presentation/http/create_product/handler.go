@@ -21,12 +21,11 @@ func Handle(factory *factory.ApplicationFactory) func(context echo.Context) erro
 			return err
 		}
 		input := create_product.Input{
-			Context:     context.Request().Context(),
 			Name:        request.Name,
 			Description: request.Description,
 			Price:       request.Price,
 		}
-		output, err := createProductUseCase.Execute(input)
+		output, err := createProductUseCase.Execute(context.Request().Context(), input)
 		if err != nil {
 			return err
 		}

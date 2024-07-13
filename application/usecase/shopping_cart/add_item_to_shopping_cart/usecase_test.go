@@ -15,12 +15,13 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
 	useCase := New(applicationFactory)
 
+	ctx := context.TODO()
 	t.Run("should return ProductNotFoundError", func(t *testing.T) {
 		input := Input{
-			Context:   context.Background(),
 			ProductId: value_object.NewID(),
+			Quantity:  1,
 		}
-		err := useCase.Execute(input)
+		err := useCase.Execute(ctx, input)
 		assert.ErrorIs(t, err, errors.ProductNotFoundError)
 	})
 
@@ -30,19 +31,18 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to restore product: %v", err)
 		}
-		_ = applicationFactory.ProductRepository.Create(context.Background(), product)
+		_ = applicationFactory.ProductRepository.Create(ctx, product)
 
 		input := Input{
-			Context:     context.Background(),
 			CustomerId:  value_object.NewID(),
 			ProductId:   product.Id,
 			Quantity:    2,
 			Observation: faker.Word(),
 		}
-		err = useCase.Execute(input)
+		err = useCase.Execute(ctx, input)
 		assert.ErrorIs(t, err, errors.ProductUnAvailableError)
 
-		shoppingCart, _ := applicationFactory.ShoppingCartRepository.FindByCustomerId(input.Context, input.CustomerId)
+		shoppingCart, _ := applicationFactory.ShoppingCartRepository.FindByCustomerId(ctx, input.CustomerId)
 		assert.Nil(t, shoppingCart)
 	})
 
@@ -51,19 +51,18 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to restore product: %v", err)
 		}
-		_ = applicationFactory.ProductRepository.Create(context.Background(), product)
+		_ = applicationFactory.ProductRepository.Create(ctx, product)
 
 		input := Input{
-			Context:     context.Background(),
 			CustomerId:  value_object.NewID(),
 			ProductId:   product.Id,
 			Quantity:    2,
 			Observation: faker.Word(),
 		}
-		err = useCase.Execute(input)
+		err = useCase.Execute(ctx, input)
 		assert.NoError(t, err)
 
-		shoppingCart, err := applicationFactory.ShoppingCartRepository.FindByCustomerId(input.Context, input.CustomerId)
+		shoppingCart, err := applicationFactory.ShoppingCartRepository.FindByCustomerId(ctx, input.CustomerId)
 		assert.NoError(t, err)
 		assert.NotNil(t, shoppingCart)
 		assert.Equal(t, 20.0, shoppingCart.GetPrice())

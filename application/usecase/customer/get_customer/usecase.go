@@ -12,8 +12,7 @@ type (
 		customerRepository repository.CustomerRepository
 	}
 	Input struct {
-		Id      string
-		Context context.Context
+		Id string
 	}
 	Output struct {
 		Name        string  `json:"name,omitempty"`
@@ -28,8 +27,8 @@ func New(factory *factory.ApplicationFactory) *UseCase {
 	}
 }
 
-func (useCase *UseCase) Execute(input Input) (*Output, error) {
-	customer, err := useCase.customerRepository.FindById(input.Context, input.Id)
+func (useCase *UseCase) Execute(ctx context.Context, input Input) (*Output, error) {
+	customer, err := useCase.customerRepository.FindById(ctx, input.Id)
 	if err != nil {
 		return nil, err
 	}
