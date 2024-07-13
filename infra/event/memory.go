@@ -2,7 +2,6 @@ package event
 
 import (
 	"bom-pedido-api/application/event"
-	"bom-pedido-api/domain/events"
 	"context"
 )
 
@@ -12,7 +11,7 @@ func NewMemoryEventHandler() event.Handler {
 	return &MemoryEventHandler{}
 }
 
-func (handler *MemoryEventHandler) Emit(context context.Context, event *events.Event) error {
+func (handler *MemoryEventHandler) Emit(context context.Context, event *event.Event) error {
 	return nil
 }
 

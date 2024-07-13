@@ -5,7 +5,6 @@ import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/application/repository"
 	"bom-pedido-api/domain/errors"
-	"bom-pedido-api/domain/events"
 	"context"
 	"time"
 )
@@ -74,7 +73,7 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) (*Output, erro
 	if err != nil {
 		return nil, err
 	}
-	err = useCase.eventEmitter.Emit(ctx, events.NewOrderCreatedEvent(order))
+	err = useCase.eventEmitter.Emit(ctx, event.NewOrderCreatedEvent(order))
 	if err != nil {
 		return nil, err
 	}

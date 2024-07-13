@@ -3,7 +3,6 @@ package event
 import (
 	"bom-pedido-api/application/event"
 	"bom-pedido-api/application/lock"
-	"bom-pedido-api/domain/events"
 	"bom-pedido-api/infra/repository/outbox"
 	"bom-pedido-api/infra/retry"
 	"context"
@@ -29,7 +28,7 @@ func NewOutboxEventHandler(handler event.Handler, outboxRepository outbox.Reposi
 	return eventHandler
 }
 
-func (handler *OutboxEventHandler) Emit(ctx context.Context, event *events.Event) error {
+func (handler *OutboxEventHandler) Emit(ctx context.Context, event *event.Event) error {
 	eventData, err := json.Marshal(event)
 	if err != nil {
 		return err
@@ -75,7 +74,7 @@ func (handler *OutboxEventHandler) processEntry(ctx context.Context, entry *outb
 	if entry == nil || entry.Status == "PROCESSED" {
 		return nil
 	}
-	var messageEvent events.Event
+	var messageEvent event.Event
 	err := json.Unmarshal([]byte(entry.Data), &messageEvent)
 	if err != nil {
 		entry.MarkAsError()

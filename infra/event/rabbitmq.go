@@ -2,7 +2,6 @@ package event
 
 import (
 	"bom-pedido-api/application/event"
-	"bom-pedido-api/domain/events"
 	"context"
 	"encoding/json"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -51,7 +50,7 @@ func NewRabbitMqAdapter(server string) event.Handler {
 	}
 }
 
-func (adapter *RabbitMqAdapter) Emit(context context.Context, event *events.Event) error {
+func (adapter *RabbitMqAdapter) Emit(context context.Context, event *event.Event) error {
 	eventBytes, err := json.Marshal(event)
 	if err != nil {
 		slog.Error("Error on emit event", "event", event, "error", err)
@@ -127,7 +126,7 @@ func (ev *RabbitMqMessageEvent) Nack() {
 }
 
 func (ev *RabbitMqMessageEvent) ParseData(event interface{}) {
-	var messageEvent events.Event
+	var messageEvent event.Event
 	_ = json.Unmarshal(ev.message.Body, &messageEvent)
 	data, _ := json.Marshal(messageEvent.Data)
 	_ = json.Unmarshal(data, event)

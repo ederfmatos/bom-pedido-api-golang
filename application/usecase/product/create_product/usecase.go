@@ -6,7 +6,6 @@ import (
 	"bom-pedido-api/application/repository"
 	"bom-pedido-api/domain/entity/product"
 	"bom-pedido-api/domain/errors"
-	"bom-pedido-api/domain/events"
 	"context"
 )
 
@@ -48,7 +47,7 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) (*Output, erro
 	if err != nil {
 		return nil, err
 	}
-	err = useCase.eventEmitter.Emit(ctx, events.NewProductCreatedEvent(product))
+	err = useCase.eventEmitter.Emit(ctx, event.NewProductCreatedEvent(product))
 	if err != nil {
 		return nil, err
 	}

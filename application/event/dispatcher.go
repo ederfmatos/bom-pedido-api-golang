@@ -1,7 +1,6 @@
 package event
 
 import (
-	"bom-pedido-api/domain/events"
 	"context"
 	"os"
 	"strconv"
@@ -41,7 +40,7 @@ func OptionsForQueue(queue string) *ConsumerOptions {
 }
 
 type Emitter interface {
-	Emit(ctx context.Context, event *events.Event) error
+	Emit(ctx context.Context, event *Event) error
 }
 
 type Handler interface {
