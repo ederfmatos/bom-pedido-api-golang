@@ -18,6 +18,8 @@ func NewProductCreatedEvent(product *product.Product) *Event {
 		Id:            value_object.NewID(),
 		CorrelationId: product.Id,
 		Name:          ProductCreatedEventName,
-		Data:          ProductCreatedData{ProductId: product.Id},
+		Data: map[string]string{
+			"productId": product.Id,
+		},
 	}
 }

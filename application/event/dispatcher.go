@@ -12,7 +12,7 @@ type MessageEvent interface {
 	Ack() error
 	AckIfNoError(err error) error
 	Nack()
-	ParseData(event interface{})
+	GetEvent() *Event
 }
 
 var defaultWorkerPoolSize int
@@ -28,15 +28,21 @@ func init() {
 
 type ConsumerOptions struct {
 	Id             string
+	Queue          string
+	TopicName      string
 	WorkerPoolSize int
 }
 
-func NewConsumerOptions(id string, workerPoolSize int) *ConsumerOptions {
-	return &ConsumerOptions{Id: id, WorkerPoolSize: workerPoolSize}
+func NewConsumerOptions(queue, eventName, id string, workerPoolSize int) *ConsumerOptions {
+	return &ConsumerOptions{Queue: queue, TopicName: eventName, Id: id, WorkerPoolSize: workerPoolSize}
 }
 
-func OptionsForQueue(queue string) *ConsumerOptions {
-	return NewConsumerOptions(queue, defaultWorkerPoolSize)
+func OptionsForTopic(topicName, id string) *ConsumerOptions {
+	return &ConsumerOptions{
+		Id:             id,
+		TopicName:      topicName,
+		WorkerPoolSize: defaultWorkerPoolSize,
+	}
 }
 
 type Emitter interface {

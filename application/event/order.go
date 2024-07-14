@@ -11,17 +11,15 @@ var (
 	OrderRejectedEventName = "ORDER_REJECTED"
 )
 
-type OrderEventData struct {
-	OrderId    string `json:"orderId"`
-	CustomerId string `json:"customerId"`
-}
-
 func newOrderEvent(order *order.Order, name string) *Event {
 	return &Event{
 		Id:            value_object.NewID(),
 		CorrelationId: order.Id,
 		Name:          name,
-		Data:          OrderEventData{OrderId: order.Id, CustomerId: order.CustomerID},
+		Data: map[string]string{
+			"orderId":    order.Id,
+			"customerId": order.CustomerID,
+		},
 	}
 }
 

@@ -24,12 +24,6 @@ type RabbitMqAdapter struct {
 	consumerChannel *amqp.Channel
 }
 
-func (adapter *RabbitMqAdapter) Close() {
-	adapter.producerChannel.Close()
-	adapter.consumerChannel.Close()
-	adapter.connection.Close()
-}
-
 func NewRabbitMqAdapter(server string) event.Handler {
 	connection, err := amqp.Dial(server)
 	if err != nil {
@@ -48,6 +42,12 @@ func NewRabbitMqAdapter(server string) event.Handler {
 		producerChannel: producerChannel,
 		consumerChannel: consumerChannel,
 	}
+}
+
+func (adapter *RabbitMqAdapter) Close() {
+	adapter.producerChannel.Close()
+	adapter.consumerChannel.Close()
+	adapter.connection.Close()
 }
 
 func (adapter *RabbitMqAdapter) Emit(context context.Context, event *event.Event) error {
@@ -73,13 +73,13 @@ func (adapter *RabbitMqAdapter) Emit(context context.Context, event *event.Event
 }
 
 func (adapter *RabbitMqAdapter) Consume(options *event.ConsumerOptions, handler event.HandlerFunc) {
-	_, err := adapter.consumerChannel.QueueDeclare(options.Id, true, false, false, false, nil)
+	_, err := adapter.consumerChannel.QueueDeclare(options.Queue, true, false, false, false, nil)
 	if err != nil {
-		slog.Error("Error on declare queue", "queue", options.Id, "error", err)
+		slog.Error("Error on declare queue", "queue", options.Queue, "error", err)
 	}
 	messages, err := adapter.consumerChannel.Consume(
-		options.Id,
-		"BOM_PEDIDO_API_"+options.Id,
+		options.Queue,
+		"BOM_PEDIDO_API_"+options.Queue,
 		false,
 		false,
 		false,
@@ -110,6 +110,12 @@ type RabbitMqMessageEvent struct {
 	message amqp.Delivery
 }
 
+func (ev *RabbitMqMessageEvent) GetEvent() *event.Event {
+	var event event.Event
+	_ = json.Unmarshal(ev.message.Body, &event)
+	return &event
+}
+
 func (ev *RabbitMqMessageEvent) AckIfNoError(err error) error {
 	if err == nil {
 		return ev.Ack()
@@ -123,11 +129,4 @@ func (ev *RabbitMqMessageEvent) Ack() error {
 
 func (ev *RabbitMqMessageEvent) Nack() {
 	_ = ev.message.Nack(false, true)
-}
-
-func (ev *RabbitMqMessageEvent) ParseData(event interface{}) {
-	var messageEvent event.Event
-	_ = json.Unmarshal(ev.message.Body, &messageEvent)
-	data, _ := json.Marshal(messageEvent.Data)
-	_ = json.Unmarshal(data, event)
 }

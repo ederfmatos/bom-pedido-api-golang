@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/redis/go-redis/v9"
-	"log/slog"
 	"time"
 )
 
@@ -30,7 +29,6 @@ func (l *redisLocker) Lock(ctx context.Context, key string, ttl time.Duration) e
 	go func() {
 		select {
 		case <-ctx.Done():
-			slog.Info("Releasing lock", "key", key)
 			_ = l.Release(context.Background(), key)
 		}
 	}()

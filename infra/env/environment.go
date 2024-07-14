@@ -16,6 +16,8 @@ type Environment struct {
 	MongoDatabaseName         string `mapstructure:"MONGO_DATABASE_NAME"`
 	MongoOutboxCollectionName string `mapstructure:"MONGO_OUTBOX_COLLECTION_NAME"`
 	Port                      string `mapstructure:"PORT"`
+	KafkaBootstrapServer      string `mapstructure:"KAFKA_BOOTSTRAP_SERVER"`
+	KafkaClientId             string `mapstructure:"KAFKA_CLIENT_ID"`
 }
 
 func LoadEnvironment(path string) *Environment {

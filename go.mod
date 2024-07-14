@@ -3,6 +3,7 @@ module bom-pedido-api
 go 1.22
 
 require (
+	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/go-faker/faker/v4 v4.4.2
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/golang-jwt/jwe v0.0.0-20220815104040-b2647e820b90

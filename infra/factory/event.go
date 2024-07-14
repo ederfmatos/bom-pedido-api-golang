@@ -12,7 +12,8 @@ import (
 )
 
 func eventFactory(environment *env.Environment, locker lock.Locker) *factory.EventFactory {
-	rabbitMqAdapter := event.NewRabbitMqAdapter(environment.RabbitMqServer)
+	//eventHandler := event.NewRabbitMqAdapter(environment.RabbitMqServer)
+	eventHandler := event.NewKafkaEventHandler(environment)
 	clientOptions := options.Client().ApplyURI(environment.MongoUrl)
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
@@ -21,6 +22,6 @@ func eventFactory(environment *env.Environment, locker lock.Locker) *factory.Eve
 	collection := client.Database(environment.MongoDatabaseName).Collection(environment.MongoOutboxCollectionName)
 	outboxRepository := outbox.NewMongoOutboxRepository(collection)
 	mongoStream := event.NewMongoStream(collection)
-	handler := event.NewOutboxEventHandler(rabbitMqAdapter, outboxRepository, mongoStream, locker)
+	handler := event.NewOutboxEventHandler(eventHandler, outboxRepository, mongoStream, locker)
 	return factory.NewEventFactory(handler)
 }
