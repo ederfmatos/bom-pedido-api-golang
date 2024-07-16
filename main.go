@@ -3,9 +3,9 @@ package main
 import (
 	"bom-pedido-api/infra/env"
 	"bom-pedido-api/infra/factory"
-	"bom-pedido-api/presentation/http"
-	"bom-pedido-api/presentation/http/health"
-	"bom-pedido-api/presentation/messaging"
+	"bom-pedido-api/infra/http"
+	"bom-pedido-api/infra/http/health"
+	"bom-pedido-api/infra/messaging"
 	"context"
 	"database/sql"
 	"fmt"
