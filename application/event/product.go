@@ -9,10 +9,6 @@ var (
 	ProductCreatedEventName = "PRODUCT_CREATED"
 )
 
-type ProductCreatedData struct {
-	ProductId string `json:"productId"`
-}
-
 func NewProductCreatedEvent(product *product.Product) *Event {
 	return &Event{
 		Id:            value_object.NewID(),

@@ -1,109 +1,65 @@
 package order
 
 import (
+	"bom-pedido-api/domain/entity/order/status"
 	"bom-pedido-api/domain/errors"
 	"time"
 )
 
 var (
-	AlreadyApprovedError  = errors.New("order already approved")
-	AlreadyCancelledError = errors.New("order already cancelled")
-	AlreadyRejectedError  = errors.New("order already rejected")
-	AlreadyFinishedError  = errors.New("order already finished")
-	ApprovalNotAllowed    = errors.New("approval not allowed")
-	InvalidStatusError    = errors.New("invalid status")
+	OperationNotAllowedError = errors.New("operation not allowed")
+	InvalidStatusError       = errors.New("invalid status")
 
-	AwaitingApproval = newStatus("AWAITING_APPROVAL")
-	Approved         = newStatus("APPROVED")
-	InProgress       = newStatus("IN_PROGRESS")
-	Rejected         = newStatus("REJECTED")
-	Cancelled        = newStatus("CANCELLED")
-	Delivering       = newStatus("DELIVERING")
-	AwaitingWithdraw = newStatus("AWAITING_WITHDRAW")
-	AwaitingDelivery = newStatus("AWAITING_DELIVERY")
-	Finished         = newStatus("FINISHED")
+	AwaitingApproval = status.NewAwaitingApproval()
+	Approved         = status.NewApproved()
+	InProgress       = status.NewInProgress()
+	Rejected         = status.NewRejected()
+	Cancelled        = status.NewCancelled()
+	Delivering       = status.NewDelivering()
+	AwaitingWithdraw = status.NewAwaitingWithdraw()
+	AwaitingDelivery = status.NewAwaitingDelivery()
+	Finished         = status.NewFinished()
 )
 
 type (
-	Status struct {
-		name string
+	Status interface {
+		Name() string
+		Approve(approvedAt time.Time, approvedBy string) (*StatusHistory, error)
+		Reject(rejectedAt time.Time, rejectedBy string, reason string) (*StatusHistory, error)
+		Cancel(cancelledAt time.Time, cancelledBy string, reason string) (*StatusHistory, error)
+		MarkAsInProgress(at time.Time, by string) (*StatusHistory, error)
+		MarkAsInDelivering(at time.Time, by string) (*StatusHistory, error)
+		MarkAsInAwaitingWithdraw(at time.Time, by string) (*StatusHistory, error)
+		MarkAsInAwaitingDelivery(at time.Time, by string) (*StatusHistory, error)
+		Finish(at time.Time, by string) (*StatusHistory, error)
 	}
 	StatusHistory struct {
 		Time      time.Time
-		Status    *Status
+		Status    string
 		ChangedBy string
 		Data      map[string]string
 	}
 )
 
-func newStatus(name string) *Status {
-	return &Status{name}
-}
-
-func (s *Status) approve(approvedAt time.Time, approvedBy string) (*StatusHistory, error) {
-	if s == AwaitingApproval {
-		return &StatusHistory{
-			Time:      approvedAt,
-			Status:    Approved,
-			ChangedBy: approvedBy,
-		}, nil
-	}
-	switch s {
-	case InProgress, Approved:
-		return nil, AlreadyApprovedError
-	case Cancelled:
-		return nil, AlreadyCancelledError
-	case Rejected:
-		return nil, AlreadyRejectedError
-	case Finished:
-		return nil, AlreadyFinishedError
-	default:
-		return nil, ApprovalNotAllowed
-	}
-}
-
-func (s *Status) reject(rejectedAt time.Time, rejectedBy string, reason string) (*StatusHistory, error) {
-	if s == AwaitingApproval {
-		return &StatusHistory{
-			Time:      rejectedAt,
-			Status:    Rejected,
-			ChangedBy: rejectedBy,
-			Data:      map[string]string{"reason": reason},
-		}, nil
-	}
-	switch s {
-	case InProgress, Approved:
-		return nil, AlreadyApprovedError
-	case Cancelled:
-		return nil, AlreadyCancelledError
-	case Rejected:
-		return nil, AlreadyRejectedError
-	case Finished:
-		return nil, AlreadyFinishedError
-	default:
-		return nil, ApprovalNotAllowed
-	}
-}
-
-func ParseStatus(value string) (*Status, error) {
+func ParseStatus(value string) (Status, error) {
 	switch value {
-	case AwaitingApproval.name:
+	case AwaitingApproval.Name():
 		return AwaitingApproval, nil
-	case Approved.name:
+	case Approved.Name():
 		return Approved, nil
-	case InProgress.name:
+	case InProgress.Name():
 		return InProgress, nil
-	case Rejected.name:
+	case Rejected.Name():
 		return Rejected, nil
-	case Cancelled.name:
+	case Cancelled.Name():
 		return Cancelled, nil
-	case Delivering.name:
+	case Delivering.Name():
 		return Delivering, nil
-	case AwaitingWithdraw.name:
+	case AwaitingWithdraw.Name():
 		return AwaitingWithdraw, nil
-	case AwaitingDelivery.name:
+	case AwaitingDelivery.Name():
 		return AwaitingDelivery, nil
-	case Finished.name:
+	case Finished.Name():
 		return Finished, nil
 	default:
 		return nil, InvalidStatusError

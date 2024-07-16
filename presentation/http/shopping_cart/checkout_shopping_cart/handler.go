@@ -1,4 +1,4 @@
-package http
+package checkout_shopping_cart
 
 import (
 	"bom-pedido-api/application/factory"

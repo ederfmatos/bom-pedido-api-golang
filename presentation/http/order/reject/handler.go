@@ -1,8 +1,8 @@
-package reject_order
+package reject
 
 import (
 	"bom-pedido-api/application/factory"
-	"bom-pedido-api/application/usecase/order/reject"
+	"bom-pedido-api/application/usecase/order/reject_order"
 	"github.com/labstack/echo/v4"
 )
 

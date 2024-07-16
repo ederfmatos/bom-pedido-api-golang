@@ -6,9 +6,15 @@ import (
 )
 
 var (
-	OrderCreatedEventName  = "ORDER_CREATED"
-	OrderApprovedEventName = "ORDER_APPROVED"
-	OrderRejectedEventName = "ORDER_REJECTED"
+	OrderCreatedEventName          = "ORDER_CREATED"
+	OrderApprovedEventName         = "ORDER_APPROVED"
+	OrderFinishedEventName         = "ORDER_FINISHED"
+	OrderRejectedEventName         = "ORDER_REJECTED"
+	OrderInProgressEventName       = "ORDER_IN_PROGRESS"
+	OrderDeliveringEventName       = "ORDER_DELIVERING"
+	OrderAwaitingWithdrawEventName = "ORDER_AWAITING_WITHDRAW"
+	OrderAwaitingDeliveryEventName = "ORDER_AWAITING_DELIVERY"
+	OrderCancelledEventName        = "ORDER_CANCELLED"
 )
 
 func newOrderEvent(order *order.Order, name string) *Event {
@@ -31,6 +37,30 @@ func NewOrderApprovedEvent(order *order.Order) *Event {
 	return newOrderEvent(order, OrderApprovedEventName)
 }
 
+func NewOrderInProgressEvent(order *order.Order) *Event {
+	return newOrderEvent(order, OrderInProgressEventName)
+}
+
+func NewOrderDeliveringEvent(order *order.Order) *Event {
+	return newOrderEvent(order, OrderDeliveringEventName)
+}
+
+func NewOrderAwaitingWithdrawEvent(order *order.Order) *Event {
+	return newOrderEvent(order, OrderAwaitingWithdrawEventName)
+}
+
+func NewOrderAwaitingDeliveryEvent(order *order.Order) *Event {
+	return newOrderEvent(order, OrderAwaitingDeliveryEventName)
+}
+
 func NewOrderRejectedEvent(order *order.Order) *Event {
 	return newOrderEvent(order, OrderRejectedEventName)
+}
+
+func NewOrderCancelledEvent(order *order.Order) *Event {
+	return newOrderEvent(order, OrderCancelledEventName)
+}
+
+func NewOrderFinishedEvent(order *order.Order) *Event {
+	return newOrderEvent(order, OrderFinishedEventName)
 }

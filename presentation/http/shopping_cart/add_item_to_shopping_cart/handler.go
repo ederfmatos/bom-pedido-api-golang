@@ -1,4 +1,4 @@
-package http
+package add_item_to_shopping_cart
 
 import (
 	"bom-pedido-api/application/factory"
@@ -12,7 +12,7 @@ type addItemToShoppingCartRequest struct {
 	Observation string `body:"observation" json:"observation,omitempty"`
 }
 
-func HandleAddItemToShoppingCart(factory *factory.ApplicationFactory) func(context echo.Context) error {
+func Handle(factory *factory.ApplicationFactory) func(context echo.Context) error {
 	useCase := add_item_to_shopping_cart.New(factory)
 	return func(context echo.Context) error {
 		var request addItemToShoppingCartRequest
