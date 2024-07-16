@@ -17,7 +17,7 @@ type OutboxEventHandler struct {
 	locker           lock.Locker
 }
 
-func NewOutboxEventHandler(handler event.Handler, outboxRepository outbox.Repository, stream Stream, locker lock.Locker) *OutboxEventHandler {
+func NewOutboxEventHandler(handler event.Handler, outboxRepository outbox.Repository, stream Stream, locker lock.Locker) event.Handler {
 	eventHandler := &OutboxEventHandler{
 		handler:          handler,
 		outboxRepository: outboxRepository,
@@ -63,8 +63,7 @@ func (handler *OutboxEventHandler) processEvent(id string) {
 		if err != nil {
 			return
 		}
-		retryable := retry.NewRetry(5, time.Second, time.Second*30)
-		_ = retryable.Execute(func() error {
+		_ = retry.Func(5, time.Second, time.Second*30, func() error {
 			return handler.processEntry(ctx, entry)
 		})
 	})

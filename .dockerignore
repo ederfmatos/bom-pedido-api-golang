@@ -1,0 +1,15 @@
+.collection
+.docker
+.resources
+.gitignore
+docker-compose.yml
+Dockerfile
+**/*_memory.go
+**/*_test.go
+**/*_mock.go
+**/test.go
+.git
+.idea
+bom-pedido-api.iml
+.env
+.dockerignore

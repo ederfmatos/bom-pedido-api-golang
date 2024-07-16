@@ -3,6 +3,7 @@ package event
 import (
 	"bom-pedido-api/application/event"
 	"bom-pedido-api/infra/env"
+	"bom-pedido-api/infra/retry"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 
 type KafkaEventHandler struct {
 	producer    *kafka.Producer
+	consumers   []*kafka.Consumer
 	environment *env.Environment
 }
 
@@ -28,7 +30,11 @@ func NewKafkaEventHandler(environment *env.Environment) event.Handler {
 	if err != nil {
 		panic(err)
 	}
-	handler := &KafkaEventHandler{producer: producer, environment: environment}
+	handler := &KafkaEventHandler{
+		producer:    producer,
+		environment: environment,
+		consumers:   make([]*kafka.Consumer, 0),
+	}
 	go handler.deliveryReport()
 	return handler
 }
@@ -58,19 +64,16 @@ func (handler *KafkaEventHandler) Emit(_ context.Context, event *event.Event) er
 		Value:     body,
 		Timestamp: time.Now(),
 	}
-	err = handler.producer.Produce(message, nil)
-	if err != nil {
-		return err
-	}
-	return nil
+	return handler.producer.Produce(message, nil)
 }
 
 func (handler *KafkaEventHandler) Consume(options *event.ConsumerOptions, handlerFunc event.HandlerFunc) {
 	configMap := &kafka.ConfigMap{
-		"bootstrap.servers": handler.environment.KafkaBootstrapServer,
-		"client.id":         handler.environment.KafkaClientId,
-		"group.id":          fmt.Sprintf("%s_%s", handler.environment.KafkaClientId, options.Id),
-		"auto.offset.reset": "earliest",
+		"bootstrap.servers":  handler.environment.KafkaBootstrapServer,
+		"client.id":          handler.environment.KafkaClientId,
+		"group.id":           fmt.Sprintf("%s_%s", handler.environment.KafkaClientId, options.Id),
+		"auto.offset.reset":  "earliest",
+		"enable.auto.commit": "false",
 	}
 	consumer, err := kafka.NewConsumer(configMap)
 	if err != nil {
@@ -81,20 +84,50 @@ func (handler *KafkaEventHandler) Consume(options *event.ConsumerOptions, handle
 		slog.Error("Error on subscribe topic", slog.String("topic", options.TopicName), "error", err)
 		panic(err)
 	}
-	go func() {
-		for {
-			message, err := consumer.ReadMessage(-1)
-			if err != nil {
-				slog.Error("Error on consume message", "error", err, "topic", options.TopicName)
-				continue
-			}
-			messageEvent := &KafkaMessageEvent{message: message, consumer: consumer}
-			err = handlerFunc(messageEvent)
-			if err != nil {
-				messageEvent.Nack()
-			}
+	handler.consumers = append(handler.consumers, consumer)
+	go handler.processMessages(consumer, options, handlerFunc)
+}
+
+func (handler *KafkaEventHandler) processMessages(consumer *kafka.Consumer, options *event.ConsumerOptions, handlerFunc event.HandlerFunc) {
+	for {
+		message, err := consumer.ReadMessage(-1)
+		if err != nil {
+			slog.Error("Error on consume message", "error", err, "topic", options.TopicName)
+			continue
 		}
-	}()
+		go handler.processMessage(message, consumer, handlerFunc)
+	}
+}
+
+func (handler *KafkaEventHandler) processMessage(message *kafka.Message, consumer *kafka.Consumer, handlerFunc event.HandlerFunc) {
+	messageEvent := &KafkaMessageEvent{message: message, consumer: consumer}
+	err := retry.Func(6, time.Second, time.Second*30, func() error {
+		return handlerFunc(messageEvent)
+	})
+	if err == nil {
+		return
+	}
+	err = handler.sendMessageToDeadLetterTopic(message, err)
+	messageEvent.AckOrNack(err)
+}
+
+func (handler *KafkaEventHandler) sendMessageToDeadLetterTopic(originalMessage *kafka.Message, err error) error {
+	topic := "DEAD_LETTER_TOPIC"
+	message := &kafka.Message{
+		TopicPartition: kafka.TopicPartition{
+			Topic:     &topic,
+			Partition: kafka.PartitionAny,
+		},
+		Key:   originalMessage.Key,
+		Value: originalMessage.Value,
+		Headers: []kafka.Header{
+			{Key: "error", Value: []byte(err.Error())},
+			{Key: "timestamp", Value: []byte(originalMessage.Timestamp.String())},
+			{Key: "topic", Value: []byte(*originalMessage.TopicPartition.Topic)},
+		},
+		Timestamp: time.Now(),
+	}
+	return handler.producer.Produce(message, nil)
 }
 
 type KafkaMessageEvent struct {
@@ -126,6 +159,14 @@ func (ev *KafkaMessageEvent) Nack() {
 	}
 }
 
+func (ev *KafkaMessageEvent) AckOrNack(err error) {
+	if err == nil {
+		ev.Ack()
+	} else {
+		ev.Nack()
+	}
+}
+
 func (ev *KafkaMessageEvent) GetEvent() *event.Event {
 	var event event.Event
 	_ = json.Unmarshal(ev.message.Value, &event)
@@ -134,4 +175,8 @@ func (ev *KafkaMessageEvent) GetEvent() *event.Event {
 
 func (handler *KafkaEventHandler) Close() {
 	handler.producer.Close()
+	for _, consumer := range handler.consumers {
+		consumer.Close()
+	}
+	handler.consumers = make([]*kafka.Consumer, 0)
 }
