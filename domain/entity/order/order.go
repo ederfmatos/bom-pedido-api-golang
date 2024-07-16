@@ -1,6 +1,7 @@
 package order
 
 import (
+	"bom-pedido-api/domain/entity/order/status"
 	"bom-pedido-api/domain/entity/product"
 	"bom-pedido-api/domain/enums"
 	"bom-pedido-api/domain/errors"
@@ -27,9 +28,9 @@ type (
 		Change          float64
 		Code            int32
 		DeliveryTime    time.Time
-		state           Status
+		state           status.Status
 		Items           []Item
-		History         []*StatusHistory
+		History         []*status.History
 	}
 
 	Item struct {
@@ -58,14 +59,14 @@ func New(customerID, paymentMethodString, paymentModeString, deliveryModeString,
 		Change:          change,
 		Code:            0,
 		DeliveryTime:    deliveryTime,
-		state:           AwaitingApproval,
+		state:           status.AwaitingApprovalStatus,
 		Items:           []Item{},
-		History:         []*StatusHistory{},
+		History:         []*status.History{},
 	}, nil
 }
 
 func Restore(
-	Id, customerID, paymentMethodString, paymentModeString, deliveryModeString, creditCardToken, status string,
+	Id, customerID, paymentMethodString, paymentModeString, deliveryModeString, creditCardToken, orderStatusString string,
 	createdAt time.Time,
 	change float64,
 	code int32,
@@ -76,7 +77,7 @@ func Restore(
 	if err != nil {
 		return nil, err
 	}
-	orderStatus, err := ParseStatus(status)
+	orderStatus, err := status.Parse(orderStatusString)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +94,7 @@ func Restore(
 		DeliveryTime:    deliveryTime,
 		state:           orderStatus,
 		Items:           items,
-		History:         []*StatusHistory{},
+		History:         []*status.History{},
 	}, nil
 }
 
@@ -142,7 +143,7 @@ func (order *Order) Approve(approvedAt time.Time, approvedBy string) error {
 	if err != nil {
 		return err
 	}
-	order.state = Approved
+	order.state = status.ApprovedStatus
 	order.History = append(order.History, history)
 	return nil
 }
@@ -152,7 +153,7 @@ func (order *Order) MarkAsInProgress(at time.Time, by string) error {
 	if err != nil {
 		return err
 	}
-	order.state = InProgress
+	order.state = status.InProgressStatus
 	order.History = append(order.History, history)
 	return nil
 }
@@ -162,7 +163,7 @@ func (order *Order) MarkAsAwaitingDelivery(at time.Time, by string) error {
 	if err != nil {
 		return err
 	}
-	order.state = AwaitingDelivery
+	order.state = status.AwaitingDeliveryStatus
 	order.History = append(order.History, history)
 	return nil
 }
@@ -172,7 +173,7 @@ func (order *Order) MarkAsAwaitingWithdraw(at time.Time, by string) error {
 	if err != nil {
 		return err
 	}
-	order.state = AwaitingWithdraw
+	order.state = status.AwaitingWithdrawStatus
 	order.History = append(order.History, history)
 	return nil
 }
@@ -182,7 +183,7 @@ func (order *Order) MarkAsDelivering(at time.Time, by string) error {
 	if err != nil {
 		return err
 	}
-	order.state = Delivering
+	order.state = status.DeliveringStatus
 	order.History = append(order.History, history)
 	return nil
 }
@@ -192,7 +193,7 @@ func (order *Order) Finish(at time.Time, by string) error {
 	if err != nil {
 		return err
 	}
-	order.state = Finished
+	order.state = status.FinishedStatus
 	order.History = append(order.History, history)
 	return nil
 }
@@ -202,7 +203,7 @@ func (order *Order) Reject(rejectedAt time.Time, rejectedBy, reason string) erro
 	if err != nil {
 		return err
 	}
-	order.state = Rejected
+	order.state = status.RejectedStatus
 	order.History = append(order.History, history)
 	return nil
 }
@@ -212,7 +213,7 @@ func (order *Order) Cancel(at time.Time, by, reason string) error {
 	if err != nil {
 		return err
 	}
-	order.state = Cancelled
+	order.state = status.CancelledStatus
 	order.History = append(order.History, history)
 	return nil
 }
