@@ -4,7 +4,6 @@ import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/presentation/http/customer/get_customer"
 	"bom-pedido-api/presentation/http/customer/google_auth_customer"
-	"bom-pedido-api/presentation/http/health"
 	"bom-pedido-api/presentation/http/middlewares"
 	"bom-pedido-api/presentation/http/order/approve"
 	"bom-pedido-api/presentation/http/order/cancel"
@@ -52,6 +51,4 @@ func SetRoutes(server *echo.Echo, applicationFactory *factory.ApplicationFactory
 	orderRoutes.POST("/delivering", mark_delivering.Handle(applicationFactory))
 	orderRoutes.POST("/awaiting-withdraw", mark_awaiting_withdraw.Handle(applicationFactory))
 	orderRoutes.POST("/awaiting-delivery", mark_awaiting_delivery.Handle(applicationFactory))
-
-	api.GET("/health", health.Handle)
 }

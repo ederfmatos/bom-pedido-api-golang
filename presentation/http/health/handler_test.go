@@ -15,11 +15,11 @@ func Test_Health(t *testing.T) {
 	response := httptest.NewRecorder()
 	context := instance.NewContext(request, response)
 
-	err := Handle(context)
+	err := Handle(nil, nil, nil)(context)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, response.Code)
 
-	var output HealthOutput
+	var output Output
 	_ = json.NewDecoder(response.Body).Decode(&output)
 	assert.Equal(t, true, output.Ok)
 }
