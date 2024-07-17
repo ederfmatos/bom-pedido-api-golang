@@ -4,6 +4,7 @@ import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/infra/http/customer/get_customer"
 	"bom-pedido-api/infra/http/customer/google_auth_customer"
+	"bom-pedido-api/infra/http/health"
 	"bom-pedido-api/infra/http/middlewares"
 	"bom-pedido-api/infra/http/order/approve"
 	"bom-pedido-api/infra/http/order/cancel"
@@ -17,21 +18,37 @@ import (
 	"bom-pedido-api/infra/http/products/list_products"
 	"bom-pedido-api/infra/http/shopping_cart/add_item_to_shopping_cart"
 	"bom-pedido-api/infra/http/shopping_cart/checkout_shopping_cart"
+	"context"
+	"database/sql"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/redis/go-redis/v9"
+	"go.mongodb.org/mongo-driver/mongo"
+	"log/slog"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
-func Server(applicationFactory *factory.ApplicationFactory) *echo.Echo {
+type Server struct {
+	server      *echo.Echo
+	mongoClient *mongo.Client
+	database    *sql.DB
+	redisClient *redis.Client
+}
+
+func NewServer(database *sql.DB, redisClient *redis.Client, mongoClient *mongo.Client) *Server {
+	return &Server{database: database, redisClient: redisClient, mongoClient: mongoClient}
+}
+
+func (s *Server) ConfigureRoutes(applicationFactory *factory.ApplicationFactory) {
 	server := echo.New()
 	server.Use(middleware.Recover())
 	server.Use(middleware.RequestID())
 	server.Use(middlewares.AuthenticateMiddleware(applicationFactory))
 	server.HTTPErrorHandler = middlewares.HandleError
-	SetRoutes(server, applicationFactory)
-	return server
-}
 
-func SetRoutes(server *echo.Echo, applicationFactory *factory.ApplicationFactory) {
 	api := server.Group("/api")
 	shoppingCartRoutes := api.Group("/v1/shopping-cart", middlewares.LockByCustomerId(applicationFactory))
 	shoppingCartRoutes.POST("/checkout", checkout_shopping_cart.Handle(applicationFactory))
@@ -51,4 +68,36 @@ func SetRoutes(server *echo.Echo, applicationFactory *factory.ApplicationFactory
 	orderRoutes.POST("/delivering", mark_delivering.Handle(applicationFactory))
 	orderRoutes.POST("/awaiting-withdraw", mark_awaiting_withdraw.Handle(applicationFactory))
 	orderRoutes.POST("/awaiting-delivery", mark_awaiting_delivery.Handle(applicationFactory))
+	server.GET("/api/health", health.Handle(s.database, s.redisClient, s.mongoClient))
+	s.server = server
+}
+
+func (s *Server) Run(port string) {
+	s.server.Logger.Fatal(s.server.Start(port))
+}
+
+func (s *Server) AwaitInterruptSignal() {
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	<-stop
+}
+
+func (s *Server) Shutdown() {
+	ctx, cancelCtx := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancelCtx()
+
+	if err := s.database.Close(); err != nil {
+		slog.Error("Error on close database connection", "error", err)
+	}
+	if err := s.redisClient.Close(); err != nil {
+		slog.Error("Error on close redis connection", "error", err)
+	}
+	if err := s.mongoClient.Disconnect(ctx); err != nil {
+		slog.Error("Error on close mongo connection", "error", err)
+	}
+
+	slog.Info("Shutting down server...")
+	if err := s.server.Shutdown(ctx); err != nil {
+		slog.Error("Error on shutdown server", "error", err)
+	}
 }

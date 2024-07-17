@@ -2,7 +2,6 @@ package event
 
 import (
 	"bom-pedido-api/infra/repository/outbox"
-	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -28,13 +27,13 @@ func (stream *MongoStream) FetchStream() (chan string, error) {
 }
 
 func (stream *MongoStream) consumeExistingEvents(ch chan string) {
-	cursor, err := stream.collection.Find(context.TODO(), bson.M{"status": bson.M{"$ne": "PROCESSED"}})
+	cursor, err := stream.collection.Find(nil, bson.M{"status": bson.M{"$ne": "PROCESSED"}})
 	if err != nil {
 		log.Fatalf("Failed to find existing events: %v", err)
 	}
-	defer cursor.Close(context.TODO())
+	defer cursor.Close(nil)
 
-	for cursor.Next(context.TODO()) {
+	for cursor.Next(nil) {
 		var entry outbox.Entry
 		if err := cursor.Decode(&entry); err != nil {
 			log.Printf("Failed to decode existing entry: %v", err)
@@ -51,15 +50,14 @@ func (stream *MongoStream) consumeExistingEvents(ch chan string) {
 func (stream *MongoStream) consumeNewEvents(ch chan string) {
 	pipeline := mongo.Pipeline{bson.D{{"$match", bson.D{{"operationType", "insert"}}}}}
 	opts := options.ChangeStream().SetFullDocument(options.UpdateLookup)
-	changeStream, err := stream.collection.Watch(context.TODO(), pipeline, opts)
+	changeStream, err := stream.collection.Watch(nil, pipeline, opts)
 	if err != nil {
 		log.Fatalf("Failed to start change stream: %v", err)
 	}
 
-	defer changeStream.Close(context.TODO())
-	defer close(ch)
+	defer changeStream.Close(nil)
 
-	for changeStream.Next(context.TODO()) {
+	for changeStream.Next(nil) {
 		var changeEvent struct {
 			DocumentKey primitive.M `bson:"documentKey,omitempty"`
 		}
@@ -68,10 +66,6 @@ func (stream *MongoStream) consumeNewEvents(ch chan string) {
 			continue
 		}
 		ch <- changeEvent.DocumentKey["_id"].(string)
-	}
-
-	if err := changeStream.Err(); err != nil {
-		log.Printf("Change stream error: %v", err)
 	}
 }
 
@@ -83,15 +77,14 @@ func (stream *MongoStream) consumeErrorEvents(ch chan string) {
 		}},
 	}}
 	opts := options.ChangeStream().SetFullDocument(options.UpdateLookup)
-	changeStream, err := stream.collection.Watch(context.TODO(), pipeline, opts)
+	changeStream, err := stream.collection.Watch(nil, pipeline, opts)
 	if err != nil {
 		log.Fatalf("Failed to start change stream: %v", err)
 	}
 
-	defer changeStream.Close(context.TODO())
-	defer close(ch)
+	defer changeStream.Close(nil)
 
-	for changeStream.Next(context.TODO()) {
+	for changeStream.Next(nil) {
 		var changeEvent struct {
 			DocumentKey primitive.M `bson:"documentKey,omitempty"`
 		}
@@ -103,9 +96,5 @@ func (stream *MongoStream) consumeErrorEvents(ch chan string) {
 			time.Sleep(time.Second * 5)
 			ch <- changeEvent.DocumentKey["_id"].(string)
 		}()
-	}
-
-	if err := changeStream.Err(); err != nil {
-		log.Printf("Change stream error: %v", err)
 	}
 }

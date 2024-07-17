@@ -4,7 +4,6 @@ import (
 	"bom-pedido-api/infra/env"
 	"bom-pedido-api/infra/factory"
 	"bom-pedido-api/infra/http"
-	"bom-pedido-api/infra/http/health"
 	"bom-pedido-api/infra/messaging"
 	"context"
 	"database/sql"
@@ -26,29 +25,25 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer database.Close()
-
 	redisUrl, err := redis.ParseURL(environment.RedisUrl)
 	if err != nil {
 		panic(err)
 	}
 	redisClient := redis.NewClient(redisUrl)
-	defer redisClient.Close()
 
 	clientOptions := options.Client().ApplyURI(environment.MongoUrl)
 	mongoClient, err := mongo.Connect(context.Background(), clientOptions)
 	if err != nil {
 		panic(err)
 	}
-	defer mongoClient.Disconnect(context.Background())
-
 	applicationFactory := factory.NewApplicationFactory(database, environment, redisClient, mongoClient)
 	defer applicationFactory.EventHandler.Close()
 
 	go messaging.HandleEvents(applicationFactory)
 
-	server := http.Server(applicationFactory)
-	server.GET("/api/health", health.Handle(database, redisClient, mongoClient))
-
-	server.Logger.Fatal(server.Start(fmt.Sprintf(":%s", environment.Port)))
+	server := http.NewServer(database, redisClient, mongoClient)
+	server.ConfigureRoutes(applicationFactory)
+	go server.Run(fmt.Sprintf(":%s", environment.Port))
+	server.AwaitInterruptSignal()
+	server.Shutdown()
 }
