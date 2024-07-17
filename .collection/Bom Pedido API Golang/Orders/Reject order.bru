@@ -1,0 +1,15 @@
+meta {
+  name: Reject order
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{API_BASE_URL}}/v1/orders/:id/reject
+  body: none
+  auth: none
+}
+
+params:path {
+  id: {{ORDER_ID}}
+}

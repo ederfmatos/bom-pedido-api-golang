@@ -1,0 +1,15 @@
+meta {
+  name: Mark delivering
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{API_BASE_URL}}/v1/orders/:id/delivering
+  body: none
+  auth: none
+}
+
+params:path {
+  id: {{ORDER_ID}}
+}

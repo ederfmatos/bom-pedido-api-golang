@@ -1,11 +1,11 @@
 meta {
   name: Checkout Shopping Cart
   type: http
-  seq: 4
+  seq: 2
 }
 
 post {
-  url: http://localhost:8080/api/v1/shopping-cart/checkout
+  url: {{API_BASE_URL}}/v1/shopping-cart/checkout
   body: json
   auth: none
 }
@@ -16,4 +16,8 @@ body:json {
     "deliveryMode": "DELIVERY",
     "paymentMode": "IN_RECEIVING"
   }
+}
+
+vars:post-response {
+  ORDER_ID: res.body.id
 }

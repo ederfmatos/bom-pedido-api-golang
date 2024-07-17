@@ -1,0 +1,15 @@
+meta {
+  name: Mark awaiting withdraw
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{API_BASE_URL}}/v1/orders/:id/awaiting-withdraw
+  body: none
+  auth: none
+}
+
+params:path {
+  id: {{ORDER_ID}}
+}

@@ -1,0 +1,15 @@
+meta {
+  name: Mark in progress
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{API_BASE_URL}}/v1/orders/:id/in-progress
+  body: none
+  auth: none
+}
+
+params:path {
+  id: {{ORDER_ID}}
+}

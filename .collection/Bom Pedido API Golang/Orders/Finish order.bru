@@ -1,0 +1,15 @@
+meta {
+  name: Finish order
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{API_BASE_URL}}/v1/orders/:id/finish
+  body: none
+  auth: none
+}
+
+params:path {
+  id: {{ORDER_ID}}
+}

@@ -1,11 +1,11 @@
 meta {
   name: Upsert shopping cart
   type: http
-  seq: 3
+  seq: 1
 }
 
 patch {
-  url: http://localhost:8080/api/v1/shopping-cart/items
+  url: {{API_BASE_URL}}/v1/shopping-cart/items
   body: json
   auth: none
 }
