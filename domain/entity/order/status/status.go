@@ -48,7 +48,7 @@ type (
 		Time      time.Time
 		Status    string
 		ChangedBy string
-		Data      map[string]string
+		Data      string
 	}
 )
 

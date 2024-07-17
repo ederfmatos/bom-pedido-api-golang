@@ -73,7 +73,7 @@ func MongoConnection(t *testing.T) (*mongo.Database, func()) {
 
 	database := mongoClient.Database("test")
 	return database, func() {
-		mongodbContainer.Terminate(ctx)
-		mongoClient.Disconnect(ctx)
+		go mongodbContainer.Terminate(ctx)
+		go mongoClient.Disconnect(ctx)
 	}
 }

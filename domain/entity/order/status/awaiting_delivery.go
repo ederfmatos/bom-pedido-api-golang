@@ -28,7 +28,7 @@ func (status *AwaitingDelivery) Cancel(cancelledAt time.Time, cancelledBy string
 		Time:      cancelledAt,
 		Status:    "Cancelled",
 		ChangedBy: cancelledBy,
-		Data:      map[string]string{"reason": reason},
+		Data:      reason,
 	}, nil
 }
 

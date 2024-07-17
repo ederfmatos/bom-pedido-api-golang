@@ -28,7 +28,7 @@ func (status *InProgress) Cancel(cancelledAt time.Time, cancelledBy string, reas
 		Time:      cancelledAt,
 		Status:    "Cancelled",
 		ChangedBy: cancelledBy,
-		Data:      map[string]string{"reason": reason},
+		Data:      reason,
 	}, nil
 }
 

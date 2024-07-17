@@ -28,7 +28,7 @@ func (status *AwaitingApproval) Reject(at time.Time, by string, reason string) (
 		Time:      at,
 		Status:    "Rejected",
 		ChangedBy: by,
-		Data:      map[string]string{"reason": reason},
+		Data:      reason,
 	}, nil
 }
 

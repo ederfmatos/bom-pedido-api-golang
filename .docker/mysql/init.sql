@@ -54,3 +54,15 @@ CREATE TABLE IF NOT EXISTS order_items
     CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES orders (id),
     CONSTRAINT fk_order_items_product FOREIGN KEY (product_id) REFERENCES products (id)
 );
+
+
+CREATE TABLE IF NOT EXISTS order_history
+(
+    id         INTEGER     NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    order_id   VARCHAR(36) NOT NULL,
+    changed_by VARCHAR(36) NOT NULL,
+    changed_at TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status     VARCHAR(30) NOT NULL,
+    data       TEXT,
+    CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES orders (id)
+);
