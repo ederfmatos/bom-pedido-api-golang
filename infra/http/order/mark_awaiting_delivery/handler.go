@@ -3,6 +3,7 @@ package mark_awaiting_delivery
 import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/application/usecase/order/mark_order_awaiting_delivery"
+	"bom-pedido-api/infra/http/response"
 	"github.com/labstack/echo/v4"
 )
 
@@ -14,9 +15,6 @@ func Handle(factory *factory.ApplicationFactory) func(context echo.Context) erro
 			By:      context.Get("adminId").(string),
 		}
 		err := useCase.Execute(context.Request().Context(), input)
-		if err != nil {
-			return err
-		}
-		return context.NoContent(204)
+		return response.NoContent(context, err)
 	}
 }

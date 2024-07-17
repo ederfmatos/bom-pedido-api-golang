@@ -3,6 +3,7 @@ package reject
 import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/application/usecase/order/reject_order"
+	"bom-pedido-api/infra/http/response"
 	"github.com/labstack/echo/v4"
 )
 
@@ -24,9 +25,6 @@ func Handle(factory *factory.ApplicationFactory) func(context echo.Context) erro
 			Reason:     request.Reason,
 		}
 		err = useCase.Execute(context.Request().Context(), input)
-		if err != nil {
-			return err
-		}
-		return context.NoContent(204)
+		return response.NoContent(context, err)
 	}
 }

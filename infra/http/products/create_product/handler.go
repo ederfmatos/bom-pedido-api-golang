@@ -3,6 +3,7 @@ package create_product
 import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/application/usecase/product/create_product"
+	"bom-pedido-api/infra/http/response"
 	"github.com/labstack/echo/v4"
 )
 
@@ -26,9 +27,6 @@ func Handle(factory *factory.ApplicationFactory) func(context echo.Context) erro
 			Price:       request.Price,
 		}
 		output, err := createProductUseCase.Execute(context.Request().Context(), input)
-		if err != nil {
-			return err
-		}
-		return context.JSON(201, output)
+		return response.Created(context, output, err)
 	}
 }

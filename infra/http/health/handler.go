@@ -17,13 +17,13 @@ func Handle(database *sql.DB, client *redis.Client, mongoClient *mongo.Client) f
 		healthErrorComposite := errors.NewCompositeError()
 		ctx := context.Request().Context()
 		if err := mongoClient.Ping(ctx, nil); err != nil {
-			healthErrorComposite.Append(err)
+			healthErrorComposite.AppendError(err)
 		}
 		if err := database.PingContext(ctx); err != nil {
-			healthErrorComposite.Append(err)
+			healthErrorComposite.AppendError(err)
 		}
 		if err := client.Ping(ctx).Err(); err != nil {
-			healthErrorComposite.Append(err)
+			healthErrorComposite.AppendError(err)
 		}
 		if healthErrorComposite.HasError() {
 			return healthErrorComposite.AsError()

@@ -137,10 +137,9 @@ func (builder *DefaultConnectionBuilder) List(ctx context.Context, mapper RowMap
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 	for rows.Next() {
-		err = mapper(func(dest ...any) error {
-			return rows.Scan(dest...)
-		})
+		err = mapper(rows.Scan)
 		if err != nil {
 			return err
 		}

@@ -3,6 +3,7 @@ package add_item_to_shopping_cart
 import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/application/usecase/shopping_cart/add_item_to_shopping_cart"
+	"bom-pedido-api/infra/http/response"
 	"github.com/labstack/echo/v4"
 )
 
@@ -27,9 +28,6 @@ func Handle(factory *factory.ApplicationFactory) func(context echo.Context) erro
 			Observation: request.Observation,
 		}
 		err = useCase.Execute(context.Request().Context(), input)
-		if err != nil {
-			return err
-		}
-		return context.NoContent(204)
+		return response.NoContent(context, err)
 	}
 }
