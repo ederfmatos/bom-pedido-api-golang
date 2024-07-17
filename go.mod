@@ -16,6 +16,8 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
 	github.com/testcontainers/testcontainers-go/modules/mongodb v0.32.0
+	github.com/testcontainers/testcontainers-go/modules/mysql v0.32.0
+	github.com/testcontainers/testcontainers-go/modules/redis v0.32.0
 	go.mongodb.org/mongo-driver v1.16.0
 	golang.org/x/net v0.27.0
 )
