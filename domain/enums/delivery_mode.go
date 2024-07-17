@@ -27,3 +27,11 @@ func ParseDeliveryMode(value string) (DeliveryMode, *errors.DomainError) {
 func (mode DeliveryMode) String() string {
 	return string(mode)
 }
+
+func (mode DeliveryMode) IsDelivery() bool {
+	return mode == DeliveryModeDelivery
+}
+
+func (mode DeliveryMode) IsWithdraw() bool {
+	return mode == DeliveryModeWithdraw
+}
