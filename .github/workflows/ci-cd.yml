@@ -1,0 +1,34 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.22.4
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Run tests
+        run: go test -v ./...
+
+      - name: Test coverage
+        run: go test -coverprofile=coverage.out ./...
+
+      - name: Generate HTML coverage report
+        run: go tool cover -html=coverage.out -o coverage.html
+
+      - name: Show coverage summary in console
+        run: go tool cover -func=coverage.out
