@@ -4,6 +4,7 @@ import (
 	"bom-pedido-api/application/repository"
 	"bom-pedido-api/domain/entity/product"
 	"context"
+	"strings"
 )
 
 const (
@@ -11,7 +12,6 @@ const (
 	sqlUpdateProduct       = "UPDATE products SET name = ?, description = ?, price = ?, status = ? WHERE id = ?"
 	sqlFindProductById     = "SELECT id, name, description, price, status FROM products WHERE id = ?"
 	sqlExistsProductByName = "SELECT 1 FROM products WHERE name = ? LIMIT 1"
-	sqlListProducts        = "select id, name, description, price, status from products WHERE id IN (?)"
 )
 
 type DefaultProductRepository struct {
@@ -57,15 +57,13 @@ func (repository *DefaultProductRepository) ExistsByName(ctx context.Context, na
 
 func (repository *DefaultProductRepository) FindAllById(ctx context.Context, ids []string) (map[string]*product.Product, error) {
 	products := make(map[string]*product.Product)
-	join := ""
+	args := make([]interface{}, len(ids))
 	for i, id := range ids {
-		join += "'" + id + "'"
-		if i < len(ids)-1 {
-			join += ","
-		}
+		args[i] = id
 	}
+	var sqlListProducts = `select id, name, description, price, status from products WHERE id IN (?` + strings.Repeat(",?", len(ids)-1) + `)`
 	err := repository.Sql(sqlListProducts).
-		Values(join).
+		Values(args...).
 		List(ctx, func(getValues func(dest ...any) error) error {
 			var id, name, description, status string
 			var price float64
