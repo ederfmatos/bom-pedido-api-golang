@@ -4,6 +4,7 @@ import (
 	"bom-pedido-api/application/repository"
 	"bom-pedido-api/domain/entity/product"
 	"context"
+	"fmt"
 )
 
 type ProductMemoryRepository struct {
@@ -15,6 +16,11 @@ func NewProductMemoryRepository() repository.ProductRepository {
 }
 
 func (repository *ProductMemoryRepository) Create(_ context.Context, product *product.Product) error {
+	for _, p := range repository.products {
+		if p.Name == product.Name {
+			return fmt.Errorf("duplicated product name")
+		}
+	}
 	repository.products[product.Id] = product
 	return nil
 }
@@ -37,7 +43,7 @@ func (repository *ProductMemoryRepository) ExistsByName(_ context.Context, name 
 	return false, nil
 }
 
-func (repository *ProductMemoryRepository) FindAllById(ctx context.Context, ids []string) (map[string]*product.Product, error) {
+func (repository *ProductMemoryRepository) FindAllById(_ context.Context, ids []string) (map[string]*product.Product, error) {
 	products := make(map[string]*product.Product)
 	for _, id := range ids {
 		product := repository.products[id]

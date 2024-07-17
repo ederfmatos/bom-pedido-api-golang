@@ -34,10 +34,8 @@ func (repository *DefaultCustomerRepository) Update(ctx context.Context, custome
 }
 
 func (repository *DefaultCustomerRepository) FindById(ctx context.Context, id string) (*customer.Customer, error) {
-	var email string
-	var name string
-	var status string
-	var phoneNumber string
+	var name, email, status string
+	var phoneNumber *string
 	found, err := repository.Sql(sqlFindCustomerById).
 		Values(id).
 		FindOne(ctx, &id, &name, &email, &phoneNumber, &status)
@@ -51,10 +49,8 @@ func (repository *DefaultCustomerRepository) FindById(ctx context.Context, id st
 }
 
 func (repository *DefaultCustomerRepository) FindByEmail(ctx context.Context, email string) (*customer.Customer, error) {
-	var id string
-	var name string
-	var status string
-	var phoneNumber string
+	var id, name, status string
+	var phoneNumber *string
 	found, err := repository.Sql(sqlFindCustomerByEmail).
 		Values(email).
 		FindOne(ctx, &id, &name, &email, &phoneNumber, &status)

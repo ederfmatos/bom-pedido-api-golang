@@ -124,6 +124,7 @@ func (builder *DefaultConnectionBuilder) Exists(ctx context.Context) (bool, erro
 	if err != nil {
 		return false, err
 	}
+	defer rows.Close()
 	return rows.Next(), nil
 }
 

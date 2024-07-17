@@ -9,10 +9,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func eventFactory(environment *env.Environment, locker lock.Locker, mongoClient *mongo.Client) *factory.EventFactory {
+func eventFactory(environment *env.Environment, locker lock.Locker, mongoDatabase *mongo.Database) *factory.EventFactory {
 	//eventHandler := event.NewRabbitMqAdapter(environment.RabbitMqServer)
 	eventHandler := event.NewKafkaEventHandler(environment)
-	collection := mongoClient.Database(environment.MongoDatabaseName).Collection(environment.MongoOutboxCollectionName)
+	collection := mongoDatabase.Collection(environment.MongoOutboxCollectionName)
 	outboxRepository := outbox.NewMongoOutboxRepository(collection)
 	mongoStream := event.NewMongoStream(collection)
 	handler := event.NewOutboxEventHandler(eventHandler, outboxRepository, mongoStream, locker)

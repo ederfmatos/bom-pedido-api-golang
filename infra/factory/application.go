@@ -13,11 +13,12 @@ import (
 func NewApplicationFactory(database *sql.DB, environment *env.Environment, redisClient *redis.Client, mongoClient *mongo.Client) *factory.ApplicationFactory {
 	connection := repository.NewDefaultSqlConnection(database)
 	locker := lock.NewRedisLocker(redisClient)
+	mongoDatabase := mongoClient.Database(environment.MongoDatabaseName)
 	return factory.NewApplicationFactory(
 		gatewayFactory(environment),
-		repositoryFactory(connection, redisClient),
+		repositoryFactory(connection, mongoDatabase),
 		tokenFactory(environment),
-		eventFactory(environment, locker, mongoClient),
+		eventFactory(environment, locker, mongoDatabase),
 		queryFactory(connection),
 		locker,
 	)

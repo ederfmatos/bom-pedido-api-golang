@@ -20,13 +20,7 @@ func (r *MongoOutboxRepository) Save(ctx context.Context, entry *Entry) error {
 }
 
 func (r *MongoOutboxRepository) Update(ctx context.Context, entry *Entry) error {
-	update := bson.M{
-		"$set": bson.M{
-			"status":          entry.Status,
-			"processedAt":     entry.ProcessedAt,
-			"lastAttemptTime": entry.LastAttemptTime,
-		},
-	}
+	update := bson.M{"$set": entry}
 	_, err := r.collection.UpdateByID(ctx, entry.Id, update)
 	return err
 }

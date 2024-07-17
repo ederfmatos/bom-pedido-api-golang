@@ -29,9 +29,9 @@ func (repository *CustomerMemoryRepository) FindById(_ context.Context, id strin
 }
 
 func (repository *CustomerMemoryRepository) FindByEmail(_ context.Context, email string) (*customer.Customer, error) {
-	for _, customer := range repository.customers {
-		if *customer.GetEmail() == email {
-			return customer, nil
+	for _, c := range repository.customers {
+		if *c.GetEmail() == email {
+			return c, nil
 		}
 	}
 	return nil, nil

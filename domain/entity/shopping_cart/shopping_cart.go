@@ -10,15 +10,15 @@ import (
 
 type (
 	ShoppingCart struct {
-		CustomerId string
-		Items      []ShoppingCartItem
+		CustomerId string             `bson:"_id"`
+		Items      []ShoppingCartItem `bson:"items"`
 	}
 	ShoppingCartItem struct {
-		Id          string
-		ProductId   string
-		Quantity    int
-		Observation string
-		Price       float64
+		Id          string  `bson:"id"`
+		ProductId   string  `bson:"productId"`
+		Quantity    int     `bson:"quantity"`
+		Observation string  `bson:"observation"`
+		Price       float64 `bson:"price"`
 	}
 )
 

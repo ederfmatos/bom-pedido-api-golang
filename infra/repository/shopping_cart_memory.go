@@ -19,7 +19,7 @@ func (repository *ShoppingCartMemoryRepository) Upsert(_ context.Context, shoppi
 	return nil
 }
 
-func (repository *ShoppingCartMemoryRepository) DeleteByCustomerId(ctx context.Context, id string) error {
+func (repository *ShoppingCartMemoryRepository) DeleteByCustomerId(_ context.Context, id string) error {
 	delete(repository.shoppingCarts, id)
 	return nil
 }

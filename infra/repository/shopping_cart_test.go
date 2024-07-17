@@ -1,46 +1,35 @@
 package repository
 
 import (
+	"bom-pedido-api/application/repository"
 	"bom-pedido-api/domain/entity/product"
 	"bom-pedido-api/domain/entity/shopping_cart"
 	"bom-pedido-api/domain/value_object"
 	"context"
 	"fmt"
 	"github.com/go-faker/faker/v4"
-	redis2 "github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
-	"github.com/testcontainers/testcontainers-go/modules/redis"
-	"log"
+	"github.com/testcontainers/testcontainers-go/modules/mongodb"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"testing"
 )
 
-func Test_ShoppingCartRepository(t *testing.T) {
-	ctx := context.Background()
+func Test_ShoppingCartMongoRepository(t *testing.T) {
+	mongoDatabase, closeDatabase := MongoConnection(t)
+	defer closeDatabase()
+	shoppingCartRepository := NewShoppingCartMongoRepository(mongoDatabase)
+	runTests(t, shoppingCartRepository)
+}
 
-	redisContainer, err := redis.Run(ctx, "docker.io/redis:7", redis.WithLogLevel(redis.LogLevelVerbose))
-	if err != nil {
-		log.Fatalf("failed to start container: %s", err)
-	}
+func Test_ShoppingCartMemoryRepository(t *testing.T) {
+	shoppingCartRepository := NewShoppingCartMemoryRepository()
+	runTests(t, shoppingCartRepository)
+}
 
-	defer func() {
-		if err := redisContainer.Terminate(ctx); err != nil {
-			log.Fatalf("failed to terminate container: %s", err)
-		}
-	}()
-	host, err := redisContainer.Host(ctx)
-	assert.NoError(t, err)
-	port, err := redisContainer.Ports(ctx)
-	assert.NoError(t, err)
-
-	options, err := redis2.ParseURL(fmt.Sprintf("redis://%s:%s/0", host, port["6379/tcp"][0].HostPort))
-	if err != nil {
-		panic(err)
-	}
-	redisClient := redis2.NewClient(options)
-	defer redisClient.Close()
-
-	shoppingCartRepository := NewShoppingCartRedisRepository(redisClient)
+func runTests(t *testing.T, shoppingCartRepository repository.ShoppingCartRepository) {
 	customerId := value_object.NewID()
+	ctx := context.Background()
 
 	shoppingCart, err := shoppingCartRepository.FindByCustomerId(ctx, customerId)
 	assert.NoError(t, err)
@@ -63,4 +52,28 @@ func Test_ShoppingCartRepository(t *testing.T) {
 	savedShoppingCart, err = shoppingCartRepository.FindByCustomerId(ctx, customerId)
 	assert.NoError(t, err)
 	assert.Nil(t, savedShoppingCart)
+}
+
+func MongoConnection(t *testing.T) (*mongo.Database, func()) {
+	ctx := context.Background()
+	mongodbContainer, err := mongodb.Run(ctx, "mongo:6")
+
+	endpoint, err := mongodbContainer.Endpoint(context.Background(), "")
+	if err != nil {
+		assert.NoError(t, err)
+	}
+
+	uri := fmt.Sprintf("mongodb://%s", endpoint)
+
+	clientOptions := options.Client().ApplyURI(uri)
+	mongoClient, err := mongo.Connect(ctx, clientOptions)
+	if err != nil {
+		assert.NoError(t, err)
+	}
+
+	database := mongoClient.Database("test")
+	return database, func() {
+		mongodbContainer.Terminate(ctx)
+		mongoClient.Disconnect(ctx)
+	}
 }

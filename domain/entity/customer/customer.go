@@ -30,14 +30,14 @@ func New(name, email string) (*Customer, error) {
 	}, nil
 }
 
-func Restore(id, name, email, phoneNumber, status string) (*Customer, error) {
+func Restore(id, name, email string, phoneNumber *string, status string) (*Customer, error) {
 	newEmail, err := value_object.NewEmail(email)
 	if err != nil {
 		return nil, err
 	}
 	var newPhoneNumber *value_object.PhoneNumber
-	if phoneNumber != "" {
-		newPhoneNumber, err = value_object.NewPhoneNumber(phoneNumber)
+	if phoneNumber != nil {
+		newPhoneNumber, err = value_object.NewPhoneNumber(*phoneNumber)
 		if err != nil {
 			return nil, err
 		}
@@ -51,22 +51,22 @@ func Restore(id, name, email, phoneNumber, status string) (*Customer, error) {
 	}, nil
 }
 
-func (customer Customer) isActive() bool {
+func (customer *Customer) isActive() bool {
 	return customer.Status == ACTIVE
 }
 
-func (customer Customer) isInactive() bool {
+func (customer *Customer) isInactive() bool {
 	return customer.Status == INACTIVE
 }
 
-func (customer Customer) GetPhoneNumber() *string {
+func (customer *Customer) GetPhoneNumber() *string {
 	if customer.phoneNumber == nil {
 		return nil
 	}
 	return customer.phoneNumber.Value()
 }
 
-func (customer Customer) SetPhoneNumber(phoneNumber string) error {
+func (customer *Customer) SetPhoneNumber(phoneNumber string) error {
 	newPhoneNumber, err := value_object.NewPhoneNumber(phoneNumber)
 	if err != nil {
 		return err
@@ -75,6 +75,6 @@ func (customer Customer) SetPhoneNumber(phoneNumber string) error {
 	return nil
 }
 
-func (customer Customer) GetEmail() *string {
+func (customer *Customer) GetEmail() *string {
 	return customer.email.Value()
 }
