@@ -83,3 +83,10 @@ services:
       CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
       CONFLUENT_METRICS_TOPIC_REPLICATION: 1
       PORT: 9021
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: bom-pedido-jaeger
+    network_mode: host
+    environment:
+      COLLECTOR_ZIPKIN_HTTP_PORT: ":9411"

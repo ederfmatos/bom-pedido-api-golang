@@ -5,6 +5,7 @@ import (
 	"bom-pedido-api/application/lock"
 	"bom-pedido-api/infra/repository/outbox"
 	"bom-pedido-api/infra/retry"
+	"bom-pedido-api/infra/telemetry"
 	"context"
 	"encoding/json"
 	"time"
@@ -29,6 +30,12 @@ func NewOutboxEventHandler(handler event.Handler, outboxRepository outbox.Reposi
 }
 
 func (handler *OutboxEventHandler) Emit(ctx context.Context, event *event.Event) error {
+	ctx, span := telemetry.StartSpan(ctx, "OutboxEventEmitter.Emit",
+		"event", event.Name,
+		"eventId", event.Id,
+		"eventCorrelationId", event.CorrelationId,
+	)
+	defer span.End()
 	eventData, err := json.Marshal(event)
 	if err != nil {
 		return err
@@ -57,6 +64,8 @@ func (handler *OutboxEventHandler) handleStream() {
 
 func (handler *OutboxEventHandler) processEvent(id string) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	ctx, span := telemetry.StartSpan(ctx, "OutboxEventHandler.Process", "eventId", id)
+	defer span.End()
 	defer cancel()
 	_ = handler.locker.LockFunc(ctx, id, time.Minute, func() {
 		entry, err := handler.outboxRepository.Get(ctx, id)

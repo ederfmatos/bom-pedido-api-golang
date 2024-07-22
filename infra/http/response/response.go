@@ -20,5 +20,5 @@ func NoContent(context echo.Context, err error) error {
 	if err != nil {
 		return err
 	}
-	return context.JSON(204, nil)
+	return context.NoContent(204)
 }

@@ -1,14 +1,19 @@
 package repository
 
 import (
+	"bom-pedido-api/infra/telemetry"
 	"context"
 	"database/sql"
 	"errors"
+	"go.opentelemetry.io/otel/trace"
+	"regexp"
+	"runtime"
+	"strings"
 )
 
 type SqlConnection interface {
 	Sql(sql string) ConnectionBuilder
-	InTransaction(ctx context.Context, handler func(transaction SqlTransaction) error) error
+	InTransaction(ctx context.Context, handler func(transaction SqlTransaction, ctx context.Context) error) error
 }
 
 type SqlTransaction interface {
@@ -49,19 +54,24 @@ func (transaction *DefaultSqlTransaction) Sql(sql string) ConnectionBuilder {
 	}
 }
 
-func (connection *DefaultSqlConnection) InTransaction(ctx context.Context, handler func(connection SqlTransaction) error) error {
+func (connection *DefaultSqlConnection) InTransaction(ctx context.Context, handler func(connection SqlTransaction, ctx context.Context) error) error {
+	ctx, span := telemetry.StartSpan(ctx, "SqlConnection.InTransaction")
+	defer span.End()
+	span.AddEvent("Begin transaction")
 	tx, err := connection.database.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	transaction := &DefaultSqlTransaction{transaction: tx}
-	err = handler(transaction)
+	err = handler(transaction, ctx)
 	if err == nil {
+		span.AddEvent("Commiting transaction")
 		if err := tx.Commit(); err != nil {
 			return err
 		}
 		return nil
 	}
+	span.AddEvent("Rollback transaction")
 	rollbackError := tx.Rollback()
 	if rollbackError == nil {
 		return err
@@ -89,6 +99,8 @@ func (builder *DefaultConnectionBuilder) Values(value ...interface{}) Connection
 }
 
 func (builder *DefaultConnectionBuilder) Update(ctx context.Context) error {
+	span := builder.createSpan(ctx)
+	defer span.End()
 	statement, err := builder.connection.PrepareContext(ctx, *builder.sql)
 	if err != nil {
 		return err
@@ -99,6 +111,8 @@ func (builder *DefaultConnectionBuilder) Update(ctx context.Context) error {
 }
 
 func (builder *DefaultConnectionBuilder) FindOne(ctx context.Context, values ...interface{}) (bool, error) {
+	span := builder.createSpan(ctx)
+	defer span.End()
 	statement, err := builder.connection.PrepareContext(ctx, *builder.sql)
 	if err != nil {
 		return false, err
@@ -115,6 +129,8 @@ func (builder *DefaultConnectionBuilder) FindOne(ctx context.Context, values ...
 }
 
 func (builder *DefaultConnectionBuilder) Exists(ctx context.Context) (bool, error) {
+	span := builder.createSpan(ctx)
+	defer span.End()
 	statement, err := builder.connection.PrepareContext(ctx, *builder.sql)
 	if err != nil {
 		return false, err
@@ -129,6 +145,8 @@ func (builder *DefaultConnectionBuilder) Exists(ctx context.Context) (bool, erro
 }
 
 func (builder *DefaultConnectionBuilder) List(ctx context.Context, mapper RowMapper) error {
+	span := builder.createSpan(ctx)
+	defer span.End()
 	statement, err := builder.connection.PrepareContext(ctx, *builder.sql)
 	if err != nil {
 		return err
@@ -146,4 +164,17 @@ func (builder *DefaultConnectionBuilder) List(ctx context.Context, mapper RowMap
 		}
 	}
 	return nil
+}
+
+var spanRegex = regexp.MustCompile(`\(\*|repository\.|\)`)
+
+func (builder *DefaultConnectionBuilder) createSpan(ctx context.Context) trace.Span {
+	pc := make([]uintptr, 15)
+	n := runtime.Callers(3, pc)
+	frames := runtime.CallersFrames(pc[:n])
+	frame, _ := frames.Next()
+	function := strings.Split(frame.Function, "/")
+	functionName := spanRegex.ReplaceAllString(function[len(function)-1], "")
+	ctx, span := telemetry.StartSpan(ctx, functionName, "sql", *builder.sql)
+	return span
 }

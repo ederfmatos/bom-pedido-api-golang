@@ -64,5 +64,5 @@ CREATE TABLE IF NOT EXISTS order_history
     changed_at TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
     status     VARCHAR(30) NOT NULL,
     data       TEXT,
-    CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES orders (id)
+    CONSTRAINT fk_order_history_order FOREIGN KEY (order_id) REFERENCES orders (id)
 );

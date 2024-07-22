@@ -42,7 +42,7 @@ func NewDefaultOrderRepository(sqlConnection SqlConnection) repository.OrderRepo
 }
 
 func (repository *DefaultOrderRepository) Create(ctx context.Context, order *order.Order) error {
-	return repository.InTransaction(ctx, func(transaction SqlTransaction) error {
+	return repository.InTransaction(ctx, func(transaction SqlTransaction, ctx context.Context) error {
 		order.CreatedAt = parseTime(order.CreatedAt)
 		order.DeliveryTime = parseTime(order.DeliveryTime)
 
@@ -130,7 +130,7 @@ func (repository *DefaultOrderRepository) getOrderHistory(ctx context.Context, i
 }
 
 func (repository *DefaultOrderRepository) Update(ctx context.Context, order *order.Order) error {
-	return repository.InTransaction(ctx, func(transaction SqlTransaction) error {
+	return repository.InTransaction(ctx, func(transaction SqlTransaction, ctx context.Context) error {
 		err := transaction.Sql(sqlUpdateOrder).
 			Values(order.GetStatus(), order.Id).
 			Update(ctx)

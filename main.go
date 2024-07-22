@@ -41,7 +41,7 @@ func main() {
 
 	go messaging.HandleEvents(applicationFactory)
 
-	server := http.NewServer(database, redisClient, mongoClient)
+	server := http.NewServer(database, redisClient, mongoClient, environment)
 	server.ConfigureRoutes(applicationFactory)
 	go server.Run(fmt.Sprintf(":%s", environment.Port))
 	server.AwaitInterruptSignal()

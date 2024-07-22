@@ -6,18 +6,19 @@ import (
 )
 
 type Environment struct {
-	DatabaseUrl               string `mapstructure:"DATABASE_URL"`
-	DatabaseDriver            string `mapstructure:"DATABASE_DRIVER"`
-	RedisUrl                  string `mapstructure:"REDIS_URL"`
-	JwePrivateKeyPath         string `mapstructure:"JWE_PRIVATE_KEY_PATH"`
-	RabbitMqServer            string `mapstructure:"RABBITMQ_SERVER"`
-	GoogleAuthUrl             string `mapstructure:"GOOGLE_AUTH_URL"`
-	MongoUrl                  string `mapstructure:"MONGO_URL"`
-	MongoDatabaseName         string `mapstructure:"MONGO_DATABASE_NAME"`
-	MongoOutboxCollectionName string `mapstructure:"MONGO_OUTBOX_COLLECTION_NAME"`
-	Port                      string `mapstructure:"PORT"`
-	KafkaBootstrapServer      string `mapstructure:"KAFKA_BOOTSTRAP_SERVER"`
-	KafkaClientId             string `mapstructure:"KAFKA_CLIENT_ID"`
+	DatabaseUrl                   string `mapstructure:"DATABASE_URL"`
+	DatabaseDriver                string `mapstructure:"DATABASE_DRIVER"`
+	RedisUrl                      string `mapstructure:"REDIS_URL"`
+	JwePrivateKeyPath             string `mapstructure:"JWE_PRIVATE_KEY_PATH"`
+	RabbitMqServer                string `mapstructure:"RABBITMQ_SERVER"`
+	GoogleAuthUrl                 string `mapstructure:"GOOGLE_AUTH_URL"`
+	MongoUrl                      string `mapstructure:"MONGO_URL"`
+	MongoDatabaseName             string `mapstructure:"MONGO_DATABASE_NAME"`
+	MongoOutboxCollectionName     string `mapstructure:"MONGO_OUTBOX_COLLECTION_NAME"`
+	Port                          string `mapstructure:"PORT"`
+	KafkaBootstrapServer          string `mapstructure:"KAFKA_BOOTSTRAP_SERVER"`
+	KafkaClientId                 string `mapstructure:"KAFKA_CLIENT_ID"`
+	OpenTelemetryEndpointExporter string `mapstructure:"OTEL_ENDPOINT_EXPORTER"`
 }
 
 func LoadEnvironment(path string) *Environment {

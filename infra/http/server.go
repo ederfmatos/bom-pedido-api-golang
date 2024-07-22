@@ -2,6 +2,7 @@ package http
 
 import (
 	"bom-pedido-api/application/factory"
+	"bom-pedido-api/infra/env"
 	"bom-pedido-api/infra/http/customer/get_customer"
 	"bom-pedido-api/infra/http/customer/google_auth_customer"
 	"bom-pedido-api/infra/http/health"
@@ -24,6 +25,12 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	"go.opentelemetry.io/otel/sdk/resource"
+	"go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -32,20 +39,23 @@ import (
 )
 
 type Server struct {
-	server      *echo.Echo
-	mongoClient *mongo.Client
-	database    *sql.DB
-	redisClient *redis.Client
+	server         *echo.Echo
+	mongoClient    *mongo.Client
+	database       *sql.DB
+	redisClient    *redis.Client
+	tracerProvider *trace.TracerProvider
+	environment    *env.Environment
 }
 
-func NewServer(database *sql.DB, redisClient *redis.Client, mongoClient *mongo.Client) *Server {
-	return &Server{database: database, redisClient: redisClient, mongoClient: mongoClient}
+func NewServer(database *sql.DB, redisClient *redis.Client, mongoClient *mongo.Client, environment *env.Environment) *Server {
+	return &Server{database: database, redisClient: redisClient, mongoClient: mongoClient, environment: environment}
 }
 
 func (s *Server) ConfigureRoutes(applicationFactory *factory.ApplicationFactory) {
 	server := echo.New()
 	server.Use(middleware.Recover())
 	server.Use(middleware.RequestID())
+	server.Use(middlewares.TraceMiddleware)
 	server.Use(middlewares.AuthenticateMiddleware(applicationFactory))
 	server.HTTPErrorHandler = middlewares.HandleError
 
@@ -72,7 +82,33 @@ func (s *Server) ConfigureRoutes(applicationFactory *factory.ApplicationFactory)
 	s.server = server
 }
 
+func (s *Server) StartTracer() {
+	exporter, err := otlptrace.New(
+		context.Background(),
+		otlptracehttp.NewClient(
+			otlptracehttp.WithEndpoint(s.environment.OpenTelemetryEndpointExporter),
+			otlptracehttp.WithHeaders(map[string]string{"content-type": "application/json"}),
+			otlptracehttp.WithInsecure(),
+		),
+	)
+	if err != nil {
+		panic(err)
+	}
+	tracerProvider := trace.NewTracerProvider(
+		trace.WithBatcher(
+			exporter,
+			trace.WithMaxExportBatchSize(trace.DefaultMaxExportBatchSize),
+			trace.WithBatchTimeout(trace.DefaultScheduleDelay*time.Millisecond),
+			trace.WithMaxExportBatchSize(trace.DefaultMaxExportBatchSize),
+		),
+		trace.WithResource(resource.NewWithAttributes(semconv.SchemaURL, semconv.ServiceNameKey.String("bom-pedido-api"))),
+	)
+	otel.SetTracerProvider(tracerProvider)
+	s.tracerProvider = tracerProvider
+}
+
 func (s *Server) Run(port string) {
+	s.StartTracer()
 	s.server.Logger.Fatal(s.server.Start(port))
 }
 
@@ -95,7 +131,9 @@ func (s *Server) Shutdown() {
 	if err := s.mongoClient.Disconnect(ctx); err != nil {
 		slog.Error("Error on close mongo connection", "error", err)
 	}
-
+	if err := s.tracerProvider.Shutdown(ctx); err != nil {
+		slog.Error("Error on close trace provider connection", "error", err)
+	}
 	slog.Info("Shutting down server...")
 	if err := s.server.Shutdown(ctx); err != nil {
 		slog.Error("Error on shutdown server", "error", err)

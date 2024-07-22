@@ -4,6 +4,7 @@ import (
 	"bom-pedido-api/application/event"
 	"bom-pedido-api/infra/env"
 	"bom-pedido-api/infra/retry"
+	"bom-pedido-api/infra/telemetry"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -50,7 +51,11 @@ func (handler *KafkaEventHandler) deliveryReport() {
 	}
 }
 
-func (handler *KafkaEventHandler) Emit(_ context.Context, event *event.Event) error {
+func (handler *KafkaEventHandler) Emit(ctx context.Context, event *event.Event) error {
+	ctx, span := telemetry.StartSpan(ctx, "KafkaEventEmitter.Emit",
+		"eventId", event.Id, "eventName", event.Name,
+	)
+	defer span.End()
 	body, err := json.Marshal(event)
 	if err != nil {
 		return err
@@ -100,6 +105,8 @@ func (handler *KafkaEventHandler) processMessages(consumer *kafka.Consumer, opti
 }
 
 func (handler *KafkaEventHandler) processMessage(message *kafka.Message, consumer *kafka.Consumer, handlerFunc event.HandlerFunc) {
+	_, span := telemetry.StartSpan(context.Background(), "KafkaEventEmitter.Process", "messageKey", string(message.Key))
+	defer span.End()
 	messageEvent := &KafkaMessageEvent{message: message, consumer: consumer}
 	err := retry.Func(6, time.Second, time.Second*30, func() error {
 		return handlerFunc(messageEvent)
