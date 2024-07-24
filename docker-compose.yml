@@ -1,6 +1,15 @@
 version: "3.9"
 
 services:
+  api:
+    image: ederfmatos/bom-pedido-api:latest
+    container_name: bom-pedido-api
+    build:
+      context: .
+    network_mode: host
+    volumes:
+      - ./.env:/.env
+
   mysql:
     image: mysql:8.0
     restart: unless-stopped
