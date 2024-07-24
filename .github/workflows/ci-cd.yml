@@ -27,8 +27,18 @@ jobs:
       - name: Test coverage
         run: go test -coverprofile=coverage.out ./...
 
+      - name: Ignore mock and memory files from coverage
+        run: cat coverage.out | grep -v '_mock.go' | grep -v '_memory.go' > coverage-test.out
+
       - name: Generate HTML coverage report
-        run: go tool cover -html=coverage.out -o coverage.html
+        run: go tool cover -html=coverage-test.out -o coverage.html
+
+      - name: Upload html report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ./coverage.html
+          retention-days: 1
 
       - name: Show coverage summary in console
-        run: go tool cover -func=coverage.out
+        run: go tool cover -func=coverage-test.out
