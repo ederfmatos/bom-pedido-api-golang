@@ -11,6 +11,10 @@ type ApplicationFactory struct {
 	Locker lock.Locker
 }
 
+func (factory *ApplicationFactory) Close() {
+	factory.EventHandler.Close()
+}
+
 func NewApplicationFactory(
 	gatewayFactory *GatewayFactory,
 	repositoryFactory *RepositoryFactory,

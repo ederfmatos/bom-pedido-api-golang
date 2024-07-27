@@ -2,7 +2,7 @@ package event
 
 import (
 	"bom-pedido-api/application/event"
-	"bom-pedido-api/infra/env"
+	"bom-pedido-api/infra/config"
 	"bom-pedido-api/infra/retry"
 	"bom-pedido-api/infra/telemetry"
 	"context"
@@ -16,10 +16,10 @@ import (
 type KafkaEventHandler struct {
 	producer    *kafka.Producer
 	consumers   []*kafka.Consumer
-	environment *env.Environment
+	environment *config.Environment
 }
 
-func NewKafkaEventHandler(environment *env.Environment) event.Handler {
+func NewKafkaEventHandler(environment *config.Environment) event.Handler {
 	configMapProducer := &kafka.ConfigMap{
 		"bootstrap.servers":   environment.KafkaBootstrapServer,
 		"delivery.timeout.ms": "0",

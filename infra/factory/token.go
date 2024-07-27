@@ -2,12 +2,12 @@ package factory
 
 import (
 	"bom-pedido-api/application/factory"
-	"bom-pedido-api/infra/env"
+	"bom-pedido-api/infra/config"
 	"bom-pedido-api/infra/token"
 	"crypto/rsa"
 )
 
-func tokenFactory(environment *env.Environment) *factory.TokenFactory {
+func tokenFactory(environment *config.Environment) *factory.TokenFactory {
 	privateKey := loadPrivateKey(environment.JwePrivateKeyPath)
 	tokenManager := token.NewCustomerTokenManager(privateKey)
 	return factory.NewTokenFactory(tokenManager)

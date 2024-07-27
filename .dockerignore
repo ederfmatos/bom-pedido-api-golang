@@ -13,3 +13,5 @@ Dockerfile
 bom-pedido-api.iml
 .env
 .dockerignore
+Makefile
+.github

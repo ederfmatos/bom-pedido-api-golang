@@ -7,19 +7,20 @@ services:
     build:
       context: .
     network_mode: host
-    volumes:
-      - ./.env:/app/.env
+    env_file:
+      - .env
 
-  mysql:
-    image: mysql:8.0
+  postgres:
+    container_name: bom-pedido-postgres
+    image: postgres:16.1-alpine
     restart: unless-stopped
-    container_name: bom-pedido-mysql
+    command: postgres -c 'max_connections=60'
     environment:
-      MYSQL_DATABASE: bompedido
-      MYSQL_PASSWORD: root
-      MYSQL_ROOT_PASSWORD: root
+      - POSTGRES_DB=bompedido
+      - POSTGRES_USER=bompedido
+      - POSTGRES_PASSWORD=bompedido
     ports:
-      - "3306:3306"
+      - "5432:5432"
 
   redis:
     image: redis:alpine

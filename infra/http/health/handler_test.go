@@ -1,22 +1,24 @@
 package health
 
 import (
+	"bom-pedido-api/infra/config"
 	"context"
 	"database/sql"
 	"encoding/json"
-	"fmt"
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo/v4"
+	_ "github.com/lib/pq"
 	redis2 "github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
+	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/mongodb"
-	"github.com/testcontainers/testcontainers-go/modules/mysql"
+	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"github.com/testcontainers/testcontainers-go/modules/redis"
+	"github.com/testcontainers/testcontainers-go/wait"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 func Test_Health(t *testing.T) {
@@ -45,10 +47,8 @@ func Test_Health(t *testing.T) {
 func MongoConnection() (*mongo.Client, func()) {
 	ctx := context.Background()
 	mongodbContainer, err := mongodb.Run(ctx, "mongo:6")
-	endpoint, err := mongodbContainer.Endpoint(context.Background(), "")
-	failOnError(err)
-	clientOptions := options.Client().ApplyURI("mongodb://" + endpoint)
-	mongoClient, err := mongo.Connect(ctx, clientOptions)
+	connectionString, err := mongodbContainer.ConnectionString(context.Background())
+	mongoClient := config.Mongo(connectionString)
 	failOnError(err)
 	return mongoClient, func() {
 		mongodbContainer.Terminate(ctx)
@@ -60,11 +60,9 @@ func RedisClient() (*redis2.Client, func()) {
 	ctx := context.Background()
 	redisContainer, err := redis.Run(ctx, "docker.io/redis:7")
 	failOnError(err)
-	endpoint, err := redisContainer.Endpoint(ctx, "")
+	connectionString, err := redisContainer.ConnectionString(ctx)
 	failOnError(err)
-	redisUrl, err := redis2.ParseURL("redis://" + endpoint)
-	failOnError(err)
-	redisClient := redis2.NewClient(redisUrl)
+	redisClient := config.Redis(connectionString)
 	return redisClient, func() {
 		redisClient.Close()
 		redisContainer.Terminate(ctx)
@@ -73,20 +71,21 @@ func RedisClient() (*redis2.Client, func()) {
 
 func DatabaseConnection() (*sql.DB, func()) {
 	ctx := context.Background()
-	mysqlContainer, err := mysql.Run(ctx,
-		"mysql:8.0.36",
-		mysql.WithDatabase("test"),
-		mysql.WithUsername("root"),
-		mysql.WithPassword("password"),
+	postgresContainer, err := postgres.Run(ctx,
+		"docker.io/postgres:16-alpine",
+		testcontainers.WithWaitStrategy(
+			wait.ForLog("database system is ready to accept connections").
+				WithOccurrence(2).
+				WithStartupTimeout(5*time.Second),
+		),
 	)
 	failOnError(err)
-	endpoint, err := mysqlContainer.Endpoint(ctx, "")
+	connectionString, err := postgresContainer.ConnectionString(ctx, "sslmode=disable")
 	failOnError(err)
-	database, err := sql.Open("mysql", fmt.Sprintf("root:password@tcp(%s)/test", endpoint))
-	failOnError(err)
+	database := config.Database("postgres", connectionString)
 	return database, func() {
 		database.Close()
-		mysqlContainer.Terminate(ctx)
+		postgresContainer.Terminate(ctx)
 	}
 }
 

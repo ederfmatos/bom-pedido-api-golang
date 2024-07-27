@@ -2,7 +2,7 @@ package http
 
 import (
 	"bom-pedido-api/application/factory"
-	"bom-pedido-api/infra/env"
+	"bom-pedido-api/infra/config"
 	"bom-pedido-api/infra/http/customer/get_customer"
 	"bom-pedido-api/infra/http/customer/google_auth_customer"
 	"bom-pedido-api/infra/http/health"
@@ -44,10 +44,10 @@ type Server struct {
 	database       *sql.DB
 	redisClient    *redis.Client
 	tracerProvider *trace.TracerProvider
-	environment    *env.Environment
+	environment    *config.Environment
 }
 
-func NewServer(database *sql.DB, redisClient *redis.Client, mongoClient *mongo.Client, environment *env.Environment) *Server {
+func NewServer(database *sql.DB, redisClient *redis.Client, mongoClient *mongo.Client, environment *config.Environment) *Server {
 	return &Server{database: database, redisClient: redisClient, mongoClient: mongoClient, environment: environment}
 }
 
