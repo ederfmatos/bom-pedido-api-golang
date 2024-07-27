@@ -8,7 +8,7 @@ RUN apk add --no-progress --no-cache gcc musl-dev
 WORKDIR /build
 COPY . .
 RUN go mod download
-RUN go build -tags musl -ldflags '-extldflags "-static"' -o app
+RUN go build -tags musl -ldflags '-s -w -extldflags "-static"' -o app
 
 FROM scratch
 WORKDIR /app
