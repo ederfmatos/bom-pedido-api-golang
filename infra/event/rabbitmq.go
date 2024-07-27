@@ -98,35 +98,20 @@ func (adapter *RabbitMqAdapter) Consume(options *event.ConsumerOptions, handler 
 
 func (adapter *RabbitMqAdapter) handleMessages(messages <-chan amqp.Delivery, handler event.HandlerFunc) {
 	for message := range messages {
-		messageEvent := &RabbitMqMessageEvent{message}
-		err := handler(messageEvent)
-		if err != nil {
-			messageEvent.Nack()
+		messageEvent := &event.MessageEvent{
+			AckFn: func() error {
+				return message.Ack(false)
+			},
+			NackFn: func() {
+				_ = message.Nack(false, true)
+			},
+			GetEventFn: func() *event.Event {
+				var event event.Event
+				_ = json.Unmarshal(message.Body, &event)
+				return &event
+			},
 		}
+		err := handler(messageEvent)
+		messageEvent.NackIfError(err)
 	}
-}
-
-type RabbitMqMessageEvent struct {
-	message amqp.Delivery
-}
-
-func (ev *RabbitMqMessageEvent) GetEvent() *event.Event {
-	var event event.Event
-	_ = json.Unmarshal(ev.message.Body, &event)
-	return &event
-}
-
-func (ev *RabbitMqMessageEvent) AckIfNoError(err error) error {
-	if err == nil {
-		return ev.Ack()
-	}
-	return err
-}
-
-func (ev *RabbitMqMessageEvent) Ack() error {
-	return ev.message.Ack(false)
-}
-
-func (ev *RabbitMqMessageEvent) Nack() {
-	_ = ev.message.Nack(false, true)
 }

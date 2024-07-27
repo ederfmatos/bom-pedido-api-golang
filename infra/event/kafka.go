@@ -107,7 +107,27 @@ func (handler *KafkaEventHandler) processMessages(consumer *kafka.Consumer, opti
 func (handler *KafkaEventHandler) processMessage(message *kafka.Message, consumer *kafka.Consumer, handlerFunc event.HandlerFunc) {
 	_, span := telemetry.StartSpan(context.Background(), "KafkaEventEmitter.Process", "messageKey", string(message.Key))
 	defer span.End()
-	messageEvent := &KafkaMessageEvent{message: message, consumer: consumer}
+	messageEvent := &event.MessageEvent{
+		AckFn: func() error {
+			_, err := consumer.CommitMessage(message)
+			if err != nil {
+				slog.Error("Error on commit message", "error", err, "topic", message.TopicPartition.Topic)
+				return err
+			}
+			return nil
+		},
+		NackFn: func() {
+			err := consumer.Seek(message.TopicPartition, 0)
+			if err != nil {
+				slog.Error("Error on seek offset", "error", err, "topic", message.TopicPartition.Topic)
+			}
+		},
+		GetEventFn: func() *event.Event {
+			var event event.Event
+			_ = json.Unmarshal(message.Value, &event)
+			return &event
+		},
+	}
 	err := retry.Func(6, time.Second, time.Second*30, func() error {
 		return handlerFunc(messageEvent)
 	})
@@ -115,7 +135,11 @@ func (handler *KafkaEventHandler) processMessage(message *kafka.Message, consume
 		return
 	}
 	err = handler.sendMessageToDeadLetterTopic(message, err)
-	messageEvent.AckOrNack(err)
+	if err == nil {
+		messageEvent.Ack()
+	} else {
+		messageEvent.Nack()
+	}
 }
 
 func (handler *KafkaEventHandler) sendMessageToDeadLetterTopic(originalMessage *kafka.Message, err error) error {
@@ -135,49 +159,6 @@ func (handler *KafkaEventHandler) sendMessageToDeadLetterTopic(originalMessage *
 		Timestamp: time.Now(),
 	}
 	return handler.producer.Produce(message, nil)
-}
-
-type KafkaMessageEvent struct {
-	message  *kafka.Message
-	consumer *kafka.Consumer
-}
-
-func (ev *KafkaMessageEvent) AckIfNoError(err error) error {
-	if err == nil {
-		return ev.Ack()
-	}
-	return err
-}
-
-func (ev *KafkaMessageEvent) Ack() error {
-	_, err := ev.consumer.CommitMessage(ev.message)
-	if err != nil {
-		slog.Error("Error on commit message", "error", err, "topic", ev.message.TopicPartition.Topic)
-		return err
-	}
-	return nil
-}
-
-func (ev *KafkaMessageEvent) Nack() {
-	err := ev.consumer.Seek(ev.message.TopicPartition, 0)
-	if err != nil {
-		slog.Error("Error on seek offset", "error", err, "topic", ev.message.TopicPartition.Topic)
-		return
-	}
-}
-
-func (ev *KafkaMessageEvent) AckOrNack(err error) {
-	if err == nil {
-		ev.Ack()
-	} else {
-		ev.Nack()
-	}
-}
-
-func (ev *KafkaMessageEvent) GetEvent() *event.Event {
-	var event event.Event
-	_ = json.Unmarshal(ev.message.Value, &event)
-	return &event
 }
 
 func (handler *KafkaEventHandler) Close() {

@@ -6,13 +6,37 @@ import (
 	"strconv"
 )
 
-type HandlerFunc func(message MessageEvent) error
+type HandlerFunc func(message *MessageEvent) error
 
-type MessageEvent interface {
-	Ack() error
-	AckIfNoError(err error) error
-	Nack()
-	GetEvent() *Event
+type MessageEvent struct {
+	AckFn      func() error
+	NackFn     func()
+	GetEventFn func() *Event
+}
+
+func (m *MessageEvent) Ack() error {
+	return m.AckFn()
+}
+
+func (m *MessageEvent) AckIfNoError(err error) error {
+	if err == nil {
+		return m.Ack()
+	}
+	return err
+}
+
+func (m *MessageEvent) NackIfError(err error) {
+	if err != nil {
+		m.Nack()
+	}
+}
+
+func (m *MessageEvent) Nack() {
+	m.NackFn()
+}
+
+func (m *MessageEvent) GetEvent() *Event {
+	return m.GetEventFn()
 }
 
 var defaultWorkerPoolSize int
