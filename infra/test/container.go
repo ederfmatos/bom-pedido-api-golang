@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-type Container struct {
+type container struct {
 	Database      *sql.DB
 	MongoClient   *mongo.Client
 	MongoDatabase *mongo.Database
@@ -27,18 +27,18 @@ type Container struct {
 	downRedis     func()
 }
 
-var container *Container
+var instance *container
 var ctx = context.TODO()
 
 func init() {
-	if container != nil {
+	if instance != nil {
 		return
 	}
-	fmt.Println("Criando nova instancia do container")
+	fmt.Println("Criando nova instancia do instance")
 	MongoClient, downMongo := mongoConnection()
 	RedisClient, downRedis := redisClient()
 	Database, downDatabase := databaseConnection()
-	container = &Container{
+	instance = &container{
 		Database:      Database,
 		MongoClient:   MongoClient,
 		MongoDatabase: MongoClient.Database("test"),
@@ -49,11 +49,11 @@ func init() {
 	}
 }
 
-func NewContainer() *Container {
-	return container
+func NewContainer() *container {
+	return instance
 }
 
-func (c *Container) Down() {
+func (c *container) Down() {
 	fmt.Println("Down containers")
 	go c.downMongo()
 	go c.downRedis()
