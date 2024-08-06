@@ -26,7 +26,7 @@ func AuthenticateMiddleware(factory *factory.ApplicationFactory) echo.Middleware
 				span.End()
 				return next(c)
 			}
-			customerId, err := customerTokenManager.Decrypt(token)
+			customerId, err := customerTokenManager.Decrypt(ctx, token)
 			if err != nil {
 				span.SetStatus(codes.Error, err.Error())
 				span.RecordError(err)

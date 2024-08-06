@@ -19,7 +19,7 @@ type (
 		Token string
 	}
 	Output struct {
-		Token string
+		Token string `json:"token"`
 	}
 )
 
@@ -50,6 +50,6 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) (*Output, erro
 			return nil, err
 		}
 	}
-	customerToken, err := useCase.customerTokenManager.Encrypt(customer.Id)
+	customerToken, err := useCase.customerTokenManager.Encrypt(ctx, customer.Id)
 	return &Output{Token: customerToken}, err
 }

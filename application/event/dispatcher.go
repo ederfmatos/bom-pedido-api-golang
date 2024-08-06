@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-type HandlerFunc func(message *MessageEvent) error
+type HandlerFunc func(ctx context.Context, message *MessageEvent) error
 
 type MessageEvent struct {
 	AckFn      func() error

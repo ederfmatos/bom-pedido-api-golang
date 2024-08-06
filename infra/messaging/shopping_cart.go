@@ -11,11 +11,11 @@ func HandleShoppingCart(factory *factory.ApplicationFactory) {
 	factory.EventHandler.Consume(event.OptionsForTopic("ORDER_CREATED", "DELETE_SHOPPING_CART"), handleDeleteShoppingCart(factory))
 }
 
-func handleDeleteShoppingCart(factory *factory.ApplicationFactory) func(message *event.MessageEvent) error {
+func handleDeleteShoppingCart(factory *factory.ApplicationFactory) func(context.Context, *event.MessageEvent) error {
 	useCase := delete_shopping_cart.New(factory)
-	return func(message *event.MessageEvent) error {
+	return func(ctx context.Context, message *event.MessageEvent) error {
 		customerId := message.GetEvent().Data["customerId"]
-		err := useCase.Execute(context.Background(), delete_shopping_cart.Input{CustomerId: customerId})
+		err := useCase.Execute(ctx, delete_shopping_cart.Input{CustomerId: customerId})
 		return message.AckIfNoError(err)
 	}
 }

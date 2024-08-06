@@ -1,6 +1,8 @@
 package token
 
+import "context"
+
 type CustomerTokenManager interface {
-	Encrypt(id string) (string, error)
-	Decrypt(token string) (string, error)
+	Encrypt(ctx context.Context, id string) (string, error)
+	Decrypt(ctx context.Context, token string) (string, error)
 }

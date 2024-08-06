@@ -7,6 +7,12 @@ services:
     build:
       context: .
     network_mode: host
+    depends_on:
+      - jaeger
+      - postgres
+      - mongo
+      - redis
+      - rabbitmq
     env_file:
       - .env
 

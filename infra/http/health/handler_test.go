@@ -1,8 +1,8 @@
 package health
 
 import (
+	"bom-pedido-api/infra/json"
 	"bom-pedido-api/infra/test"
-	"encoding/json"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -23,6 +23,6 @@ func Test_Health(t *testing.T) {
 	assert.Equal(t, http.StatusOK, response.Code)
 
 	var output Output
-	_ = json.NewDecoder(response.Body).Decode(&output)
+	_ = json.Decode(request.Context(), response.Body, &output)
 	assert.Equal(t, true, output.Ok)
 }

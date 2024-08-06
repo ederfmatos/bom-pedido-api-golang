@@ -3,9 +3,9 @@ package create_product
 import (
 	"bom-pedido-api/application/usecase/product/create_product"
 	"bom-pedido-api/infra/factory"
+	"bom-pedido-api/infra/json"
 	"bytes"
 	"context"
-	"encoding/json"
 	"github.com/go-faker/faker/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
@@ -24,7 +24,7 @@ func Test_CreateProduct(t *testing.T) {
 		Price:       10.0,
 	}
 	var buffer bytes.Buffer
-	err := json.NewEncoder(&buffer).Encode(body)
+	err := json.Encode(context.Background(), &buffer, body)
 	if err != nil {
 		panic(err)
 	}
@@ -38,7 +38,7 @@ func Test_CreateProduct(t *testing.T) {
 	assert.Equal(t, http.StatusCreated, response.Code)
 
 	var output create_product.Output
-	_ = json.NewDecoder(response.Body).Decode(&output)
+	_ = json.Decode(request.Context(), response.Body, &output)
 	assert.NotEmpty(t, output.Id)
 
 	savedProduct, err := applicationFactory.ProductRepository.FindById(context.TODO(), output.Id)

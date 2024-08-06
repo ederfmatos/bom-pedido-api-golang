@@ -8,3 +8,9 @@ down:
 
 create-migration:
 	migrate create -ext=sql -dir=.sql/migrations init
+
+docker-build:
+	docker build . --no-cache -t ederfmatos/bom-pedido-api:latest
+
+docker-up:
+	docker run --name bom-pedido-api --network host --env-file .env  ederfmatos/bom-pedido-api:latest

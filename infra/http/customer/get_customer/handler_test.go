@@ -6,11 +6,11 @@ import (
 	"bom-pedido-api/domain/errors"
 	"bom-pedido-api/domain/value_object"
 	"bom-pedido-api/infra/factory"
-	"encoding/json"
+	"bom-pedido-api/infra/json"
+	"context"
 	"github.com/go-faker/faker/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/net/context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -35,7 +35,7 @@ func Test_GetCustomer(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 
 		var output get_customer.Output
-		_ = json.NewDecoder(response.Body).Decode(&output)
+		_ = json.Decode(request.Context(), response.Body, &output)
 		assert.Equal(t, customer.Name, output.Name)
 		assert.Equal(t, customer.GetEmail(), output.Email)
 		assert.Equal(t, customer.GetPhoneNumber(), output.PhoneNumber)

@@ -5,6 +5,9 @@ import (
 	"bom-pedido-api/infra/config"
 	"bom-pedido-api/infra/token"
 	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
+	"os"
 )
 
 func tokenFactory(environment *config.Environment) *factory.TokenFactory {
@@ -14,18 +17,17 @@ func tokenFactory(environment *config.Environment) *factory.TokenFactory {
 }
 
 func loadPrivateKey(file string) *rsa.PrivateKey {
-	//pemData, err := os.ReadFile(file)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//block, _ := pem.Decode(pemData)
-	//if block == nil || block.Type != "RSA PRIVATE KEY" {
-	//	panic("failed to decode PEM block containing private key")
-	//}
-	//key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//return key
-	return nil
+	pemData, err := os.ReadFile(file)
+	if err != nil {
+		panic(err)
+	}
+	block, _ := pem.Decode(pemData)
+	if block == nil || block.Type != "RSA PRIVATE KEY" {
+		panic("failed to decode PEM block containing private key")
+	}
+	key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		panic(err)
+	}
+	return key
 }

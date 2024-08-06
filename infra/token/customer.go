@@ -1,8 +1,9 @@
 package token
 
 import (
+	"bom-pedido-api/infra/json"
+	"context"
 	"crypto/rsa"
-	"encoding/json"
 	"github.com/golang-jwt/jwe"
 	"github.com/golang-jwt/jwt"
 	"time"
@@ -16,7 +17,7 @@ func NewCustomerTokenManager(privateKey *rsa.PrivateKey) *CustomerTokenManager {
 	return &CustomerTokenManager{privateKey: privateKey}
 }
 
-func (tokenManager *CustomerTokenManager) Encrypt(id string) (string, error) {
+func (tokenManager *CustomerTokenManager) Encrypt(ctx context.Context, id string) (string, error) {
 	claims := jwt.StandardClaims{
 		ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
 		Id:        id,
@@ -25,7 +26,7 @@ func (tokenManager *CustomerTokenManager) Encrypt(id string) (string, error) {
 		NotBefore: time.Now().Unix(),
 		Subject:   id,
 	}
-	tokenContent, err := json.Marshal(claims)
+	tokenContent, err := json.Marshal(ctx, claims)
 	if err != nil {
 		return "", err
 	}
@@ -36,7 +37,7 @@ func (tokenManager *CustomerTokenManager) Encrypt(id string) (string, error) {
 	return token.CompactSerialize()
 }
 
-func (tokenManager *CustomerTokenManager) Decrypt(token string) (string, error) {
+func (tokenManager *CustomerTokenManager) Decrypt(ctx context.Context, token string) (string, error) {
 	tokenContent, err := jwe.ParseEncrypted(token)
 	if err != nil {
 		return "", err
@@ -46,7 +47,7 @@ func (tokenManager *CustomerTokenManager) Decrypt(token string) (string, error) 
 		return "", err
 	}
 	var claims jwt.StandardClaims
-	err = json.Unmarshal(content, &claims)
+	err = json.Unmarshal(ctx, content, &claims)
 	if err != nil {
 		return "", err
 	}

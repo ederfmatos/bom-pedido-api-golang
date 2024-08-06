@@ -1,0 +1,17 @@
+meta {
+  name: Google Auth
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{API_BASE_URL}}/v1/auth/google/customer
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "token": "ya29.a0AcM612w7dTYrdWwI9_FAaEKsFfpVgqEqgVpHvbHEk05mBVLYkEsKcjUKQ_T0_3PaoQj3uzS9SfYUzknsNOqvKs8_Ony49erot62C0IpSHinTNth5wm-g145FX7MDh4bghtBFT7YgiTQqrda2_RzLkgnhBgNNwWPlqLtWaCgYKAaQSARASFQHGX2Mi1loLAB3cVTCPZXPArrQkpQ0171"
+  }
+}

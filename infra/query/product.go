@@ -14,10 +14,10 @@ func NewProductSqlQuery(sqlConnection repository.SqlConnection) *ProductSqlQuery
 	return &ProductSqlQuery{SqlConnection: sqlConnection}
 }
 
-func (sqlQuery *ProductSqlQuery) List(context context.Context) ([]query.Product, error) {
+func (sqlQuery *ProductSqlQuery) List(ctx context.Context) ([]query.Product, error) {
 	var products []query.Product
 	err := sqlQuery.Sql("select id, name, description, price from products").
-		List(context, func(getValues func(dest ...any) error) error {
+		List(ctx, func(getValues func(dest ...any) error) error {
 			var product query.Product
 			err := getValues(&product.Id, &product.Name, &product.Description, &product.Price)
 			if err != nil {

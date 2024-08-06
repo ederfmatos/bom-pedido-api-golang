@@ -2,8 +2,9 @@ package event
 
 import (
 	"bom-pedido-api/application/event"
+	"bom-pedido-api/infra/json"
+	"bom-pedido-api/infra/telemetry"
 	"context"
-	"encoding/json"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"log/slog"
 )
@@ -50,15 +51,17 @@ func (adapter *RabbitMqAdapter) Close() {
 	adapter.connection.Close()
 }
 
-func (adapter *RabbitMqAdapter) Emit(context context.Context, event *event.Event) error {
-	eventBytes, err := json.Marshal(event)
+func (adapter *RabbitMqAdapter) Emit(ctx context.Context, event *event.Event) error {
+	ctx, span := telemetry.StartSpan(ctx, "RabbitMq.Emit")
+	defer span.End()
+	eventBytes, err := json.Marshal(ctx, event)
 	if err != nil {
 		slog.Error("Error on emit event", "event", event, "error", err)
 		return err
 	}
 	exchange := eventExchanges[event.Name]
 	err = adapter.producerChannel.PublishWithContext(
-		context,
+		ctx,
 		exchange,
 		event.Name,
 		false,
@@ -92,26 +95,30 @@ func (adapter *RabbitMqAdapter) Consume(options *event.ConsumerOptions, handler 
 	}
 
 	for range options.WorkerPoolSize {
-		go adapter.handleMessages(messages, handler)
+		go func(messages <-chan amqp.Delivery) {
+			for message := range messages {
+				adapter.handleMessage(message, handler)
+			}
+		}(messages)
 	}
 }
 
-func (adapter *RabbitMqAdapter) handleMessages(messages <-chan amqp.Delivery, handler event.HandlerFunc) {
-	for message := range messages {
-		messageEvent := &event.MessageEvent{
-			AckFn: func() error {
-				return message.Ack(false)
-			},
-			NackFn: func() {
-				_ = message.Nack(false, true)
-			},
-			GetEventFn: func() *event.Event {
-				var event event.Event
-				_ = json.Unmarshal(message.Body, &event)
-				return &event
-			},
-		}
-		err := handler(messageEvent)
-		messageEvent.NackIfError(err)
+func (adapter *RabbitMqAdapter) handleMessage(message amqp.Delivery, handler event.HandlerFunc) {
+	ctx, span := telemetry.StartSpan(context.Background(), "RabbitMq.Process")
+	defer span.End()
+	messageEvent := &event.MessageEvent{
+		AckFn: func() error {
+			return message.Ack(false)
+		},
+		NackFn: func() {
+			_ = message.Nack(false, true)
+		},
+		GetEventFn: func() *event.Event {
+			var event event.Event
+			_ = json.Unmarshal(ctx, message.Body, &event)
+			return &event
+		},
 	}
+	err := handler(ctx, messageEvent)
+	messageEvent.NackIfError(err)
 }

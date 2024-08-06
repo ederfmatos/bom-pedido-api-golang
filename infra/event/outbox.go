@@ -3,11 +3,11 @@ package event
 import (
 	"bom-pedido-api/application/event"
 	"bom-pedido-api/application/lock"
+	"bom-pedido-api/infra/json"
 	"bom-pedido-api/infra/repository/outbox"
 	"bom-pedido-api/infra/retry"
 	"bom-pedido-api/infra/telemetry"
 	"context"
-	"encoding/json"
 	"time"
 )
 
@@ -36,7 +36,7 @@ func (handler *OutboxEventHandler) Emit(ctx context.Context, event *event.Event)
 		"eventCorrelationId", event.CorrelationId,
 	)
 	defer span.End()
-	eventData, err := json.Marshal(event)
+	eventData, err := json.Marshal(ctx, event)
 	if err != nil {
 		return err
 	}
@@ -83,7 +83,7 @@ func (handler *OutboxEventHandler) processEntry(ctx context.Context, entry *outb
 		return nil
 	}
 	var messageEvent event.Event
-	err := json.Unmarshal([]byte(entry.Data), &messageEvent)
+	err := json.Unmarshal(ctx, []byte(entry.Data), &messageEvent)
 	if err != nil {
 		entry.MarkAsError()
 		_ = handler.outboxRepository.Update(ctx, entry)

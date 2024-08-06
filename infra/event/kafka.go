@@ -3,10 +3,10 @@ package event
 import (
 	"bom-pedido-api/application/event"
 	"bom-pedido-api/infra/config"
+	"bom-pedido-api/infra/json"
 	"bom-pedido-api/infra/retry"
 	"bom-pedido-api/infra/telemetry"
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"log/slog"
@@ -56,7 +56,7 @@ func (handler *KafkaEventHandler) Emit(ctx context.Context, event *event.Event) 
 		"eventId", event.Id, "eventName", event.Name,
 	)
 	defer span.End()
-	body, err := json.Marshal(event)
+	body, err := json.Marshal(ctx, event)
 	if err != nil {
 		return err
 	}
@@ -105,10 +105,12 @@ func (handler *KafkaEventHandler) processMessages(consumer *kafka.Consumer, opti
 }
 
 func (handler *KafkaEventHandler) processMessage(message *kafka.Message, consumer *kafka.Consumer, handlerFunc event.HandlerFunc) {
-	_, span := telemetry.StartSpan(context.Background(), "KafkaEventEmitter.Process", "messageKey", string(message.Key))
+	ctx, span := telemetry.StartSpan(context.Background(), "KafkaEventEmitter.Process", "messageKey", string(message.Key))
 	defer span.End()
 	messageEvent := &event.MessageEvent{
 		AckFn: func() error {
+			_, ackSpan := telemetry.StartSpan(ctx, "KafkaEventEmitter.Ack")
+			defer ackSpan.End()
 			_, err := consumer.CommitMessage(message)
 			if err != nil {
 				slog.Error("Error on commit message", "error", err, "topic", message.TopicPartition.Topic)
@@ -117,6 +119,8 @@ func (handler *KafkaEventHandler) processMessage(message *kafka.Message, consume
 			return nil
 		},
 		NackFn: func() {
+			_, ackSpan := telemetry.StartSpan(ctx, "KafkaEventEmitter.Nack")
+			defer ackSpan.End()
 			err := consumer.Seek(message.TopicPartition, 0)
 			if err != nil {
 				slog.Error("Error on seek offset", "error", err, "topic", message.TopicPartition.Topic)
@@ -124,12 +128,14 @@ func (handler *KafkaEventHandler) processMessage(message *kafka.Message, consume
 		},
 		GetEventFn: func() *event.Event {
 			var event event.Event
-			_ = json.Unmarshal(message.Value, &event)
+			_ = json.Unmarshal(ctx, message.Value, &event)
 			return &event
 		},
 	}
 	err := retry.Func(6, time.Second, time.Second*30, func() error {
-		return handlerFunc(messageEvent)
+		ctx, span := telemetry.StartSpan(ctx, "KafkaEventEmitter.Handler")
+		defer span.End()
+		return handlerFunc(ctx, messageEvent)
 	})
 	if err == nil {
 		return
