@@ -8,10 +8,10 @@ import (
 )
 
 const (
-	sqlCreateProduct       = "INSERT INTO products (id, name, description, price, status) VALUES (?, ?, ?, ?, ?)"
-	sqlUpdateProduct       = "UPDATE products SET name = ?, description = ?, price = ?, status = ? WHERE id = ?"
-	sqlFindProductById     = "SELECT id, name, description, price, status FROM products WHERE id = ?"
-	sqlExistsProductByName = "SELECT 1 FROM products WHERE name = ? LIMIT 1"
+	sqlCreateProduct       = "INSERT INTO products (id, name, description, price, status) VALUES ($1, $2, $3, $4, $5)"
+	sqlUpdateProduct       = "UPDATE products SET name = $1, description = $2, price = $3, status = $4 WHERE id = $5"
+	sqlFindProductById     = "SELECT id, name, description, price, status FROM products WHERE id = $1"
+	sqlExistsProductByName = "SELECT 1 FROM products WHERE name = $1 LIMIT 1"
 )
 
 type DefaultProductRepository struct {

@@ -5,20 +5,16 @@ import (
 	"bom-pedido-api/domain/entity/product"
 	"bom-pedido-api/domain/entity/shopping_cart"
 	"bom-pedido-api/domain/value_object"
+	"bom-pedido-api/infra/test"
 	"context"
-	"fmt"
 	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/assert"
-	"github.com/testcontainers/testcontainers-go/modules/mongodb"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"testing"
 )
 
 func Test_ShoppingCartMongoRepository(t *testing.T) {
-	mongoDatabase, closeDatabase := MongoConnection(t)
-	defer closeDatabase()
-	shoppingCartRepository := NewShoppingCartMongoRepository(mongoDatabase)
+	container := test.NewContainer()
+	shoppingCartRepository := NewShoppingCartMongoRepository(container.MongoDatabase)
 	runTests(t, shoppingCartRepository)
 }
 
@@ -52,28 +48,4 @@ func runTests(t *testing.T, shoppingCartRepository repository.ShoppingCartReposi
 	savedShoppingCart, err = shoppingCartRepository.FindByCustomerId(ctx, customerId)
 	assert.NoError(t, err)
 	assert.Nil(t, savedShoppingCart)
-}
-
-func MongoConnection(t *testing.T) (*mongo.Database, func()) {
-	ctx := context.Background()
-	mongodbContainer, err := mongodb.Run(ctx, "mongo:6")
-
-	endpoint, err := mongodbContainer.Endpoint(context.Background(), "")
-	if err != nil {
-		assert.NoError(t, err)
-	}
-
-	uri := fmt.Sprintf("mongodb://%s", endpoint)
-
-	clientOptions := options.Client().ApplyURI(uri)
-	mongoClient, err := mongo.Connect(ctx, clientOptions)
-	if err != nil {
-		assert.NoError(t, err)
-	}
-
-	database := mongoClient.Database("test")
-	return database, func() {
-		go mongodbContainer.Terminate(ctx)
-		go mongoClient.Disconnect(ctx)
-	}
 }

@@ -3,33 +3,16 @@ package repository
 import (
 	"bom-pedido-api/application/repository"
 	"bom-pedido-api/domain/entity/product"
+	"bom-pedido-api/infra/test"
 	"context"
-	"database/sql"
 	"github.com/go-faker/faker/v4"
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func Test_ProductSqlRepository(t *testing.T) {
-	database, err := sql.Open("sqlite3", "file::memory:?mode=memory&cache=shared")
-	if err != nil {
-		t.Error(err)
-	}
-	defer database.Close()
-	_, err = database.Exec(`
-		CREATE TABLE IF NOT EXISTS products
-		(
-			id          VARCHAR(36)                            NOT NULL PRIMARY KEY,
-			name        VARCHAR(255)                           NOT NULL UNIQUE,
-			description MEDIUMTEXT,
-			price       DECIMAL(6, 2)                          NOT NULL,
-			status      VARCHAR(20) NOT NULL,
-			created_at  TIMESTAMP                              NOT NULL DEFAULT CURRENT_TIMESTAMP
-		);
-	`)
-	assert.NoError(t, err)
-	sqlConnection := NewDefaultSqlConnection(database)
+	container := test.NewContainer()
+	sqlConnection := NewDefaultSqlConnection(container.Database)
 	productRepository := NewDefaultProductRepository(sqlConnection)
 	runProductTests(t, productRepository)
 }

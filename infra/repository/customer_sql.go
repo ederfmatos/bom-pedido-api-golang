@@ -7,10 +7,10 @@ import (
 )
 
 const (
-	sqlCreateCustomer      = "INSERT INTO customers (id, name, email, status, phone_number) VALUES (?, ?, ?, ?, ?)"
-	sqlUpdateCustomer      = "UPDATE customers SET name = ?, email = ?, status = ?, phone_number = ? WHERE id = ?"
-	sqlFindCustomerById    = "SELECT id, name, email, phone_number, status FROM customers WHERE id = ?"
-	sqlFindCustomerByEmail = "SELECT id, name, email, phone_number, status FROM customers WHERE email = ?"
+	sqlCreateCustomer      = "INSERT INTO customers (id, name, email, status, phone_number) VALUES ($1, $2, $3, $4, $5)"
+	sqlUpdateCustomer      = "UPDATE customers SET name = $1, email = $2, status = $3, phone_number = $4 WHERE id = $5"
+	sqlFindCustomerById    = "SELECT id, name, email, phone_number, status FROM customers WHERE id = $1"
+	sqlFindCustomerByEmail = "SELECT id, name, email, phone_number, status FROM customers WHERE email = $1"
 )
 
 type DefaultCustomerRepository struct {

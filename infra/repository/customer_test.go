@@ -3,32 +3,16 @@ package repository
 import (
 	"bom-pedido-api/application/repository"
 	customer2 "bom-pedido-api/domain/entity/customer"
+	"bom-pedido-api/infra/test"
 	"context"
-	"database/sql"
 	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func Test_CustomerSqlRepository(t *testing.T) {
-	database, err := sql.Open("sqlite3", "file::memory:?mode=memory&cache=shared")
-	if err != nil {
-		t.Error(err)
-	}
-	defer database.Close()
-	_, err = database.Exec(`
-		CREATE TABLE IF NOT EXISTS customers
-		(
-			id           VARCHAR(36)                NOT NULL PRIMARY KEY,
-			name         VARCHAR(255)               NOT NULL,
-			email        VARCHAR(255)               NOT NULL UNIQUE,
-			phone_number VARCHAR(11)                UNIQUE,
-			status       VARCHAR(11)				NOT NULL,
-			created_at   TIMESTAMP                  NOT NULL DEFAULT CURRENT_TIMESTAMP
-		);
-	`)
-	assert.NoError(t, err)
-	sqlConnection := NewDefaultSqlConnection(database)
+	container := test.NewContainer()
+	sqlConnection := NewDefaultSqlConnection(container.Database)
 	customerSqlRepository := NewDefaultCustomerRepository(sqlConnection)
 	runCustomerTests(t, customerSqlRepository)
 }

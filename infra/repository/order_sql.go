@@ -9,13 +9,13 @@ import (
 )
 
 const (
-	sqlCreateOrder          = "INSERT INTO orders (id, customer_id, payment_method, payment_mode, delivery_mode, credit_card_token, `change`, delivery_time, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-	sqlUpdateOrder          = "UPDATE orders SET status = ? WHERE id = ?"
-	sqlInsertOrderItem      = "INSERT INTO order_items (id, order_id, product_id, quantity, observation, price, status) VALUES (?, ?, ?, ?, ?, ?, ?)"
-	sqlInsertOrderHistory   = "INSERT INTO order_history (order_id, changed_by, changed_at, status, data) VALUES (?, ?, ?, ?, ?)"
-	sqlFindOrderById        = "SELECT code, customer_id, payment_method, payment_mode, delivery_mode, credit_card_token, `change`, delivery_time, status, created_at FROM orders WHERE id = ? LIMIT 1"
-	sqlListItemsFromOrderId = "SELECT id, product_id, quantity, observation, price, status FROM order_items WHERE order_id = ?"
-	sqlOrderHistory         = "SELECT changed_by, changed_at, status, data FROM order_history WHERE order_id = ?"
+	sqlCreateOrder          = "INSERT INTO orders (id, customer_id, payment_method, payment_mode, delivery_mode, credit_card_token, change, delivery_time, status, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)"
+	sqlUpdateOrder          = "UPDATE orders SET status = $1 WHERE id = $2"
+	sqlInsertOrderItem      = "INSERT INTO order_items (id, order_id, product_id, quantity, observation, price, status) VALUES ($1, $2, $3, $4, $5, $6, $7)"
+	sqlInsertOrderHistory   = "INSERT INTO order_history (order_id, changed_by, changed_at, status, data) VALUES ($1, $2, $3, $4, $5)"
+	sqlFindOrderById        = "SELECT code, customer_id, payment_method, payment_mode, delivery_mode, credit_card_token, change, delivery_time, status, created_at FROM orders WHERE id = $1 LIMIT 1"
+	sqlListItemsFromOrderId = "SELECT id, product_id, quantity, observation, price, status FROM order_items WHERE order_id = $1"
+	sqlOrderHistory         = "SELECT changed_by, changed_at, status, data FROM order_history WHERE order_id = $1"
 )
 
 type (
@@ -43,9 +43,6 @@ func NewDefaultOrderRepository(sqlConnection SqlConnection) repository.OrderRepo
 
 func (repository *DefaultOrderRepository) Create(ctx context.Context, order *order.Order) error {
 	return repository.InTransaction(ctx, func(transaction SqlTransaction, ctx context.Context) error {
-		order.CreatedAt = parseTime(order.CreatedAt)
-		order.DeliveryTime = parseTime(order.DeliveryTime)
-
 		err := transaction.Sql(sqlCreateOrder).
 			Values(order.Id, order.CustomerID, order.PaymentMethod, order.PaymentMode, order.DeliveryMode, order.CreditCardToken, order.Change, order.DeliveryTime, order.GetStatus(), order.CreatedAt).
 			Update(ctx)
@@ -91,10 +88,10 @@ func (repository *DefaultOrderRepository) FindById(ctx context.Context, id strin
 		entity.DeliveryMode,
 		entity.CreditCardToken,
 		entity.Status,
-		parseTime(entity.CreatedAt),
+		entity.CreatedAt,
 		entity.Change,
 		entity.Code,
-		parseTime(entity.DeliveryTime),
+		entity.DeliveryTime,
 		items,
 		history,
 	)
@@ -146,5 +143,5 @@ func (repository *DefaultOrderRepository) Update(ctx context.Context, order *ord
 }
 
 func parseTime(value time.Time) time.Time {
-	return time.UnixMilli(value.UnixMilli())
+	return time.Date(value.Year(), value.Month(), value.Day(), value.Hour(), value.Minute(), value.Second(), (value.Nanosecond()/1000)*1000, time.Local)
 }

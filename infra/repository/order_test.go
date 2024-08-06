@@ -5,59 +5,16 @@ import (
 	"bom-pedido-api/domain/entity/order"
 	"bom-pedido-api/domain/enums"
 	"bom-pedido-api/domain/value_object"
+	"bom-pedido-api/infra/test"
 	"context"
-	"database/sql"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
 
 func Test_OrderSqlRepository(t *testing.T) {
-	database, err := sql.Open("sqlite3", "file::memory:?mode=memory&cache=shared")
-	if err != nil {
-		t.Error(err)
-	}
-	defer database.Close()
-	_, err = database.Exec(`
-		CREATE TABLE IF NOT EXISTS orders
-		(
-			id                VARCHAR(36) NOT NULL PRIMARY KEY,
-			code              INTEGER NULL DEFAULT 1,
-			customer_id       VARCHAR(36) NOT NULL,
-			payment_method    VARCHAR(30) NOT NULL,
-			payment_mode      VARCHAR(30) NOT NULL,
-			delivery_mode     VARCHAR(30) NOT NULL,
-			status            VARCHAR(30) NOT NULL,
-			credit_card_token VARCHAR(255),
-			'change'          DECIMAL(6, 2),
-			delivery_time     TIMESTAMP   NOT NULL,
-			created_at        TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
-		);
-		
-		CREATE TABLE IF NOT EXISTS order_items
-		(
-			id          VARCHAR(36) NOT NULL PRIMARY KEY,
-			order_id    VARCHAR(36) NOT NULL,
-			product_id  VARCHAR(36) NOT NULL,
-			status      VARCHAR(30) NOT NULL,
-			quantity    NUMERIC     NOT NULL,
-			observation TEXT,
-			price       DECIMAL(6, 2),
-			created_at  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
-		);
-
-		CREATE TABLE IF NOT EXISTS order_history
-		(
-			id         SERIAL      PRIMARY KEY,
-			order_id   VARCHAR(36) NOT NULL,
-			changed_by VARCHAR(36) NOT NULL,
-			changed_at TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-			status     VARCHAR(30) NOT NULL,
-			data       TEXT
-		);
-	`)
-	assert.NoError(t, err)
-	sqlConnection := NewDefaultSqlConnection(database)
+	container := test.NewContainer()
+	sqlConnection := NewDefaultSqlConnection(container.Database)
 	orderRepository := NewDefaultOrderRepository(sqlConnection)
 	orderTests(t, orderRepository)
 }
@@ -85,7 +42,7 @@ func orderTests(t *testing.T, repository repository.OrderRepository) {
 
 	savedOrder, err = repository.FindById(ctx, anOrder.Id)
 	assert.NoError(t, err)
-	assert.Equal(t, *anOrder, *savedOrder)
+	assertOrder(t, anOrder, savedOrder)
 
 	// Approve
 	err = anOrder.Approve(time.Now(), adminId)
@@ -96,7 +53,7 @@ func orderTests(t *testing.T, repository repository.OrderRepository) {
 
 	savedOrder, err = repository.FindById(ctx, anOrder.Id)
 	assert.NoError(t, err)
-	assert.Equal(t, *anOrder, *savedOrder)
+	assertOrder(t, anOrder, savedOrder)
 
 	// MarkAsInProgress
 	err = anOrder.MarkAsInProgress(time.Now(), adminId)
@@ -107,7 +64,7 @@ func orderTests(t *testing.T, repository repository.OrderRepository) {
 
 	savedOrder, err = repository.FindById(ctx, anOrder.Id)
 	assert.NoError(t, err)
-	assert.Equal(t, *anOrder, *savedOrder)
+	assertOrder(t, anOrder, savedOrder)
 
 	// MarkAsAwaitingDelivery
 	err = anOrder.MarkAsAwaitingDelivery(time.Now(), adminId)
@@ -118,7 +75,7 @@ func orderTests(t *testing.T, repository repository.OrderRepository) {
 
 	savedOrder, err = repository.FindById(ctx, anOrder.Id)
 	assert.NoError(t, err)
-	assert.Equal(t, *anOrder, *savedOrder)
+	assertOrder(t, anOrder, savedOrder)
 
 	// MarkAsDelivering
 	err = anOrder.MarkAsDelivering(time.Now(), adminId)
@@ -129,7 +86,7 @@ func orderTests(t *testing.T, repository repository.OrderRepository) {
 
 	savedOrder, err = repository.FindById(ctx, anOrder.Id)
 	assert.NoError(t, err)
-	assert.Equal(t, *anOrder, *savedOrder)
+	assertOrder(t, anOrder, savedOrder)
 
 	// Finish
 	err = anOrder.Finish(time.Now(), adminId)
@@ -140,5 +97,20 @@ func orderTests(t *testing.T, repository repository.OrderRepository) {
 
 	savedOrder, err = repository.FindById(ctx, anOrder.Id)
 	assert.NoError(t, err)
-	assert.Equal(t, *anOrder, *savedOrder)
+	assertOrder(t, anOrder, savedOrder)
+}
+
+func assertOrder(t *testing.T, expectedOrder, actualOrder *order.Order) {
+	assert.Equal(t, expectedOrder.Id, actualOrder.Id)
+	assert.Equal(t, expectedOrder.CustomerID, actualOrder.CustomerID)
+	assert.Equal(t, expectedOrder.PaymentMethod, actualOrder.PaymentMethod)
+	assert.Equal(t, expectedOrder.PaymentMode, actualOrder.PaymentMode)
+	assert.Equal(t, expectedOrder.DeliveryMode, actualOrder.DeliveryMode)
+	assert.Equal(t, expectedOrder.CreditCardToken, actualOrder.CreditCardToken)
+	assert.Equal(t, expectedOrder.Change, actualOrder.Change)
+	assert.Equal(t, expectedOrder.Code, actualOrder.Code)
+	assert.Equal(t, expectedOrder.DeliveryTime.Format("2006-01-02 15:04:05"), actualOrder.DeliveryTime.Format("2006-01-02 15:04:05"))
+	assert.Equal(t, expectedOrder.GetStatus(), actualOrder.GetStatus())
+	assert.Equal(t, expectedOrder.Items, actualOrder.Items)
+	assert.Equal(t, expectedOrder.History, actualOrder.History)
 }
