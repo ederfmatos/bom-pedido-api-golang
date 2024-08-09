@@ -14,8 +14,8 @@ func HandleShoppingCart(factory *factory.ApplicationFactory) {
 func handleDeleteShoppingCart(factory *factory.ApplicationFactory) func(context.Context, *event.MessageEvent) error {
 	useCase := delete_shopping_cart.New(factory)
 	return func(ctx context.Context, message *event.MessageEvent) error {
-		customerId := message.GetEvent().Data["customerId"]
+		customerId := message.GetEvent(ctx).Data["customerId"]
 		err := useCase.Execute(ctx, delete_shopping_cart.Input{CustomerId: customerId})
-		return message.AckIfNoError(err)
+		return message.AckIfNoError(ctx, err)
 	}
 }

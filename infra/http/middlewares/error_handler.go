@@ -6,9 +6,13 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+type ErrorResponse struct {
+	Errors []string `json:"errors"`
+}
+
 func HandleError(err error, c echo.Context) {
-	type ErrorResponse struct {
-		Errors []string `json:"errors"`
+	if c.Response().Header().Get("X-Error") != "" {
+		return
 	}
 	var errorResponse ErrorResponse
 	var compositeError *domainError.CompositeError
@@ -17,5 +21,6 @@ func HandleError(err error, c echo.Context) {
 	} else {
 		errorResponse = ErrorResponse{Errors: []string{err.Error()}}
 	}
+	c.Response().Header().Set("X-Error", err.Error())
 	_ = c.JSON(400, errorResponse)
 }

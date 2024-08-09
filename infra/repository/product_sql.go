@@ -4,7 +4,6 @@ import (
 	"bom-pedido-api/application/repository"
 	"bom-pedido-api/domain/entity/product"
 	"context"
-	"strings"
 )
 
 const (
@@ -61,7 +60,7 @@ func (repository *DefaultProductRepository) FindAllById(ctx context.Context, ids
 	for i, id := range ids {
 		args[i] = id
 	}
-	var sqlListProducts = `select id, name, description, price, status from products WHERE id IN (?` + strings.Repeat(",?", len(ids)-1) + `)`
+	var sqlListProducts = `select id, name, description, price, status from products WHERE id IN ($1)`
 	err := repository.Sql(sqlListProducts).
 		Values(args...).
 		List(ctx, func(getValues func(dest ...any) error) error {

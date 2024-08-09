@@ -14,7 +14,6 @@ func AuthenticateMiddleware(factory *factory.ApplicationFactory) echo.Middleware
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			ctx, span := telemetry.StartSpan(c.Request().Context(), "AuthenticateMiddleware")
-			c.SetRequest(c.Request().WithContext(ctx))
 			token := c.Request().Header.Get("Authorization")
 			if token == "" {
 				span.SetAttributes(

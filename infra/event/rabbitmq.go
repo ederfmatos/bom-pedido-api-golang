@@ -107,18 +107,18 @@ func (adapter *RabbitMqAdapter) handleMessage(message amqp.Delivery, handler eve
 	ctx, span := telemetry.StartSpan(context.Background(), "RabbitMq.Process")
 	defer span.End()
 	messageEvent := &event.MessageEvent{
-		AckFn: func() error {
+		AckFn: func(ctx context.Context) error {
 			return message.Ack(false)
 		},
-		NackFn: func() {
+		NackFn: func(ctx context.Context) {
 			_ = message.Nack(false, true)
 		},
-		GetEventFn: func() *event.Event {
+		GetEventFn: func(ctx context.Context) *event.Event {
 			var event event.Event
 			_ = json.Unmarshal(ctx, message.Body, &event)
 			return &event
 		},
 	}
 	err := handler(ctx, messageEvent)
-	messageEvent.NackIfError(err)
+	messageEvent.NackIfError(ctx, err)
 }

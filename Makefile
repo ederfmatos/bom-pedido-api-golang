@@ -1,4 +1,4 @@
-DATABASE_URL="postgresql://bompedido:bompedido@localhost:5432/bompedido?search_path=bompedido&sslmode=disable"
+DATABASE_URL="postgresql://bompedido:bompedido@localhost:5432/bompedido?sslmode=disable&dbname=bompedido"
 
 migrate:
 	migrate -path=.sql/migrations -database $(DATABASE_URL) -verbose up

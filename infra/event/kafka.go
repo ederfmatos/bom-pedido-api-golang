@@ -105,10 +105,26 @@ func (handler *KafkaEventHandler) processMessages(consumer *kafka.Consumer, opti
 }
 
 func (handler *KafkaEventHandler) processMessage(message *kafka.Message, consumer *kafka.Consumer, handlerFunc event.HandlerFunc) {
-	ctx, span := telemetry.StartSpan(context.Background(), "KafkaEventEmitter.Process", "messageKey", string(message.Key))
+	ctx, span := telemetry.StartSpan(context.Background(), "KafkaEventEmitter.Process", "messageKey", string(message.Key), "topic", *message.TopicPartition.Topic)
 	defer span.End()
-	messageEvent := &event.MessageEvent{
-		AckFn: func() error {
+	messageEvent := handler.createMessageEvent(message, consumer)
+	err := retry.Func(ctx, 6, time.Second, time.Second*30, func(ctx context.Context) error {
+		return handlerFunc(ctx, messageEvent)
+	})
+	if err == nil {
+		return
+	}
+	err = handler.sendMessageToDeadLetterTopic(message, err)
+	if err == nil {
+		messageEvent.Ack(ctx)
+	} else {
+		messageEvent.Nack(ctx)
+	}
+}
+
+func (handler *KafkaEventHandler) createMessageEvent(message *kafka.Message, consumer *kafka.Consumer) *event.MessageEvent {
+	return &event.MessageEvent{
+		AckFn: func(ctx context.Context) error {
 			_, ackSpan := telemetry.StartSpan(ctx, "KafkaEventEmitter.Ack")
 			defer ackSpan.End()
 			_, err := consumer.CommitMessage(message)
@@ -118,7 +134,7 @@ func (handler *KafkaEventHandler) processMessage(message *kafka.Message, consume
 			}
 			return nil
 		},
-		NackFn: func() {
+		NackFn: func(ctx context.Context) {
 			_, ackSpan := telemetry.StartSpan(ctx, "KafkaEventEmitter.Nack")
 			defer ackSpan.End()
 			err := consumer.Seek(message.TopicPartition, 0)
@@ -126,25 +142,11 @@ func (handler *KafkaEventHandler) processMessage(message *kafka.Message, consume
 				slog.Error("Error on seek offset", "error", err, "topic", message.TopicPartition.Topic)
 			}
 		},
-		GetEventFn: func() *event.Event {
+		GetEventFn: func(ctx context.Context) *event.Event {
 			var event event.Event
 			_ = json.Unmarshal(ctx, message.Value, &event)
 			return &event
 		},
-	}
-	err := retry.Func(6, time.Second, time.Second*30, func() error {
-		ctx, span := telemetry.StartSpan(ctx, "KafkaEventEmitter.Handler")
-		defer span.End()
-		return handlerFunc(ctx, messageEvent)
-	})
-	if err == nil {
-		return
-	}
-	err = handler.sendMessageToDeadLetterTopic(message, err)
-	if err == nil {
-		messageEvent.Ack()
-	} else {
-		messageEvent.Nack()
 	}
 }
 

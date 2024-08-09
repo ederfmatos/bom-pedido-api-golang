@@ -25,6 +25,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -55,7 +56,7 @@ func (s *Server) ConfigureRoutes(applicationFactory *factory.ApplicationFactory)
 	server := echo.New()
 	server.Use(middleware.Recover())
 	server.Use(middleware.RequestID())
-	server.Use(middlewares.TraceMiddleware)
+	server.Use(otelecho.Middleware("bom-pedido-api"))
 	server.Use(middlewares.AuthenticateMiddleware(applicationFactory))
 	server.HTTPErrorHandler = middlewares.HandleError
 

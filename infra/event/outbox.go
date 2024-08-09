@@ -72,9 +72,10 @@ func (handler *OutboxEventHandler) processEvent(id string) {
 		if err != nil {
 			return
 		}
-		_ = retry.Func(5, time.Second, time.Second*30, func() error {
+		err = retry.Func(ctx, 5, time.Second, time.Second*30, func(ctx context.Context) error {
 			return handler.processEntry(ctx, entry)
 		})
+		span.RecordError(err)
 	})
 }
 
