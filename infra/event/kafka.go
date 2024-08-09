@@ -9,6 +9,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"go.opentelemetry.io/otel/codes"
 	"log/slog"
 	"time"
 )
@@ -107,8 +108,18 @@ func (handler *KafkaEventHandler) processMessages(consumer *kafka.Consumer, opti
 func (handler *KafkaEventHandler) processMessage(message *kafka.Message, consumer *kafka.Consumer, handlerFunc event.HandlerFunc) {
 	ctx, span := telemetry.StartSpan(context.Background(), "KafkaEventEmitter.Process", "messageKey", string(message.Key), "topic", *message.TopicPartition.Topic)
 	defer span.End()
-	messageEvent := handler.createMessageEvent(message, consumer)
-	err := retry.Func(ctx, 6, time.Second, time.Second*30, func(ctx context.Context) error {
+	messageEvent, err := handler.createMessageEvent(ctx, message, consumer)
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+			messageEvent.Nack(ctx)
+		}
+	}()
+	if err != nil {
+		return
+	}
+	err = retry.Func(ctx, 6, time.Second, time.Second*30, func(ctx context.Context) error {
 		return handlerFunc(ctx, messageEvent)
 	})
 	if err == nil {
@@ -122,32 +133,25 @@ func (handler *KafkaEventHandler) processMessage(message *kafka.Message, consume
 	}
 }
 
-func (handler *KafkaEventHandler) createMessageEvent(message *kafka.Message, consumer *kafka.Consumer) *event.MessageEvent {
+func (handler *KafkaEventHandler) createMessageEvent(ctx context.Context, message *kafka.Message, consumer *kafka.Consumer) (*event.MessageEvent, error) {
+	var messageEvent event.Event
+	err := json.Unmarshal(ctx, message.Value, &messageEvent)
 	return &event.MessageEvent{
+		Event: &messageEvent,
 		AckFn: func(ctx context.Context) error {
-			_, ackSpan := telemetry.StartSpan(ctx, "KafkaEventEmitter.Ack")
-			defer ackSpan.End()
-			_, err := consumer.CommitMessage(message)
+			_, err = consumer.CommitMessage(message)
 			if err != nil {
 				slog.Error("Error on commit message", "error", err, "topic", message.TopicPartition.Topic)
-				return err
 			}
 			return nil
 		},
 		NackFn: func(ctx context.Context) {
-			_, ackSpan := telemetry.StartSpan(ctx, "KafkaEventEmitter.Nack")
-			defer ackSpan.End()
-			err := consumer.Seek(message.TopicPartition, 0)
+			err = consumer.Seek(message.TopicPartition, 0)
 			if err != nil {
 				slog.Error("Error on seek offset", "error", err, "topic", message.TopicPartition.Topic)
 			}
 		},
-		GetEventFn: func(ctx context.Context) *event.Event {
-			var event event.Event
-			_ = json.Unmarshal(ctx, message.Value, &event)
-			return &event
-		},
-	}
+	}, err
 }
 
 func (handler *KafkaEventHandler) sendMessageToDeadLetterTopic(originalMessage *kafka.Message, err error) error {

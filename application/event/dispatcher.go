@@ -1,6 +1,7 @@
 package event
 
 import (
+	"bom-pedido-api/infra/telemetry"
 	"context"
 	"os"
 	"strconv"
@@ -9,12 +10,14 @@ import (
 type HandlerFunc func(ctx context.Context, message *MessageEvent) error
 
 type MessageEvent struct {
-	AckFn      func(context.Context) error
-	NackFn     func(context.Context)
-	GetEventFn func(context.Context) *Event
+	Event  *Event
+	AckFn  func(context.Context) error
+	NackFn func(context.Context)
 }
 
 func (m *MessageEvent) Ack(ctx context.Context) error {
+	_, span := telemetry.StartSpan(ctx, "MessageEvent.Ack")
+	defer span.End()
 	return m.AckFn(ctx)
 }
 
@@ -25,18 +28,10 @@ func (m *MessageEvent) AckIfNoError(ctx context.Context, err error) error {
 	return err
 }
 
-func (m *MessageEvent) NackIfError(ctx context.Context, err error) {
-	if err != nil {
-		m.Nack(ctx)
-	}
-}
-
 func (m *MessageEvent) Nack(ctx context.Context) {
+	_, span := telemetry.StartSpan(ctx, "MessageEvent.Nack")
+	defer span.End()
 	m.NackFn(ctx)
-}
-
-func (m *MessageEvent) GetEvent(ctx context.Context) *Event {
-	return m.GetEventFn(ctx)
 }
 
 var defaultWorkerPoolSize int

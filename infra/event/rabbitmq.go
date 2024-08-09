@@ -6,6 +6,7 @@ import (
 	"bom-pedido-api/infra/telemetry"
 	"context"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"go.opentelemetry.io/otel/codes"
 	"log/slog"
 )
 
@@ -106,19 +107,26 @@ func (adapter *RabbitMqAdapter) Consume(options *event.ConsumerOptions, handler 
 func (adapter *RabbitMqAdapter) handleMessage(message amqp.Delivery, handler event.HandlerFunc) {
 	ctx, span := telemetry.StartSpan(context.Background(), "RabbitMq.Process")
 	defer span.End()
+	var applicationEvent event.Event
+	err := json.Unmarshal(ctx, message.Body, &applicationEvent)
 	messageEvent := &event.MessageEvent{
+		Event: &applicationEvent,
 		AckFn: func(ctx context.Context) error {
 			return message.Ack(false)
 		},
 		NackFn: func(ctx context.Context) {
 			_ = message.Nack(false, true)
 		},
-		GetEventFn: func(ctx context.Context) *event.Event {
-			var event event.Event
-			_ = json.Unmarshal(ctx, message.Body, &event)
-			return &event
-		},
 	}
-	err := handler(ctx, messageEvent)
-	messageEvent.NackIfError(ctx, err)
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+			messageEvent.Nack(ctx)
+		}
+	}()
+	if err != nil {
+		return
+	}
+	err = handler(ctx, messageEvent)
 }

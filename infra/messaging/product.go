@@ -9,7 +9,7 @@ import (
 
 func HandleProductEvents(factory *factory.ApplicationFactory) {
 	factory.EventHandler.Consume(event.OptionsForTopic("PRODUCT_CREATED", "CREATE_PRODUCT_PROJECTION"), func(ctx context.Context, message *event.MessageEvent) error {
-		slog.Info("Received product message", "productId", message.GetEvent(ctx).Data["productId"])
+		slog.Info("Received product message", "productId", message.Event.Data["productId"])
 		return message.Ack(ctx)
 	})
 }
