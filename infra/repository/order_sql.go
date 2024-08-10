@@ -5,17 +5,20 @@ import (
 	"bom-pedido-api/domain/entity/order"
 	"bom-pedido-api/domain/entity/order/status"
 	"context"
+	"fmt"
+	"strings"
 	"time"
 )
 
 const (
 	sqlCreateOrder          = "INSERT INTO orders (id, customer_id, payment_method, payment_mode, delivery_mode, credit_card_token, change, delivery_time, status, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)"
 	sqlUpdateOrder          = "UPDATE orders SET status = $1 WHERE id = $2"
-	sqlInsertOrderItem      = "INSERT INTO order_items (id, order_id, product_id, quantity, observation, price, status) VALUES ($1, $2, $3, $4, $5, $6, $7)"
+	sqlInsertOrderItem      = "INSERT INTO order_items (id, order_id, product_id, quantity, observation, price, status) VALUES "
 	sqlInsertOrderHistory   = "INSERT INTO order_history (order_id, changed_by, changed_at, status, data) VALUES ($1, $2, $3, $4, $5)"
 	sqlFindOrderById        = "SELECT code, customer_id, payment_method, payment_mode, delivery_mode, credit_card_token, change, delivery_time, status, created_at FROM orders WHERE id = $1 LIMIT 1"
 	sqlListItemsFromOrderId = "SELECT id, product_id, quantity, observation, price, status FROM order_items WHERE order_id = $1"
 	sqlOrderHistory         = "SELECT changed_by, changed_at, status, data FROM order_history WHERE order_id = $1"
+	orderItemsFieldSize     = 7
 )
 
 type (
@@ -46,20 +49,44 @@ func (repository *DefaultOrderRepository) Create(ctx context.Context, order *ord
 		err := transaction.Sql(sqlCreateOrder).
 			Values(order.Id, order.CustomerID, order.PaymentMethod, order.PaymentMode, order.DeliveryMode, order.CreditCardToken, order.Change, order.DeliveryTime, order.GetStatus(), order.CreatedAt).
 			Update(ctx)
-
 		if err != nil {
 			return err
 		}
-		for _, item := range order.Items {
-			err := transaction.Sql(sqlInsertOrderItem).
-				Values(item.Id, order.Id, item.ProductId, item.Quantity, item.Observation, item.Price, item.Status).
-				Update(ctx)
-			if err != nil {
-				return err
+		itemsSql, values := repository.orderItemSql(order)
+		return transaction.Sql(itemsSql).
+			Values(values...).
+			Update(ctx)
+	})
+}
+
+func (repository *DefaultOrderRepository) orderItemSql(order *order.Order) (string, []interface{}) {
+	var valuesSql strings.Builder
+	valuesSql.WriteString(sqlInsertOrderItem)
+	itemsSize := len(order.Items)
+	values := make([]interface{}, itemsSize*orderItemsFieldSize)
+	for i, item := range order.Items {
+		valuesSql.WriteString("(")
+		for j := 1; j <= orderItemsFieldSize; j++ {
+			value := i*orderItemsFieldSize + j
+			valuesSql.WriteString(fmt.Sprintf("$%d", value))
+			if j < orderItemsFieldSize {
+				valuesSql.WriteString(",")
 			}
 		}
-		return nil
-	})
+		valuesSql.WriteString(")")
+		if i < itemsSize-1 {
+			valuesSql.WriteString(",")
+		}
+		fieldNumber := i * orderItemsFieldSize
+		values[fieldNumber] = item.Id
+		values[fieldNumber+1] = order.Id
+		values[fieldNumber+2] = item.ProductId
+		values[fieldNumber+3] = item.Quantity
+		values[fieldNumber+4] = item.Observation
+		values[fieldNumber+5] = item.Price
+		values[fieldNumber+6] = item.Status
+	}
+	return valuesSql.String(), values
 }
 
 func (repository *DefaultOrderRepository) FindById(ctx context.Context, id string) (*order.Order, error) {
