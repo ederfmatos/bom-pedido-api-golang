@@ -65,27 +65,27 @@ func (shoppingCart *ShoppingCart) GetItems() []ShoppingCartItem {
 
 func (shoppingCart *ShoppingCart) Checkout(
 	paymentMethodString, deliveryModeString, paymentModeString, cardToken string,
-	change float64,
+	payback float64,
 	products map[string]*product.Product,
 	deliveryTime time.Duration,
 ) (*order.Order, error) {
 	if shoppingCart.IsEmpty() {
 		return nil, errors.ShoppingCartEmptyError
 	}
-	order, err := order.New(shoppingCart.CustomerId, paymentMethodString, paymentModeString, deliveryModeString, cardToken, change, time.Now().Add(deliveryTime))
+	anOrder, err := order.New(shoppingCart.CustomerId, paymentMethodString, paymentModeString, deliveryModeString, cardToken, payback, time.Now().Add(deliveryTime))
 	if err != nil {
 		return nil, err
 	}
 	compositeError := errors.NewCompositeError()
 	for _, item := range shoppingCart.Items {
-		product := products[item.ProductId]
-		err := order.AddProduct(product, item.Quantity, item.Observation)
+		aProduct := products[item.ProductId]
+		err = anOrder.AddProduct(aProduct, item.Quantity, item.Observation)
 		compositeError.Append(err)
 	}
 	if compositeError.HasError() {
 		return nil, compositeError
 	}
-	return order, nil
+	return anOrder, nil
 }
 
 func (shoppingCart *ShoppingCart) IsEmpty() bool {

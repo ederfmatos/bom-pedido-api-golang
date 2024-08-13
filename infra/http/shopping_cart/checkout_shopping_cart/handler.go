@@ -12,7 +12,7 @@ type checkoutShoppingCartRequest struct {
 	DeliveryMode    string  `body:"deliveryMode" json:"deliveryMode,omitempty"`
 	PaymentMode     string  `body:"paymentMode" json:"paymentMode,omitempty"`
 	AddressId       string  `body:"addressId" json:"addressId,omitempty"`
-	Change          float64 `body:"change" json:"change,omitempty"`
+	Payback         float64 `body:"payback" json:"payback,omitempty"`
 	CreditCardToken string  `body:"creditCardToken" json:"creditCardToken,omitempty"`
 }
 
@@ -30,7 +30,7 @@ func Handle(factory *factory.ApplicationFactory) func(context echo.Context) erro
 			DeliveryMode:    request.DeliveryMode,
 			PaymentMode:     request.PaymentMode,
 			AddressId:       request.AddressId,
-			Change:          request.Change,
+			Payback:         request.Payback,
 			CreditCardToken: request.CreditCardToken,
 		}
 		output, err := useCase.Execute(context.Request().Context(), input)

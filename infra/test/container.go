@@ -136,7 +136,7 @@ func databaseConnection() (*sql.DB, func()) {
 			delivery_mode     VARCHAR(30) NOT NULL,
 			status            VARCHAR(30) NOT NULL,
 			credit_card_token VARCHAR(255),
-			change          DECIMAL(6, 2),
+			payback           DECIMAL(6, 2),
 			delivery_time     TIMESTAMP   NOT NULL,
 			created_at        TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
 		);

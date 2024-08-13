@@ -17,7 +17,7 @@ const (
 
 var InvalidPaymentMethodError = errors.New("Invalid payment method")
 
-func ParsePaymentMethod(value string) (PaymentMethod, *errors.DomainError) {
+func ParsePaymentMethod(value string) (PaymentMethod, error) {
 	switch value {
 	case CreditCard:
 		return PaymentMethodCreditCard, nil

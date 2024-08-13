@@ -18,23 +18,23 @@ func TestShoppingCart_Checkout(t *testing.T) {
 		deliveryMode  string
 		paymentMode   string
 		cardToken     string
-		change        float64
+		payback       float64
 		Errors        []error
 	}{
 		{
 			paymentMethod: "",
 			deliveryMode:  "",
 			paymentMode:   "",
-			change:        -1,
-			Errors:        []error{enums.InvalidPaymentMethodError, enums.InvalidDeliveryModeError, enums.InvalidPaymentModeError, errors.ChangeShouldBePositiveError},
+			payback:       -1,
+			Errors:        []error{enums.InvalidPaymentMethodError, enums.InvalidDeliveryModeError, enums.InvalidPaymentModeError, errors.PaybackShouldBePositiveError},
 		},
 		{
 			paymentMethod: enums.CreditCard,
 			deliveryMode:  "",
 			paymentMode:   enums.PaymentModeInApp.String(),
-			change:        -2,
+			payback:       -2,
 			cardToken:     "",
-			Errors:        []error{enums.InvalidDeliveryModeError, errors.CardTokenIsRequiredError, errors.ChangeShouldBePositiveError},
+			Errors:        []error{enums.InvalidDeliveryModeError, errors.CardTokenIsRequiredError, errors.PaybackShouldBePositiveError},
 		},
 	}
 	for _, test := range tests {
@@ -45,7 +45,7 @@ func TestShoppingCart_Checkout(t *testing.T) {
 			err := shoppingCart.AddItem(newProduct, 1, faker.Word())
 			assert.NoError(t, err)
 
-			order, err := shoppingCart.Checkout(test.paymentMethod, test.deliveryMode, test.paymentMode, test.cardToken, test.change, make(map[string]*product.Product), time.Second)
+			order, err := shoppingCart.Checkout(test.paymentMethod, test.deliveryMode, test.paymentMode, test.cardToken, test.payback, make(map[string]*product.Product), time.Second)
 			assert.Nil(t, order)
 			expectedError := errors.NewCompositeWithError(test.Errors...)
 			assert.Equal(t, err, expectedError)
@@ -95,6 +95,6 @@ func TestShoppingCart_Checkout(t *testing.T) {
 		assert.Equal(t, enums.DeliveryModeDelivery, order.DeliveryMode)
 		assert.Equal(t, enums.PaymentModeInReceiving, order.PaymentMode)
 		assert.Equal(t, "", order.CreditCardToken)
-		assert.Equal(t, float64(0), order.Change)
+		assert.Equal(t, float64(0), order.Payback)
 	})
 }

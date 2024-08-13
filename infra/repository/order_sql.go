@@ -11,11 +11,11 @@ import (
 )
 
 const (
-	sqlCreateOrder          = "INSERT INTO orders (id, customer_id, payment_method, payment_mode, delivery_mode, credit_card_token, change, delivery_time, status, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)"
+	sqlCreateOrder          = "INSERT INTO orders (id, customer_id, payment_method, payment_mode, delivery_mode, credit_card_token, payback, delivery_time, status, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)"
 	sqlUpdateOrder          = "UPDATE orders SET status = $1 WHERE id = $2"
 	sqlInsertOrderItem      = "INSERT INTO order_items (id, order_id, product_id, quantity, observation, price, status) VALUES "
 	sqlInsertOrderHistory   = "INSERT INTO order_history (order_id, changed_by, changed_at, status, data) VALUES ($1, $2, $3, $4, $5)"
-	sqlFindOrderById        = "SELECT code, customer_id, payment_method, payment_mode, delivery_mode, credit_card_token, change, delivery_time, status, created_at FROM orders WHERE id = $1 LIMIT 1"
+	sqlFindOrderById        = "SELECT code, customer_id, payment_method, payment_mode, delivery_mode, credit_card_token, payback, delivery_time, status, created_at FROM orders WHERE id = $1 LIMIT 1"
 	sqlListItemsFromOrderId = "SELECT id, product_id, quantity, observation, price, status FROM order_items WHERE order_id = $1"
 	sqlOrderHistory         = "SELECT changed_by, changed_at, status, data FROM order_history WHERE order_id = $1"
 	orderItemsFieldSize     = 7
@@ -33,7 +33,7 @@ type (
 		PaymentMode     string
 		DeliveryMode    string
 		CreditCardToken string
-		Change          float64
+		Payback         float64
 		DeliveryTime    time.Time
 		Status          string
 		CreatedAt       time.Time
@@ -47,7 +47,7 @@ func NewDefaultOrderRepository(sqlConnection SqlConnection) repository.OrderRepo
 func (repository *DefaultOrderRepository) Create(ctx context.Context, order *order.Order) error {
 	return repository.InTransaction(ctx, func(transaction SqlTransaction, ctx context.Context) error {
 		err := transaction.Sql(sqlCreateOrder).
-			Values(order.Id, order.CustomerID, order.PaymentMethod, order.PaymentMode, order.DeliveryMode, order.CreditCardToken, order.Change, order.DeliveryTime, order.GetStatus(), order.CreatedAt).
+			Values(order.Id, order.CustomerID, order.PaymentMethod, order.PaymentMode, order.DeliveryMode, order.CreditCardToken, order.Payback, order.DeliveryTime, order.GetStatus(), order.CreatedAt).
 			Update(ctx)
 		if err != nil {
 			return err
@@ -92,7 +92,7 @@ func (repository *DefaultOrderRepository) orderItemSql(order *order.Order) (stri
 func (repository *DefaultOrderRepository) FindById(ctx context.Context, id string) (*order.Order, error) {
 	var entity OrderEntity
 	found, err := repository.Sql(sqlFindOrderById).Values(id).
-		FindOne(ctx, &entity.Code, &entity.CustomerId, &entity.PaymentMethod, &entity.PaymentMode, &entity.DeliveryMode, &entity.CreditCardToken, &entity.Change, &entity.DeliveryTime, &entity.Status, &entity.CreatedAt)
+		FindOne(ctx, &entity.Code, &entity.CustomerId, &entity.PaymentMethod, &entity.PaymentMode, &entity.DeliveryMode, &entity.CreditCardToken, &entity.Payback, &entity.DeliveryTime, &entity.Status, &entity.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,7 @@ func (repository *DefaultOrderRepository) FindById(ctx context.Context, id strin
 		entity.CreditCardToken,
 		entity.Status,
 		entity.CreatedAt,
-		entity.Change,
+		entity.Payback,
 		entity.Code,
 		entity.DeliveryTime,
 		items,

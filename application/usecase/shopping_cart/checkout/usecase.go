@@ -22,7 +22,7 @@ type (
 		DeliveryMode    string
 		PaymentMode     string
 		AddressId       string // TODO
-		Change          float64
+		Payback         float64
 		CreditCardToken string
 	}
 	Output struct {
@@ -62,7 +62,7 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) (*Output, erro
 		input.DeliveryMode,
 		input.PaymentMode,
 		input.CreditCardToken,
-		input.Change,
+		input.Payback,
 		products,
 		deliveryTimeInMinutes,
 	)

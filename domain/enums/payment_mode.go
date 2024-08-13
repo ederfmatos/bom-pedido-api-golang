@@ -13,7 +13,7 @@ const (
 
 var InvalidPaymentModeError = errors.New("Invalid payment mode")
 
-func ParsePaymentMode(value string) (PaymentMode, *errors.DomainError) {
+func ParsePaymentMode(value string) (PaymentMode, error) {
 	switch value {
 	case InApp:
 		return PaymentModeInApp, nil

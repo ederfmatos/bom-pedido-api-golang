@@ -43,7 +43,7 @@ func Test_CheckoutShoppingCart(t *testing.T) {
 			DeliveryMode:    enums.Withdraw,
 			PaymentMode:     enums.InReceiving,
 			AddressId:       "",
-			Change:          0,
+			Payback:         0,
 			CreditCardToken: "",
 		}
 		product, _ := product.New(faker.Name(), faker.Word(), 11.0)
@@ -70,7 +70,7 @@ func Test_CheckoutShoppingCart(t *testing.T) {
 		assert.Equal(t, enums.DeliveryModeWithdraw, order.DeliveryMode)
 		assert.Equal(t, enums.PaymentModeInReceiving, order.PaymentMode)
 		assert.Equal(t, "", order.CreditCardToken)
-		assert.Equal(t, float64(0), order.Change)
+		assert.Equal(t, float64(0), order.Payback)
 		assert.Equal(t, int32(1), order.Code)
 	})
 }

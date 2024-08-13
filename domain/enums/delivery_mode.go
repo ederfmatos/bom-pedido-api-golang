@@ -13,7 +13,7 @@ const (
 
 var InvalidDeliveryModeError = errors.New("Invalid delivery method")
 
-func ParseDeliveryMode(value string) (DeliveryMode, *errors.DomainError) {
+func ParseDeliveryMode(value string) (DeliveryMode, error) {
 	switch value {
 	case Delivery:
 		return DeliveryModeDelivery, nil

@@ -25,7 +25,7 @@ type (
 		DeliveryMode    enums.DeliveryMode
 		CreatedAt       time.Time
 		CreditCardToken string
-		Change          float64
+		Payback         float64
 		Code            int32
 		DeliveryTime    time.Time
 		state           status.Status
@@ -43,8 +43,8 @@ type (
 	}
 )
 
-func New(customerID, paymentMethodString, paymentModeString, deliveryModeString, creditCardToken string, change float64, deliveryTime time.Time) (*Order, error) {
-	paymentMethod, deliveryMode, paymentMode, err := validateOrder(paymentMethodString, deliveryModeString, paymentModeString, creditCardToken, change)
+func New(customerID, paymentMethodString, paymentModeString, deliveryModeString, creditCardToken string, payback float64, deliveryTime time.Time) (*Order, error) {
+	paymentMethod, deliveryMode, paymentMode, err := validateOrder(paymentMethodString, deliveryModeString, paymentModeString, creditCardToken, payback)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func New(customerID, paymentMethodString, paymentModeString, deliveryModeString,
 		DeliveryMode:    deliveryMode,
 		CreatedAt:       time.Now(),
 		CreditCardToken: creditCardToken,
-		Change:          change,
+		Payback:         payback,
 		Code:            0,
 		DeliveryTime:    deliveryTime,
 		state:           status.AwaitingApprovalStatus,
@@ -68,13 +68,13 @@ func New(customerID, paymentMethodString, paymentModeString, deliveryModeString,
 func Restore(
 	Id, customerID, paymentMethodString, paymentModeString, deliveryModeString, creditCardToken, orderStatusString string,
 	createdAt time.Time,
-	change float64,
+	payback float64,
 	code int32,
 	deliveryTime time.Time,
 	items []Item,
 	history []status.History,
 ) (*Order, error) {
-	paymentMethod, deliveryMode, paymentMode, err := validateOrder(paymentMethodString, deliveryModeString, paymentModeString, creditCardToken, change)
+	paymentMethod, deliveryMode, paymentMode, err := validateOrder(paymentMethodString, deliveryModeString, paymentModeString, creditCardToken, payback)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func Restore(
 		DeliveryMode:    deliveryMode,
 		CreatedAt:       createdAt,
 		CreditCardToken: creditCardToken,
-		Change:          change,
+		Payback:         payback,
 		Code:            code,
 		DeliveryTime:    deliveryTime,
 		state:           orderStatus,
@@ -99,7 +99,7 @@ func Restore(
 	}, nil
 }
 
-func validateOrder(paymentMethodString, deliveryModeString, paymentModeString, cardToken string, change float64) (enums.PaymentMethod, enums.DeliveryMode, enums.PaymentMode, error) {
+func validateOrder(paymentMethodString, deliveryModeString, paymentModeString, cardToken string, payback float64) (enums.PaymentMethod, enums.DeliveryMode, enums.PaymentMode, error) {
 	compositeError := errors.NewCompositeError()
 
 	paymentMethod, err := enums.ParsePaymentMethod(paymentMethodString)
@@ -115,13 +115,13 @@ func validateOrder(paymentMethodString, deliveryModeString, paymentModeString, c
 	if cardTokenIsRequired && cardToken == "" {
 		compositeError.Append(errors.CardTokenIsRequiredError)
 	}
-	if change < 0 {
-		compositeError.Append(errors.ChangeShouldBePositiveError)
+	if payback < 0 {
+		compositeError.Append(errors.PaybackShouldBePositiveError)
 	}
 	return paymentMethod, deliveryMode, paymentMode, compositeError.AsError()
 }
 
-func (order *Order) AddProduct(product *product.Product, quantity int, observation string) *errors.DomainError {
+func (order *Order) AddProduct(product *product.Product, quantity int, observation string) error {
 	if product == nil {
 		return errors.ProductNotFoundError
 	}
