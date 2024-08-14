@@ -18,6 +18,7 @@ type Environment struct {
 	KafkaBootstrapServer          string
 	KafkaClientId                 string
 	OpenTelemetryEndpointExporter string
+	MessagingStrategy             string
 }
 
 func requiredEnv(name string) string {
@@ -49,5 +50,6 @@ func LoadEnvironment() *Environment {
 		KafkaBootstrapServer:          requiredEnv("KAFKA_BOOTSTRAP_SERVER"),
 		KafkaClientId:                 requiredEnv("KAFKA_CLIENT_ID"),
 		OpenTelemetryEndpointExporter: requiredEnv("OTEL_ENDPOINT_EXPORTER"),
+		MessagingStrategy:             requiredEnv("MESSAGING_STRATEGY"),
 	}
 }

@@ -52,13 +52,10 @@ type ConsumerOptions struct {
 	WorkerPoolSize int
 }
 
-func NewConsumerOptions(queue, eventName, id string, workerPoolSize int) *ConsumerOptions {
-	return &ConsumerOptions{Queue: queue, TopicName: eventName, Id: id, WorkerPoolSize: workerPoolSize}
-}
-
 func OptionsForTopic(topicName, id string) *ConsumerOptions {
 	return &ConsumerOptions{
 		Id:             id,
+		Queue:          id,
 		TopicName:      topicName,
 		WorkerPoolSize: defaultWorkerPoolSize,
 	}

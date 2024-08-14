@@ -10,15 +10,7 @@ import (
 	"log/slog"
 )
 
-var eventExchanges map[string]string
-
-func init() {
-	eventExchanges = map[string]string{
-		"PRODUCT_CREATED": "PRODUCTS",
-		"ORDER_CREATED":   "ORDERS",
-		"ORDER_APPROVED":  "ORDERS",
-	}
-}
+const exchange = "bompedido"
 
 type RabbitMqAdapter struct {
 	connection      *amqp.Connection
@@ -60,7 +52,6 @@ func (adapter *RabbitMqAdapter) Emit(ctx context.Context, event *event.Event) er
 		slog.Error("Error on emit event", "event", event, "error", err)
 		return err
 	}
-	exchange := eventExchanges[event.Name]
 	err = adapter.producerChannel.PublishWithContext(
 		ctx,
 		exchange,
