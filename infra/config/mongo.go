@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/mongo/otelmongo"
+	"log/slog"
 )
 
 func Mongo(url string) *mongo.Client {
@@ -23,5 +24,6 @@ func Mongo(url string) *mongo.Client {
 	failOnError(err, "Failed to connect to mongo")
 	err = mongoClient.Ping(context.TODO(), nil)
 	failOnError(err, "Failed to ping mongo")
+	slog.Info("Connected to mongo successfully")
 	return mongoClient
 }

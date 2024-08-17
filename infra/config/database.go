@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	_ "github.com/lib/pq"
 	"log"
+	"log/slog"
 )
 
 func Database(driver, url string) *sql.DB {
@@ -11,6 +12,7 @@ func Database(driver, url string) *sql.DB {
 	failOnError(err, "Failed to connect to database")
 	err = database.Ping()
 	failOnError(err, "Failed to ping database")
+	slog.Info("Connected to database successfully")
 	return database
 }
 
