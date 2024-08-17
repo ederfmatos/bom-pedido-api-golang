@@ -4,15 +4,17 @@ services:
   api:
     image: ederfmatos/bom-pedido-api:latest
     container_name: bom-pedido-api
-    build:
-      context: .
     network_mode: host
+    volumes:
+      - ./.resources/private.pem:/secrets/private.pem:ro
     depends_on:
       - jaeger
       - postgres
       - mongo
       - redis
       - rabbitmq
+    environment:
+      - JWE_PRIVATE_KEY_PATH=/secrets/private.pem
     env_file:
       - .env
 

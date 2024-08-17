@@ -58,6 +58,7 @@ func (s *Server) ConfigureRoutes(applicationFactory *factory.ApplicationFactory)
 	server.Use(middleware.RequestID())
 	server.Use(otelecho.Middleware("bom-pedido-api"))
 	server.Use(middlewares.AuthenticateMiddleware(applicationFactory))
+	server.Use(middlewares.RedocDocumentation())
 	server.HTTPErrorHandler = middlewares.HandleError
 
 	api := server.Group("/api")
