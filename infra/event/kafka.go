@@ -32,6 +32,7 @@ func NewKafkaEventHandler(environment *config.Environment) event.Handler {
 	if err != nil {
 		panic(err)
 	}
+	slog.Info("Connected to kafka successfully")
 	handler := &KafkaEventHandler{
 		producer:    producer,
 		environment: environment,

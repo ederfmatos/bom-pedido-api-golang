@@ -23,6 +23,7 @@ func NewRabbitMqAdapter(server string) event.Handler {
 	if err != nil {
 		panic(err)
 	}
+	slog.Info("Connected to rabbitmq successfully")
 	producerChannel, err := connection.Channel()
 	if err != nil {
 		panic(err)
