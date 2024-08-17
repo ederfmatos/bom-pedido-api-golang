@@ -84,6 +84,9 @@ func (s *Server) ConfigureRoutes(applicationFactory *factory.ApplicationFactory)
 }
 
 func (s *Server) StartTracer() {
+	if os.Getenv("ENVIRONMENT") != "production" {
+		return
+	}
 	exporter, err := otlptrace.New(
 		context.Background(),
 		otlptracehttp.NewClient(
@@ -132,8 +135,10 @@ func (s *Server) Shutdown() {
 	if err := s.mongoClient.Disconnect(ctx); err != nil {
 		slog.Error("Error on close mongo connection", "error", err)
 	}
-	if err := s.tracerProvider.Shutdown(ctx); err != nil {
-		slog.Error("Error on close trace provider connection", "error", err)
+	if s.tracerProvider != nil {
+		if err := s.tracerProvider.Shutdown(ctx); err != nil {
+			slog.Error("Error on close trace provider connection", "error", err)
+		}
 	}
 	slog.Info("Shutting down server...")
 	if err := s.server.Shutdown(ctx); err != nil {
