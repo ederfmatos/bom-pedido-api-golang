@@ -45,6 +45,7 @@
   "paths": {
     "/v1/auth/google/customer": {
       "post": {
+        "security": [],
         "summary": "Autenticar Cliente com Google",
         "tags": [
           "Authentication"
@@ -101,7 +102,14 @@
               }
             }
           }
-        }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cUrl",
+            "label": "Curl",
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/auth/google/customer \\\n  --header 'content-type: application/json' \\\n  --data '{\n  \"token\": \"<GOOGLE_TOKEN>\"\n}'"
+          }
+        ]
       }
     },
     "/v1/customers/me": {
@@ -144,7 +152,14 @@
               }
             }
           }
-        }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cUrl",
+            "label": "Curl",
+            "source": "curl --request GET \\\n  --url https://api.bompedido.app/api/v1/customers/me"
+          }
+        ]
       }
     },
     "/v1/products": {
@@ -205,7 +220,14 @@
               }
             }
           }
-        }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cUrl",
+            "label": "Curl",
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/products \\\n  --header 'content-type: application/json' \\\n  --data '{\n  \"name\": \"Produto 1\", \"description\": \"Descrição do Produto\", \"price\": 59.90\n}'"
+          }
+        ]
       },
       "get": {
         "summary": "Listar Produtos",
@@ -243,7 +265,14 @@
               }
             }
           }
-        }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cUrl",
+            "label": "Curl",
+            "source": "curl --request GET \\\n  --url https://api.bompedido.app/api/v1/products"
+          }
+        ]
       }
     },
     "/v1/shopping-cart/checkout": {
@@ -297,7 +326,14 @@
               }
             }
           }
-        }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cUrl",
+            "label": "Curl",
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/shopping-cart/checkout \\\n --header 'content-type: application/json' \\\n --data '{\n  \"paymentMethod\": \"CREDIT_CARD\",\n  \"paymentMode\": \"IN_APP\",\n  \"deliveryMode\": \"DELIVERY\",\n  \"creditCardToken\": \"0191656a-eb08-7aad-9856-52caa3f1cd99\",\n  \"addressId\": \"abc123\"\n}' "
+          }
+        ]
       }
     },
     "/v1/shopping-cart/items": {
@@ -351,7 +387,14 @@
               }
             }
           }
-        }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cUrl",
+            "label": "Curl",
+            "source": "curl --request PATCH \\\n  --url https://api.bompedido.app/api/v1/shopping-cart/items \\\n  --header 'content-type: application/json' \\\n  --data '{\n  \"productId\": \"01916125-fb78-765d-80dc-3ab8106d569b\",\n  \"description\": \"Sem Cebola\",\n  \"quantity\": 2\n}'"
+          }
+        ]
       }
     },
     "/v1/orders/{id}/approve": {
@@ -405,7 +448,14 @@
               }
             }
           }
-        }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cUrl",
+            "label": "Curl",
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/approve \\\n  --header 'content-type: application/json'"
+          }
+        ]
       }
     },
     "/v1/orders/{id}/reject": {
@@ -425,7 +475,6 @@
             "description": "ID do pedido a ser rejeitado"
           }
         ],
-
         "requestBody": {
           "description": "Dados para rejeição do Pedido",
           "required": true,
@@ -433,7 +482,9 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["reason"],
+                "required": [
+                  "reason"
+                ],
                 "properties": {
                   "reason": {
                     "type": "string",
@@ -479,7 +530,14 @@
               }
             }
           }
-        }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cUrl",
+            "label": "Curl",
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/reject \\\n  --header 'content-type: application/json' \\\n  --data '{\n  \"reason\": \"Solicitação do Cliente\"\n}'"
+          }
+        ]
       }
     },
     "/v1/orders/{id}/cancel": {
@@ -506,7 +564,9 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["reason"],
+                "required": [
+                  "reason"
+                ],
                 "properties": {
                   "reason": {
                     "type": "string",
@@ -552,7 +612,14 @@
               }
             }
           }
-        }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cUrl",
+            "label": "Curl",
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/cancel \\\n  --header 'content-type: application/json' \\\n  --data '{\n  \"reason\": \"Solicitação do Cliente\"\n}'"
+          }
+        ]
       }
     },
     "/v1/orders/{id}/finish": {
@@ -606,7 +673,14 @@
               }
             }
           }
-        }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cUrl",
+            "label": "Curl",
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/finish \\\n  --header 'content-type: application/json'"
+          }
+        ]
       }
     },
     "/v1/orders/{id}/in-progress": {
@@ -660,7 +734,14 @@
               }
             }
           }
-        }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cUrl",
+            "label": "Curl",
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/in-progress \\\n  --header 'content-type: application/json'"
+          }
+        ]
       }
     },
     "/v1/orders/{id}/delivering": {
@@ -714,7 +795,14 @@
               }
             }
           }
-        }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cUrl",
+            "label": "Curl",
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/delivering \\\n  --header 'content-type: application/json'"
+          }
+        ]
       }
     },
     "/v1/orders/{id}/awaiting-withdraw": {
@@ -768,7 +856,14 @@
               }
             }
           }
-        }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cUrl",
+            "label": "Curl",
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/awaiting-withdraw \\\n  --header 'content-type: application/json'"
+          }
+        ]
       }
     },
     "/v1/orders/{id}/awaiting-delivery": {
@@ -822,80 +917,163 @@
               }
             }
           }
-        }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cUrl",
+            "label": "Curl",
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/awaiting-delivery \\\n  --header 'content-type: application/json'"
+          }
+        ]
       }
     }
   },
+  "security": [
+    {
+      "JWE": [
+      ]
+    }
+  ],
   "components": {
+    "securitySchemes": {
+      "JWE": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWE",
+        "description": "JWE token para autenticação. O token deve ser obtido através do endpoint de autenticação e enviado em cada requisição protegida."
+      }
+    },
     "schemas": {
+      "PaymentMethod": {
+        "type": "string",
+        "enum": ["CREDIT_CARD", "DEBIT_CARD", "MONEY", "PIX"],
+        "title": "Meio de Pagamento",
+        "description": "Indica o meio de pagamento aceito nas transações. Pode ser um dos seguintes valores: \n\n- **CREDIT_CARD**: Pagamento com Cartão de Crédito à Vista.\n- **DEBIT_CARD**: Pagamento com Cartão de Débito.\n- **MONEY**: Pagamento com Dinheiro.\n- **PIX**: Pagamento via PIX usando QrCode ou Pix Copia e Cola.",
+        "x-enumDescriptions": {
+          "CREDIT_CARD": "Pagamento com Cartão de Crédito à Vista",
+          "DEBIT_CARD": "Pagamento com Cartão de Débito",
+          "MONEY": "Pagamento com Dinheiro",
+          "PIX": "Pagamento com PIX a partir de QrCode ou Pix Copia e Cola"
+        }
+      },
+      "PaymentMode": {
+        "type": "string",
+        "enum": ["IN_APP", "IN_RECEIVING"],
+        "title": "Modo de Pagamento",
+        "description": "Define o modo de pagamento selecionado pelo cliente: \n\n- **IN_APP**: Pagamento realizado diretamente pelo aplicativo.\n- **IN_RECEIVING**: Pagamento realizado no momento da entrega ou retirada do pedido.",
+        "x-enumDescriptions": {
+          "IN_APP": "Pagamento pelo App",
+          "IN_RECEIVING": "Pagamento no recebimento/retirada do produto"
+        }
+      },
+      "DeliveryMode": {
+        "type": "string",
+        "enum": ["DELIVERY", "WITHDRAW"],
+        "title": "Modo de Entrega do Pedido",
+        "description": "Especifica como o pedido será entregue ao cliente: \n\n- **DELIVERY**: O pedido será entregue no endereço fornecido pelo cliente, sujeito a uma taxa de entrega.\n- **WITHDRAW**: O cliente irá retirar o pedido no estabelecimento.",
+        "x-enumDescriptions": {
+          "DELIVERY": "O pedido será enviado para o endereço desejado pelo cliente (sujeito à taxa de entrega)",
+          "WITHDRAW": "O pedido será retirado pelo cliente no estabelecimento"
+        }
+      },
       "CheckoutRequest": {
         "type": "object",
         "properties": {
           "paymentMethod": {
+            "$ref": "#/components/schemas/PaymentMethod"
+          },
+          "paymentMode": {
+            "$ref": "#/components/schemas/PaymentMode"
+          },
+          "deliveryMode": {
+            "$ref": "#/components/schemas/DeliveryMode"
+          },
+          "payback": {
+            "type": "number",
+            "example": "50.00",
+            "description": "Valor que o cliente está pagando em dinheiro. Utilizado para calcular o troco. Este campo é obrigatório quando o meio de pagamento é **MONEY**."
+          },
+          "creditCardToken": {
             "type": "string",
-            "example": "credit_card"
+            "example": "0191656a-eb08-7aad-9856-52caa3f1cd99",
+            "description": "Token do cartão de crédito gerado pela solução de pagamento. Necessário quando o meio de pagamento é **CREDIT_CARD** e o pagamento é **IN_APP**."
           },
           "addressId": {
             "type": "string",
-            "example": "abc123"
+            "example": "abc123",
+            "description": "Identificador do endereço de entrega do pedido. Obrigatório quando o modo de entrega é **DELIVERY**."
           }
         },
         "required": [
+          "deliveryMode",
           "paymentMethod",
-          "addressId"
-        ]
+          "paymentMode"
+        ],
+        "description": "Requisição para realizar o checkout de um carrinho de compras. Dependendo do meio de pagamento e modo de entrega selecionados, campos adicionais podem ser necessários."
       },
       "AddItemRequest": {
         "type": "object",
         "properties": {
           "productId": {
             "type": "string",
-            "example": "01916125-fb78-765d-80dc-3ab8106d569b"
+            "example": "01916125-fb78-765d-80dc-3ab8106d569b",
+            "description": "Identificador único do produto que está sendo adicionado ao carrinho."
           },
           "description": {
             "type": "string",
-            "example": "Sem Cebola"
+            "example": "Sem Cebola",
+            "description": "Descrição opcional sobre como o produto deve ser preparado ou outras observações relevantes."
           },
           "quantity": {
             "type": "integer",
-            "example": 2
+            "example": 2,
+            "description": "Quantidade do produto que está sendo adicionada ao carrinho."
           }
         },
         "required": [
           "productId",
           "quantity"
-        ]
+        ],
+        "description": "Requisição para adicionar um item ao carrinho de compras. Inclui o identificador do produto, a quantidade desejada e quaisquer observações adicionais."
       },
       "CreateProductRequest": {
         "type": "object",
         "properties": {
           "name": {
             "type": "string",
-            "example": "Produto X"
+            "example": "Produto X",
+            "description": "Nome do produto a ser criado.",
+            "minLength": 5
           },
           "description": {
             "type": "string",
-            "example": "Detalhes do produto x"
+            "example": "Detalhes do produto X",
+            "description": "Descrição detalhada do produto, incluindo características e benefícios."
           },
           "price": {
             "type": "number",
             "format": "float",
-            "example": 99.99
+            "example": 99.99,
+            "description": "Preço do produto. Deve ser um valor numérico positivo.",
+            "minimum": 0.01
           }
         },
         "required": [
           "name",
           "price"
-        ]
+        ],
+        "description": "Requisição para criar um novo produto. Inclui o nome, descrição e preço do produto."
       },
       "CreateProductResponse": {
         "type": "object",
         "properties": {
           "id": {
             "type": "string",
-            "example": "019160ee-7929-72d3-99cf-6c7f33789ba8"
+            "example": "019160ee-7929-72d3-99cf-6c7f33789ba8",
+            "description": "Identificador único do produto criado."
           }
-        }
+        },
+        "description": "Resposta retornada ao criar um novo produto. Contém o identificador único do produto."
       },
       "ProductListResponse": {
         "type": "array",
@@ -903,48 +1081,58 @@
           "properties": {
             "id": {
               "type": "string",
-              "example": "01916125-fb78-765d-80dc-3ab8106d569b"
+              "example": "01916125-fb78-765d-80dc-3ab8106d569b",
+              "description": "Identificador único do produto."
             },
             "name": {
               "type": "string",
-              "example": "Produto X"
+              "example": "Produto X",
+              "description": "Nome do produto."
             },
             "description": {
               "type": "string",
-              "example": "Detalhes do Produto X"
+              "example": "Detalhes do Produto X",
+              "description": "Descrição detalhada do produto."
             },
             "price": {
               "type": "number",
               "format": "float",
-              "example": 99.99
+              "example": 99.99,
+              "description": "Preço do produto."
             },
             "imageURL": {
               "type": "string",
-              "example": "https://images.bompedido.app/01916125-fb78-765d-80dc-3ab8106d569b"
+              "example": "https://images.bompedido.app/01916125-fb78-765d-80dc-3ab8106d569b",
+              "description": "URL da imagem do produto."
             }
           }
-        }
+        },
+        "description": "Lista de produtos retornada pela API. Cada item contém o identificador, nome, descrição, preço e URL da imagem do produto."
       },
       "GoogleAuthRequest": {
         "type": "object",
         "properties": {
           "token": {
             "type": "string",
-            "example": "google_token_abc123"
+            "example": "google_token_abc123",
+            "description": "Token de autenticação fornecido pelo Google. Utilizado para autenticar o cliente."
           }
         },
         "required": [
           "token"
-        ]
+        ],
+        "description": "Requisição de autenticação via Google. Contém o token gerado pelo Google."
       },
       "AuthResponse": {
         "type": "object",
         "properties": {
           "token": {
             "type": "string",
-            "example": "access_token_xyz789"
+            "example": "access_token_xyz789",
+            "description": "Token JWE retornado após a autenticação bem-sucedida. Este token deve ser usado nos headers de Authorization para chamadas subsequentes à API."
           }
-        }
+        },
+        "description": "Resposta de autenticação. Contém o token JWE necessário para autenticação em endpoints protegidos."
       },
       "CustomerResponse": {
         "type": "object",
@@ -952,64 +1140,62 @@
           "name": {
             "type": "string",
             "example": "Cliente X",
-            "description": "Nome do Cliente",
-            "nullable": false
+            "description": "Nome do Cliente"
           },
           "email": {
             "type": "string",
             "example": "cliente@bompedido.app",
-            "description": "Email do Cliente",
-            "nullable": false
+            "description": "Email do Cliente"
           },
           "phoneNumber": {
             "type": "string",
             "example": "16999999999",
-            "description": "Número de Telefone do Cliente",
-            "nullable": true
+            "description": "Número de Telefone do Cliente"
           }
-        }
+        },
+        "description": "Dados do cliente autenticado retornados pela API. Inclui nome, email e número de telefone."
       },
       "BadRequestErrorResponse": {
         "type": "object",
         "properties": {
           "errors": {
             "type": "array",
-            "items": [
-              {
-                "type": "string",
-                "example": "O campo X é obrigatório"
-              }
-            ]
+            "items": {
+              "type": "string",
+              "example": "O campo X é obrigatório",
+              "description": "Mensagem de erro detalhando o problema ocorrido na requisição."
+            }
           }
-        }
+        },
+        "description": "Resposta de erro para requisições malformadas. Inclui uma lista de mensagens de erro específicas."
       },
       "UnAuthorizedErrorResponse": {
         "type": "object",
         "properties": {
           "errors": {
             "type": "array",
-            "items": [
-              {
-                "type": "string",
-                "example": "Você não possui permissão para acessar esse recurso"
-              }
-            ]
+            "items": {
+              "type": "string",
+              "example": "Você não possui permissão para acessar esse recurso",
+              "description": "Mensagem de erro indicando que a requisição falhou devido a problemas de autenticação ou autorização."
+            }
           }
-        }
+        },
+        "description": "Resposta de erro para tentativas de acesso não autorizado. Inclui mensagens explicativas."
       },
       "InternalServerErrorResponse": {
         "type": "object",
         "properties": {
           "errors": {
             "type": "array",
-            "items": [
-              {
-                "type": "string",
-                "example": "Ocorreu um erro interno"
-              }
-            ]
+            "items": {
+              "type": "string",
+              "example": "Ocorreu um erro interno",
+              "description": "Mensagem de erro genérica indicando que um problema inesperado ocorreu no servidor."
+            }
           }
-        }
+        },
+        "description": "Resposta de erro genérica para falhas inesperadas no servidor. Inclui uma mensagem de erro."
       }
     }
   }
