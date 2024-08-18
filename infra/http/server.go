@@ -24,6 +24,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/redis/go-redis/v9"
+	echoSwagger "github.com/swaggo/echo-swagger"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 	"go.opentelemetry.io/otel"
@@ -61,6 +62,12 @@ func (s *Server) ConfigureRoutes(applicationFactory *factory.ApplicationFactory)
 	server.Use(middlewares.RedocDocumentation())
 	server.HTTPErrorHandler = middlewares.HandleError
 
+	server.GET("/swagger.json", func(c echo.Context) error {
+		return c.File(".docs/openapi.json")
+	})
+	server.GET("/swagger/*", echoSwagger.EchoWrapHandler(func(c *echoSwagger.Config) {
+		c.URLs = []string{".docs/openapi.json"}
+	}))
 	api := server.Group("/api")
 	shoppingCartRoutes := api.Group("/v1/shopping-cart", middlewares.LockByCustomerId(applicationFactory))
 	shoppingCartRoutes.POST("/checkout", checkout_shopping_cart.Handle(applicationFactory))
