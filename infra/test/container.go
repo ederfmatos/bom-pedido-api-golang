@@ -14,6 +14,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -29,27 +30,26 @@ type Container struct {
 
 var instance *Container
 var ctx = context.TODO()
-
-func init() {
-	if instance != nil {
-		return
-	}
-	fmt.Println("Criando nova instancia do instance")
-	MongoClient, downMongo := mongoConnection()
-	RedisClient, downRedis := redisClient()
-	Database, downDatabase := databaseConnection()
-	instance = &Container{
-		Database:      Database,
-		MongoClient:   MongoClient,
-		MongoDatabase: MongoClient.Database("test"),
-		RedisClient:   RedisClient,
-		downDatabase:  downDatabase,
-		downMongo:     downMongo,
-		downRedis:     downRedis,
-	}
-}
+var once sync.Once
 
 func NewContainer() *Container {
+	once.Do(func() {
+		if instance != nil {
+			return
+		}
+		MongoClient, downMongo := mongoConnection()
+		RedisClient, downRedis := redisClient()
+		Database, downDatabase := databaseConnection()
+		instance = &Container{
+			Database:      Database,
+			MongoClient:   MongoClient,
+			MongoDatabase: MongoClient.Database("test"),
+			RedisClient:   RedisClient,
+			downDatabase:  downDatabase,
+			downMongo:     downMongo,
+			downRedis:     downRedis,
+		}
+	})
 	return instance
 }
 

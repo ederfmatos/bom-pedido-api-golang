@@ -11,6 +11,7 @@ import (
 	"bom-pedido-api/infra/http/shopping_cart"
 	"context"
 	"database/sql"
+	echoPrometheus "github.com/labstack/echo-contrib/echoprometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/redis/go-redis/v9"
@@ -47,11 +48,13 @@ func (s *Server) ConfigureRoutes(applicationFactory *factory.ApplicationFactory)
 	server := echo.New()
 	server.Use(middleware.Recover())
 	server.Use(middleware.RequestID())
+	server.Use(echoPrometheus.NewMiddleware("bom_pedido_api"))
 	server.Use(otelecho.Middleware("bom-pedido-api"))
 	server.Use(middlewares.AuthenticateMiddleware(applicationFactory))
 	server.Use(middlewares.RedocDocumentation())
 	server.HTTPErrorHandler = middlewares.HandleError
 
+	server.GET("/metrics", echoPrometheus.NewHandler())
 	server.GET("/swagger.json", func(c echo.Context) error {
 		return c.File(".docs/openapi.json")
 	})
