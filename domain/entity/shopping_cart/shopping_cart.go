@@ -91,3 +91,20 @@ func (shoppingCart *ShoppingCart) Checkout(
 func (shoppingCart *ShoppingCart) IsEmpty() bool {
 	return len(shoppingCart.Items) == 0
 }
+
+func CloneOrder(order *order.Order) *ShoppingCart {
+	shoppingCart := &ShoppingCart{
+		CustomerId: order.CustomerID,
+		Items:      make([]ShoppingCartItem, len(order.Items)),
+	}
+	for i, item := range order.Items {
+		shoppingCart.Items[i] = ShoppingCartItem{
+			Id:          item.Id,
+			ProductId:   item.ProductId,
+			Quantity:    item.Quantity,
+			Observation: item.Observation,
+			Price:       item.Price,
+		}
+	}
+	return shoppingCart
+}

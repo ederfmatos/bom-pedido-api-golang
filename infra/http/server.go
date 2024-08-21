@@ -9,6 +9,7 @@ import (
 	"bom-pedido-api/infra/http/middlewares"
 	"bom-pedido-api/infra/http/order/approve"
 	"bom-pedido-api/infra/http/order/cancel"
+	"bom-pedido-api/infra/http/order/clone"
 	"bom-pedido-api/infra/http/order/finish"
 	"bom-pedido-api/infra/http/order/mark_awaiting_delivery"
 	"bom-pedido-api/infra/http/order/mark_awaiting_withdraw"
@@ -87,6 +88,7 @@ func (s *Server) ConfigureRoutes(applicationFactory *factory.ApplicationFactory)
 	orderRoutes.POST("/delivering", mark_delivering.Handle(applicationFactory))
 	orderRoutes.POST("/awaiting-withdraw", mark_awaiting_withdraw.Handle(applicationFactory))
 	orderRoutes.POST("/awaiting-delivery", mark_awaiting_delivery.Handle(applicationFactory))
+	orderRoutes.POST("/clone", clone.Handle(applicationFactory))
 	server.GET("/api/health", health.Handle(s.database, s.redisClient, s.mongoClient))
 	s.server = server
 }
