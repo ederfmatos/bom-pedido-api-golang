@@ -83,7 +83,7 @@ func (adapter *RabbitMqAdapter) Consume(options *event.ConsumerOptions, handler 
 		nil,
 	)
 	if err != nil {
-		slog.Error("Error on consume messages", err)
+		slog.Error("Error on consume messages", "error", err)
 		return
 	}
 
