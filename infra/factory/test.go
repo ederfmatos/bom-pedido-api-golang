@@ -4,6 +4,8 @@ import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/infra/event"
 	"bom-pedido-api/infra/gateway"
+	"bom-pedido-api/infra/gateway/email"
+	"bom-pedido-api/infra/lock"
 	"bom-pedido-api/infra/repository"
 	"bom-pedido-api/infra/test"
 	"bom-pedido-api/infra/token"
@@ -17,26 +19,29 @@ func NewTestApplicationFactory() *factory.ApplicationFactory {
 			repository.NewProductMemoryRepository(),
 			repository.NewShoppingCartMemoryRepository(),
 			repository.NewOrderMemoryRepository(),
+			repository.NewAdminMemoryRepository(),
 		),
 		factory.NewTokenFactory(token.NewFakeCustomerTokenManager()),
 		factory.NewEventFactory(event.NewMemoryEventHandler()),
-		nil, nil,
+		nil, nil, email.NewFakeEmailGateway(),
 	)
 }
 
 func NewContainerApplicationFactory(container *test.Container) *factory.ApplicationFactory {
 	sqlConnection := repository.NewDefaultSqlConnection(container.Database)
-	mongoDatabase := container.MongoDatabase
 	return factory.NewApplicationFactory(
 		factory.NewGatewayFactory(gateway.NewFakeGoogleGateway()),
 		factory.NewRepositoryFactory(
 			repository.NewDefaultCustomerRepository(sqlConnection),
 			repository.NewDefaultProductRepository(sqlConnection),
-			repository.NewShoppingCartMongoRepository(mongoDatabase),
+			repository.NewShoppingCartMongoRepository(container.MongoDatabase),
 			repository.NewDefaultOrderRepository(sqlConnection),
+			repository.NewDefaultAdminRepository(sqlConnection),
 		),
 		factory.NewTokenFactory(token.NewFakeCustomerTokenManager()),
 		factory.NewEventFactory(event.NewMemoryEventHandler()),
-		nil, nil,
+		queryFactory(sqlConnection),
+		lock.NewRedisLocker(container.RedisClient),
+		email.NewFakeEmailGateway(),
 	)
 }

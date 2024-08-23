@@ -9,6 +9,7 @@ type RepositoryFactory struct {
 	ProductRepository      repository.ProductRepository
 	OrderRepository        repository.OrderRepository
 	ShoppingCartRepository repository.ShoppingCartRepository
+	AdminRepository        repository.AdminRepository
 }
 
 func NewRepositoryFactory(
@@ -16,11 +17,13 @@ func NewRepositoryFactory(
 	productRepository repository.ProductRepository,
 	shoppingCartRepository repository.ShoppingCartRepository,
 	orderRepository repository.OrderRepository,
+	adminRepository repository.AdminRepository,
 ) *RepositoryFactory {
 	return &RepositoryFactory{
 		CustomerRepository:     customerRepository,
 		ProductRepository:      productRepository,
 		ShoppingCartRepository: shoppingCartRepository,
 		OrderRepository:        orderRepository,
+		AdminRepository:        adminRepository,
 	}
 }

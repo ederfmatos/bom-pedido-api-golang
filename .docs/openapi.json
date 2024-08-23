@@ -12,6 +12,11 @@
       "x-displayName": "Autenticação"
     },
     {
+      "name": "Admin",
+      "description": "Todas as operações de administradores",
+      "x-displayName": "Administradores"
+    },
+    {
       "name": "Customer",
       "description": "Todas as operações para o cliente",
       "x-displayName": "Cliente"
@@ -43,6 +48,66 @@
     }
   ],
   "paths": {
+    "/v1/auth/admin": {
+      "post": {
+        "security": [],
+        "summary": "Enviar link de autenticação para administrador",
+        "tags": ["Admin"],
+        "requestBody": {
+          "description": "Dados de autenticação do administrador",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendAdminMagicLinkRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Link de autenticação enviado com sucesso",
+          },
+          "400": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnAuthorizedErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cUrl",
+            "label": "Curl",
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/auth/admin \\\n  --header 'content-type: application/json' \\\n  --data '{\n  \"email\": \"<EMAIL>\"\n}'"
+          }
+        ]
+      }
+    },
     "/v1/auth/google/customer": {
       "post": {
         "security": [
@@ -1189,6 +1254,20 @@
         },
         "required": [
           "token"
+        ],
+        "description": "Requisição de autenticação via Google. Contém o token gerado pelo Google."
+      },
+      "SendAdminMagicLinkRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "admin@pedido.app",
+            "description": "Email do administrador"
+          }
+        },
+        "required": [
+          "email"
         ],
         "description": "Requisição de autenticação via Google. Contém o token gerado pelo Google."
       },

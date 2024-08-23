@@ -16,7 +16,7 @@ type (
 	}
 	Output struct {
 		Name        string  `json:"name,omitempty"`
-		Email       *string `json:"email,omitempty"`
+		Email       string  `json:"email,omitempty"`
 		PhoneNumber *string `json:"phoneNumber,omitempty"`
 	}
 )

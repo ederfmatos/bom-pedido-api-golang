@@ -78,6 +78,6 @@ func (customer *Customer) SetPhoneNumber(phoneNumber string) error {
 	return nil
 }
 
-func (customer *Customer) GetEmail() *string {
+func (customer *Customer) GetEmail() string {
 	return customer.email.Value()
 }

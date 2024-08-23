@@ -3,6 +3,7 @@ module bom-pedido-api
 go 1.23
 
 require (
+	github.com/cbroglie/mustache v1.4.0
 	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/go-faker/faker/v4 v4.4.2
 	github.com/golang-jwt/jwe v0.0.0-20220815104040-b2647e820b90
@@ -15,6 +16,7 @@ require (
 	github.com/mvrilo/go-redoc/echo v0.0.0-20240120021923-101384bb3acd
 	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/redis/go-redis/v9 v9.6.1
+	github.com/resend/resend-go/v2 v2.11.0
 	github.com/stretchr/testify v1.9.0
 	github.com/swaggo/echo-swagger v1.4.1
 	github.com/testcontainers/testcontainers-go v0.32.0

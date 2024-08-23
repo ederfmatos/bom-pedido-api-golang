@@ -28,7 +28,7 @@ func runCustomerTests(t *testing.T, repository repository.CustomerRepository) {
 	aCustomer, err := customer.New(faker.Name(), faker.Email(), faker.Word())
 	assert.NoError(t, err)
 
-	savedCustomer, err := repository.FindByEmail(ctx, *aCustomer.GetEmail(), aCustomer.TenantId)
+	savedCustomer, err := repository.FindByEmail(ctx, aCustomer.GetEmail(), aCustomer.TenantId)
 	assert.NoError(t, err)
 	assert.Nil(t, savedCustomer)
 
@@ -39,7 +39,7 @@ func runCustomerTests(t *testing.T, repository repository.CustomerRepository) {
 	err = repository.Create(ctx, aCustomer)
 	assert.NoError(t, err)
 
-	savedCustomer, err = repository.FindByEmail(ctx, *aCustomer.GetEmail(), aCustomer.TenantId)
+	savedCustomer, err = repository.FindByEmail(ctx, aCustomer.GetEmail(), aCustomer.TenantId)
 	assert.NoError(t, err)
 	assert.NotNil(t, savedCustomer)
 	assert.Equal(t, aCustomer, savedCustomer)
@@ -56,7 +56,7 @@ func runCustomerTests(t *testing.T, repository repository.CustomerRepository) {
 	err = repository.Update(ctx, aCustomer)
 	assert.NoError(t, err)
 
-	savedCustomer, err = repository.FindByEmail(ctx, *aCustomer.GetEmail(), aCustomer.TenantId)
+	savedCustomer, err = repository.FindByEmail(ctx, aCustomer.GetEmail(), aCustomer.TenantId)
 	assert.NoError(t, err)
 	assert.NotNil(t, savedCustomer)
 	assert.Equal(t, aCustomer, savedCustomer)

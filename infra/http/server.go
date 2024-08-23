@@ -3,6 +3,7 @@ package http
 import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/infra/config"
+	"bom-pedido-api/infra/http/admin"
 	"bom-pedido-api/infra/http/customer"
 	"bom-pedido-api/infra/http/health"
 	"bom-pedido-api/infra/http/middlewares"
@@ -64,6 +65,7 @@ func (s *Server) ConfigureRoutes(applicationFactory *factory.ApplicationFactory)
 	}))
 
 	api := server.Group("/api")
+	admin.ConfigureRoutes(api, applicationFactory, s.environment)
 	order.ConfigureRoutes(api, applicationFactory)
 	products.ConfigureRoutes(api, applicationFactory)
 	customer.ConfigureRoutes(api, applicationFactory)

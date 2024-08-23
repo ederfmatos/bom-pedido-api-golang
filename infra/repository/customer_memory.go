@@ -30,7 +30,7 @@ func (repository *CustomerMemoryRepository) FindById(_ context.Context, id strin
 
 func (repository *CustomerMemoryRepository) FindByEmail(_ context.Context, email, tenantId string) (*customer.Customer, error) {
 	for _, c := range repository.customers {
-		if *c.GetEmail() == email && c.TenantId == tenantId {
+		if c.GetEmail() == email && c.TenantId == tenantId {
 			return c, nil
 		}
 	}

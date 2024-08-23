@@ -19,6 +19,9 @@ type Environment struct {
 	KafkaClientId                 string
 	OpenTelemetryEndpointExporter string
 	MessagingStrategy             string
+	AdminMagicLinkBaseUrl         string
+	EmailFrom                     string
+	ResendMailKey                 string
 }
 
 func requiredEnv(name string) string {
@@ -51,5 +54,8 @@ func LoadEnvironment() *Environment {
 		KafkaClientId:                 requiredEnv("KAFKA_CLIENT_ID"),
 		OpenTelemetryEndpointExporter: requiredEnv("OTEL_ENDPOINT_EXPORTER"),
 		MessagingStrategy:             requiredEnv("MESSAGING_STRATEGY"),
+		AdminMagicLinkBaseUrl:         requiredEnv("ADMIN_MAGIC_LINK_BASE_URL"),
+		EmailFrom:                     requiredEnv("EMAIL_FROM"),
+		ResendMailKey:                 requiredEnv("RESEND_MAIL_KEY"),
 	}
 }

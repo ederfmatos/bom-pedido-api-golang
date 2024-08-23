@@ -171,6 +171,15 @@ func databaseConnection() (*sql.DB, func()) {
 			data       TEXT,
 			CONSTRAINT fk_order_history_order FOREIGN KEY (order_id) REFERENCES orders (id)
 		);
+
+		CREATE TABLE admins
+		(
+			id          VARCHAR(36) PRIMARY KEY,
+			name        VARCHAR(255) NOT NULL,
+			email       VARCHAR(255) NOT NULL UNIQUE,
+			merchant_id VARCHAR(36),
+			created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+		);
     `)
 	failOnError(err)
 	return database, func() {

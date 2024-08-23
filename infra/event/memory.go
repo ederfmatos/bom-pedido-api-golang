@@ -5,9 +5,10 @@ import (
 	"context"
 )
 
-type MemoryEventHandler struct{}
+type MemoryEventHandler struct {
+}
 
-func NewMemoryEventHandler() event.Handler {
+func NewMemoryEventHandler() *MemoryEventHandler {
 	return &MemoryEventHandler{}
 }
 

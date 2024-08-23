@@ -1,6 +1,9 @@
 package factory
 
-import "bom-pedido-api/application/lock"
+import (
+	"bom-pedido-api/application/gateway"
+	"bom-pedido-api/application/lock"
+)
 
 type ApplicationFactory struct {
 	*GatewayFactory
@@ -8,7 +11,8 @@ type ApplicationFactory struct {
 	*TokenFactory
 	*EventFactory
 	*QueryFactory
-	Locker lock.Locker
+	Locker       lock.Locker
+	EmailGateway gateway.EmailGateway
 }
 
 func (factory *ApplicationFactory) Close() {
@@ -22,6 +26,7 @@ func NewApplicationFactory(
 	eventFactory *EventFactory,
 	queryFactory *QueryFactory,
 	locker lock.Locker,
+	emailGateway gateway.EmailGateway,
 ) *ApplicationFactory {
 	return &ApplicationFactory{
 		GatewayFactory:    gatewayFactory,
@@ -30,5 +35,6 @@ func NewApplicationFactory(
 		EventFactory:      eventFactory,
 		QueryFactory:      queryFactory,
 		Locker:            locker,
+		EmailGateway:      emailGateway,
 	}
 }
