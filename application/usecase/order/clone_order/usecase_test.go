@@ -30,9 +30,9 @@ func Test_UseCase(t *testing.T) {
 	t.Run("should clone an order", func(t *testing.T) {
 		ctx := context.Background()
 		customerId := value_object.NewID()
-		anOrder, err := order.New(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, time.Now())
+		anOrder, err := order.New(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, time.Now(), faker.Word())
 		assert.NoError(t, err)
-		aProduct, err := product.New(faker.Name(), faker.Word(), 10.0)
+		aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.Word())
 		assert.NoError(t, err)
 		err = anOrder.AddProduct(aProduct, 1, "observation")
 		assert.NoError(t, err)

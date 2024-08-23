@@ -22,12 +22,13 @@ func TestCreateProductUseCase_Execute(t *testing.T) {
 			Name:        faker.Name(),
 			Description: faker.Word(),
 			Price:       10.0,
+			TenantId:    faker.Word(),
 		}
-		product, err := product.Restore(value_object.NewID(), input.Name, faker.Word(), 10.0, "ACTIVE")
+		aProduct, err := product.Restore(value_object.NewID(), input.Name, faker.Word(), 10.0, "ACTIVE", input.TenantId)
 		if err != nil {
-			t.Fatalf("failed to restore product: %v", err)
+			t.Fatalf("failed to restore aProduct: %v", err)
 		}
-		_ = applicationFactory.ProductRepository.Create(ctx, product)
+		_ = applicationFactory.ProductRepository.Create(ctx, aProduct)
 
 		output, err := useCase.Execute(ctx, input)
 
@@ -52,6 +53,7 @@ func TestCreateProductUseCase_Execute(t *testing.T) {
 					Name:        tt.name,
 					Description: tt.description,
 					Price:       tt.price,
+					TenantId:    faker.Word(),
 				}
 
 				output, err := useCase.Execute(ctx, input)
@@ -67,6 +69,7 @@ func TestCreateProductUseCase_Execute(t *testing.T) {
 			Name:        faker.Name(),
 			Description: faker.Word(),
 			Price:       10.0,
+			TenantId:    faker.Word(),
 		}
 
 		output, err := useCase.Execute(ctx, input)
@@ -79,6 +82,7 @@ func TestCreateProductUseCase_Execute(t *testing.T) {
 		assert.Equal(t, input.Name, savedProduct.Name)
 		assert.Equal(t, input.Description, savedProduct.Description)
 		assert.Equal(t, input.Price, savedProduct.Price)
+		assert.Equal(t, input.TenantId, savedProduct.TenantId)
 		assert.True(t, savedProduct.IsActive())
 	})
 }

@@ -34,9 +34,9 @@ func (repository *ProductMemoryRepository) FindById(_ context.Context, id string
 	return repository.products[id], nil
 }
 
-func (repository *ProductMemoryRepository) ExistsByName(_ context.Context, name string) (bool, error) {
-	for _, product := range repository.products {
-		if product.Name == name {
+func (repository *ProductMemoryRepository) ExistsByNameAndTenantId(_ context.Context, name, tenantId string) (bool, error) {
+	for _, aProduct := range repository.products {
+		if aProduct.Name == name && aProduct.TenantId == tenantId {
 			return true, nil
 		}
 	}

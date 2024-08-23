@@ -24,14 +24,14 @@ func Test_ProductMemoryRepository(t *testing.T) {
 
 func runProductTests(t *testing.T, repository repository.ProductRepository) {
 	t.Run("should create a product", func(t *testing.T) {
-		aProduct, err := product.New(faker.Name(), faker.Word(), 10.0)
+		aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.WORD)
 		assert.NoError(t, err)
 
 		savedProduct, err := repository.FindById(context.Background(), aProduct.Id)
 		assert.NoError(t, err)
 		assert.Nil(t, savedProduct)
 
-		existsByName, err := repository.ExistsByName(context.Background(), aProduct.Name)
+		existsByName, err := repository.ExistsByNameAndTenantId(context.Background(), aProduct.Name, faker.WORD)
 		assert.NoError(t, err)
 		assert.False(t, existsByName)
 
@@ -46,19 +46,19 @@ func runProductTests(t *testing.T, repository repository.ProductRepository) {
 		assert.Equal(t, aProduct.Price, savedProduct.Price)
 		assert.Equal(t, aProduct.Status, savedProduct.Status)
 
-		existsByName, err = repository.ExistsByName(context.Background(), aProduct.Name)
+		existsByName, err = repository.ExistsByNameAndTenantId(context.Background(), aProduct.Name, faker.WORD)
 		assert.NoError(t, err)
 		assert.True(t, existsByName)
 	})
 
 	t.Run("should not create duplicated product", func(t *testing.T) {
-		aProduct, err := product.New(faker.Name(), faker.Word(), 10.0)
+		aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.WORD)
 		assert.NoError(t, err)
 
 		err = repository.Create(context.Background(), aProduct)
 		assert.NoError(t, err)
 
-		anotherProduct, err := product.New(aProduct.Name, aProduct.Description, aProduct.Price)
+		anotherProduct, err := product.New(aProduct.Name, aProduct.Description, aProduct.Price, faker.WORD)
 		assert.NoError(t, err)
 
 		err = repository.Create(context.Background(), anotherProduct)
@@ -70,7 +70,7 @@ func runProductTests(t *testing.T, repository repository.ProductRepository) {
 	})
 
 	t.Run("should update a product", func(t *testing.T) {
-		aProduct, err := product.New(faker.Name(), faker.Word(), 10.0)
+		aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.WORD)
 		assert.NoError(t, err)
 
 		err = repository.Create(context.Background(), aProduct)

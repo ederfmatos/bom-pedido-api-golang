@@ -18,6 +18,7 @@ type (
 		ProductId   string
 		Quantity    int
 		Observation string
+		TenantId    string
 	}
 )
 
@@ -41,7 +42,7 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) error {
 		return err
 	}
 	if shoppingCart == nil {
-		shoppingCart = shopping_cart.New(input.CustomerId)
+		shoppingCart = shopping_cart.New(input.CustomerId, input.TenantId)
 	}
 	err = shoppingCart.AddItem(product, input.Quantity, input.Observation)
 	if err != nil {

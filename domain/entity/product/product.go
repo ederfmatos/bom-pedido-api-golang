@@ -19,26 +19,29 @@ type Product struct {
 	Description string
 	Price       float64
 	Status      Status
+	TenantId    string
 }
 
-func New(name, description string, price float64) (*Product, error) {
+func New(name, description string, price float64, tenantId string) (*Product, error) {
 	product := &Product{
 		Id:          value_object.NewID(),
 		Name:        name,
 		Price:       price,
 		Description: description,
 		Status:      Active,
+		TenantId:    tenantId,
 	}
 	return product, product.Validate()
 }
 
-func Restore(id, name, description string, price float64, status string) (*Product, error) {
+func Restore(id, name, description string, price float64, status, tenantId string) (*Product, error) {
 	product := &Product{
 		Id:          id,
 		Name:        name,
 		Price:       price,
 		Description: description,
 		Status:      Status(status),
+		TenantId:    tenantId,
 	}
 	return product, product.Validate()
 }

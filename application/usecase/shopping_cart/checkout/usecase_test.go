@@ -27,7 +27,7 @@ func Test_CheckoutShoppingCart(t *testing.T) {
 		assert.Nil(t, output)
 		assert.ErrorIs(t, err, errors.ShoppingCartEmptyError)
 
-		shoppingCart := shopping_cart.New(input.CustomerId)
+		shoppingCart := shopping_cart.New(input.CustomerId, faker.WORD)
 		err = shoppingCartRepository.Upsert(ctx, shoppingCart)
 		assert.NoError(t, err)
 
@@ -46,12 +46,12 @@ func Test_CheckoutShoppingCart(t *testing.T) {
 			Payback:         0,
 			CreditCardToken: "",
 		}
-		product, _ := product.New(faker.Name(), faker.Word(), 11.0)
-		err := productRepository.Create(ctx, product)
+		aProduct, _ := product.New(faker.Name(), faker.Word(), 11.0, faker.Word())
+		err := productRepository.Create(ctx, aProduct)
 		assert.NoError(t, err)
 
-		shoppingCart := shopping_cart.New(input.CustomerId)
-		err = shoppingCart.AddItem(product, 1, "")
+		shoppingCart := shopping_cart.New(input.CustomerId, faker.WORD)
+		err = shoppingCart.AddItem(aProduct, 1, "")
 		assert.NoError(t, err)
 
 		err = shoppingCartRepository.Upsert(ctx, shoppingCart)

@@ -15,22 +15,24 @@ type Customer struct {
 	email       value_object.Email
 	phoneNumber *value_object.PhoneNumber
 	Status      string
+	TenantId    string
 }
 
-func New(name, email string) (*Customer, error) {
+func New(name, email, tenantId string) (*Customer, error) {
 	newEmail, err := value_object.NewEmail(email)
 	if err != nil {
 		return nil, err
 	}
 	return &Customer{
-		Id:     value_object.NewID(),
-		Name:   name,
-		email:  *newEmail,
-		Status: ACTIVE,
+		Id:       value_object.NewID(),
+		Name:     name,
+		email:    *newEmail,
+		Status:   ACTIVE,
+		TenantId: tenantId,
 	}, nil
 }
 
-func Restore(id, name, email string, phoneNumber *string, status string) (*Customer, error) {
+func Restore(id, name, email string, phoneNumber *string, status, tenantId string) (*Customer, error) {
 	newEmail, err := value_object.NewEmail(email)
 	if err != nil {
 		return nil, err
@@ -48,6 +50,7 @@ func Restore(id, name, email string, phoneNumber *string, status string) (*Custo
 		email:       *newEmail,
 		phoneNumber: newPhoneNumber,
 		Status:      status,
+		TenantId:    tenantId,
 	}, nil
 }
 

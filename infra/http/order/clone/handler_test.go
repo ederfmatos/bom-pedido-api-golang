@@ -24,7 +24,7 @@ func TestHandle(t *testing.T) {
 	defer container.Down()
 	applicationFactory := factory.NewContainerApplicationFactory(container)
 
-	aCustomer, err := customer.New(faker.Name(), faker.Email())
+	aCustomer, err := customer.New(faker.Name(), faker.Email(), faker.WORD)
 	assert.NoError(t, err)
 	err = applicationFactory.CustomerRepository.Create(ctx, aCustomer)
 	assert.NoError(t, err)
@@ -34,6 +34,7 @@ func TestHandle(t *testing.T) {
 		Name:        faker.Name(),
 		Description: faker.Word(),
 		Price:       10.0,
+		TenantId:    faker.WORD,
 	})
 	assert.NoError(t, err)
 
@@ -43,6 +44,7 @@ func TestHandle(t *testing.T) {
 		ProductId:   createProductOutput.Id,
 		Quantity:    1,
 		Observation: "",
+		TenantId:    faker.WORD,
 	})
 	assert.NoError(t, err)
 

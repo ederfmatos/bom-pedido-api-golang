@@ -32,7 +32,7 @@ func Test_UseCase(t *testing.T) {
 	t.Run("should cancel order", func(t *testing.T) {
 		ctx := context.Background()
 		customerId := value_object.NewID()
-		order, err := order2.New(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, time.Now())
+		order, err := order2.New(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, time.Now(), faker.WORD)
 		err = order.Approve(time.Now(), "")
 		assert.NoError(t, err)
 		err = applicationFactory.OrderRepository.Create(ctx, order)
@@ -62,7 +62,7 @@ func Test_UseCase(t *testing.T) {
 				ctx := context.Background()
 				orderId := value_object.NewID()
 				customerId := value_object.NewID()
-				order, err := order2.Restore(orderId, customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", currentStatus, time.Now(), 0, 1, time.Now(), []order2.Item{}, make([]status.History, 0))
+				order, err := order2.Restore(orderId, customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", currentStatus, time.Now(), 0, 1, time.Now(), []order2.Item{}, make([]status.History, 0), faker.WORD)
 				err = applicationFactory.OrderRepository.Create(ctx, order)
 				assert.NoError(t, err)
 				input := Input{

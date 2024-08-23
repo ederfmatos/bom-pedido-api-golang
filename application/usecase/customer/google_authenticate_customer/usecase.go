@@ -5,7 +5,7 @@ import (
 	"bom-pedido-api/application/gateway"
 	"bom-pedido-api/application/repository"
 	"bom-pedido-api/application/token"
-	customerEntity "bom-pedido-api/domain/entity/customer"
+	"bom-pedido-api/domain/entity/customer"
 	"context"
 )
 
@@ -16,7 +16,8 @@ type (
 		customerTokenManager token.CustomerTokenManager
 	}
 	Input struct {
-		Token string
+		Token    string
+		TenantId string
 	}
 	Output struct {
 		Token string `json:"token"`
@@ -36,20 +37,20 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) (*Output, erro
 	if err != nil {
 		return nil, err
 	}
-	customer, err := useCase.customerRepository.FindByEmail(ctx, googleUser.Email)
+	aCustomer, err := useCase.customerRepository.FindByEmail(ctx, googleUser.Email, input.TenantId)
 	if err != nil {
 		return nil, err
 	}
-	if customer == nil {
-		customer, err = customerEntity.New(googleUser.Name, googleUser.Email)
+	if aCustomer == nil {
+		aCustomer, err = customer.New(googleUser.Name, googleUser.Email, input.TenantId)
 		if err != nil {
 			return nil, err
 		}
-		err := useCase.customerRepository.Create(ctx, customer)
+		err = useCase.customerRepository.Create(ctx, aCustomer)
 		if err != nil {
 			return nil, err
 		}
 	}
-	customerToken, err := useCase.customerTokenManager.Encrypt(ctx, customer.Id)
+	customerToken, err := useCase.customerTokenManager.Encrypt(ctx, aCustomer.Id)
 	return &Output{Token: customerToken}, err
 }

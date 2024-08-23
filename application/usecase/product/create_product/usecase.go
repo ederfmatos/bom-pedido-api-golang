@@ -18,6 +18,7 @@ type (
 		Name        string
 		Description string
 		Price       float64
+		TenantId    string
 	}
 	Output struct {
 		Id string `json:"id"`
@@ -32,24 +33,24 @@ func New(factory *factory.ApplicationFactory) *UseCase {
 }
 
 func (useCase *UseCase) Execute(ctx context.Context, input Input) (*Output, error) {
-	existsByName, err := useCase.productRepository.ExistsByName(ctx, input.Name)
+	existsByName, err := useCase.productRepository.ExistsByNameAndTenantId(ctx, input.Name, input.TenantId)
 	if err != nil {
 		return nil, err
 	}
 	if existsByName {
 		return nil, errors.ProductWithSameNameError
 	}
-	product, err := product.New(input.Name, input.Description, input.Price)
+	aProduct, err := product.New(input.Name, input.Description, input.Price, input.TenantId)
 	if err != nil {
 		return nil, err
 	}
-	err = useCase.productRepository.Create(ctx, product)
+	err = useCase.productRepository.Create(ctx, aProduct)
 	if err != nil {
 		return nil, err
 	}
-	err = useCase.eventEmitter.Emit(ctx, event.NewProductCreatedEvent(product))
+	err = useCase.eventEmitter.Emit(ctx, event.NewProductCreatedEvent(aProduct))
 	if err != nil {
 		return nil, err
 	}
-	return &Output{Id: product.Id}, nil
+	return &Output{Id: aProduct.Id}, nil
 }

@@ -26,16 +26,16 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 	})
 
 	t.Run("should return error is product is unavailable", func(t *testing.T) {
-		product, err := product.New(faker.Name(), faker.Word(), 10.0)
-		product.MarkUnAvailable()
+		aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.WORD)
+		aProduct.MarkUnAvailable()
 		if err != nil {
-			t.Fatalf("failed to restore product: %v", err)
+			t.Fatalf("failed to restore aProduct: %v", err)
 		}
-		_ = applicationFactory.ProductRepository.Create(ctx, product)
+		_ = applicationFactory.ProductRepository.Create(ctx, aProduct)
 
 		input := Input{
 			CustomerId:  value_object.NewID(),
-			ProductId:   product.Id,
+			ProductId:   aProduct.Id,
 			Quantity:    2,
 			Observation: faker.Word(),
 		}
@@ -47,15 +47,15 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 	})
 
 	t.Run("should create a shopping cart with one item", func(t *testing.T) {
-		product, err := product.New(faker.Name(), faker.Word(), 10.0)
+		aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.WORD)
 		if err != nil {
-			t.Fatalf("failed to restore product: %v", err)
+			t.Fatalf("failed to restore aProduct: %v", err)
 		}
-		_ = applicationFactory.ProductRepository.Create(ctx, product)
+		_ = applicationFactory.ProductRepository.Create(ctx, aProduct)
 
 		input := Input{
 			CustomerId:  value_object.NewID(),
-			ProductId:   product.Id,
+			ProductId:   aProduct.Id,
 			Quantity:    2,
 			Observation: faker.Word(),
 		}
@@ -69,7 +69,7 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 		items := shoppingCart.GetItems()
 		assert.Equal(t, 1, len(items))
 		item := items[0]
-		assert.Equal(t, product.Id, item.ProductId)
+		assert.Equal(t, aProduct.Id, item.ProductId)
 		assert.Equal(t, input.Quantity, item.Quantity)
 		assert.Equal(t, input.Observation, item.Observation)
 		assert.Equal(t, 10.0, item.Price)

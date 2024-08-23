@@ -2,7 +2,7 @@ package repository
 
 import (
 	"bom-pedido-api/application/repository"
-	customer2 "bom-pedido-api/domain/entity/customer"
+	customer "bom-pedido-api/domain/entity/customer"
 	"bom-pedido-api/infra/test"
 	"context"
 	"github.com/go-faker/faker/v4"
@@ -25,46 +25,46 @@ func Test_CustomerMemoryRepository(t *testing.T) {
 func runCustomerTests(t *testing.T, repository repository.CustomerRepository) {
 	ctx := context.TODO()
 
-	customer, err := customer2.New(faker.Name(), faker.Email())
+	aCustomer, err := customer.New(faker.Name(), faker.Email(), faker.Word())
 	assert.NoError(t, err)
 
-	savedCustomer, err := repository.FindByEmail(ctx, *customer.GetEmail())
+	savedCustomer, err := repository.FindByEmail(ctx, *aCustomer.GetEmail(), aCustomer.TenantId)
 	assert.NoError(t, err)
 	assert.Nil(t, savedCustomer)
 
-	savedCustomer, err = repository.FindById(ctx, customer.Id)
+	savedCustomer, err = repository.FindById(ctx, aCustomer.Id)
 	assert.NoError(t, err)
 	assert.Nil(t, savedCustomer)
 
-	err = repository.Create(ctx, customer)
+	err = repository.Create(ctx, aCustomer)
 	assert.NoError(t, err)
 
-	savedCustomer, err = repository.FindByEmail(ctx, *customer.GetEmail())
+	savedCustomer, err = repository.FindByEmail(ctx, *aCustomer.GetEmail(), aCustomer.TenantId)
 	assert.NoError(t, err)
 	assert.NotNil(t, savedCustomer)
-	assert.Equal(t, customer, savedCustomer)
+	assert.Equal(t, aCustomer, savedCustomer)
 
-	savedCustomer, err = repository.FindById(ctx, customer.Id)
+	savedCustomer, err = repository.FindById(ctx, aCustomer.Id)
 	assert.NoError(t, err)
 	assert.NotNil(t, savedCustomer)
-	assert.Equal(t, customer, savedCustomer)
+	assert.Equal(t, aCustomer, savedCustomer)
 
 	phoneNumber := "11999999999"
-	err = customer.SetPhoneNumber(phoneNumber)
+	err = aCustomer.SetPhoneNumber(phoneNumber)
 	assert.NoError(t, err)
 
-	err = repository.Update(ctx, customer)
+	err = repository.Update(ctx, aCustomer)
 	assert.NoError(t, err)
 
-	savedCustomer, err = repository.FindByEmail(ctx, *customer.GetEmail())
+	savedCustomer, err = repository.FindByEmail(ctx, *aCustomer.GetEmail(), aCustomer.TenantId)
 	assert.NoError(t, err)
 	assert.NotNil(t, savedCustomer)
-	assert.Equal(t, customer, savedCustomer)
+	assert.Equal(t, aCustomer, savedCustomer)
 	assert.Equal(t, phoneNumber, *savedCustomer.GetPhoneNumber())
 
-	savedCustomer, err = repository.FindById(ctx, customer.Id)
+	savedCustomer, err = repository.FindById(ctx, aCustomer.Id)
 	assert.NoError(t, err)
 	assert.NotNil(t, savedCustomer)
-	assert.Equal(t, customer, savedCustomer)
+	assert.Equal(t, aCustomer, savedCustomer)
 	assert.Equal(t, phoneNumber, *savedCustomer.GetPhoneNumber())
 }

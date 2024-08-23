@@ -33,10 +33,10 @@ func orderTests(t *testing.T, orderRepository repository.OrderRepository, produc
 
 	customerId := value_object.NewID()
 	adminId := value_object.NewID()
-	anOrder, err := order.New(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 10.0, time.Now())
+	anOrder, err := order.New(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 10.0, time.Now(), faker.WORD)
 	assert.NoError(t, err)
 
-	aProduct, err := product.New(faker.Name(), faker.Word(), 10.0)
+	aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.WORD)
 	assert.NoError(t, err)
 
 	err = anOrder.AddProduct(aProduct, 1, "")

@@ -31,6 +31,7 @@ type (
 		state           status.Status
 		Items           []Item
 		History         []status.History
+		TenantId        string
 	}
 
 	Item struct {
@@ -43,7 +44,7 @@ type (
 	}
 )
 
-func New(customerID, paymentMethodString, paymentModeString, deliveryModeString, creditCardToken string, payback float64, deliveryTime time.Time) (*Order, error) {
+func New(customerID, paymentMethodString, paymentModeString, deliveryModeString, creditCardToken string, payback float64, deliveryTime time.Time, tenantId string) (*Order, error) {
 	paymentMethod, deliveryMode, paymentMode, err := validateOrder(paymentMethodString, deliveryModeString, paymentModeString, creditCardToken, payback)
 	if err != nil {
 		return nil, err
@@ -62,6 +63,7 @@ func New(customerID, paymentMethodString, paymentModeString, deliveryModeString,
 		state:           status.AwaitingApprovalStatus,
 		Items:           make([]Item, 0),
 		History:         make([]status.History, 0),
+		TenantId:        tenantId,
 	}, nil
 }
 
@@ -73,6 +75,7 @@ func Restore(
 	deliveryTime time.Time,
 	items []Item,
 	history []status.History,
+	tenantId string,
 ) (*Order, error) {
 	paymentMethod, deliveryMode, paymentMode, err := validateOrder(paymentMethodString, deliveryModeString, paymentModeString, creditCardToken, payback)
 	if err != nil {
@@ -96,6 +99,7 @@ func Restore(
 		state:           orderStatus,
 		Items:           items,
 		History:         history,
+		TenantId:        tenantId,
 	}, nil
 }
 

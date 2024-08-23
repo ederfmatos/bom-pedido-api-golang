@@ -8,6 +8,7 @@ import (
 	"bom-pedido-api/domain/value_object"
 	"bom-pedido-api/infra/factory"
 	"context"
+	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -30,7 +31,7 @@ func Test_UseCase(t *testing.T) {
 	t.Run("should mark an order in delivering", func(t *testing.T) {
 		ctx := context.Background()
 		customerId := value_object.NewID()
-		order, err := order2.New(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, time.Now())
+		order, err := order2.New(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, time.Now(), faker.WORD)
 		err = order.Approve(time.Now(), "")
 		assert.NoError(t, err)
 		err = order.MarkAsInProgress(time.Now(), "")

@@ -11,5 +11,5 @@ type Product struct {
 }
 
 type ProductQuery interface {
-	List(ctx context.Context) ([]Product, error)
+	List(ctx context.Context, tenantId string) ([]Product, error)
 }

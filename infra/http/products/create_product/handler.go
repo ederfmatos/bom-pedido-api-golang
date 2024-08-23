@@ -4,6 +4,7 @@ import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/application/usecase/product/create_product"
 	"bom-pedido-api/infra/http/response"
+	"bom-pedido-api/infra/tenant"
 	"github.com/labstack/echo/v4"
 )
 
@@ -25,6 +26,7 @@ func Handle(factory *factory.ApplicationFactory) func(context echo.Context) erro
 			Name:        request.Name,
 			Description: request.Description,
 			Price:       request.Price,
+			TenantId:    context.Get(tenant.Id).(string),
 		}
 		output, err := createProductUseCase.Execute(context.Request().Context(), input)
 		return response.Created(context, output, err)

@@ -31,8 +31,8 @@ func runTests(t *testing.T, shoppingCartRepository repository.ShoppingCartReposi
 	assert.NoError(t, err)
 	assert.Nil(t, shoppingCart)
 
-	shoppingCart = shopping_cart.New(customerId)
-	product, err := product.New(faker.Name(), faker.Word(), 10.0)
+	shoppingCart = shopping_cart.New(customerId, faker.WORD)
+	product, err := product.New(faker.Name(), faker.Word(), 10.0, faker.WORD)
 	assert.NoError(t, err)
 
 	assert.NoError(t, shoppingCart.AddItem(product, 2, ""))

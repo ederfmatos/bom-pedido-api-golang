@@ -108,6 +108,7 @@ func databaseConnection() (*sql.DB, func()) {
 			email        VARCHAR(255)               NOT NULL UNIQUE,
 			phone_number VARCHAR(11)                UNIQUE,
 			status       VARCHAR(20)				NOT NULL,
+			tenant_id 	 VARCHAR(20) 				NOT NULL,
 			created_at   TIMESTAMP                  NOT NULL DEFAULT CURRENT_TIMESTAMP
 		);
 		
@@ -121,6 +122,7 @@ func databaseConnection() (*sql.DB, func()) {
 			description TEXT,
 			price       DECIMAL(6, 2)                          NOT NULL,
 			status       VARCHAR(20)						   NOT NULL,
+			tenant_id 	 VARCHAR(20) 						   NOT NULL,
 			created_at  TIMESTAMP                              NOT NULL DEFAULT CURRENT_TIMESTAMP
 		);
     `)
@@ -138,6 +140,7 @@ func databaseConnection() (*sql.DB, func()) {
 			credit_card_token VARCHAR(255),
 			payback           DECIMAL(6, 2),
 			delivery_time     TIMESTAMP   NOT NULL,
+			tenant_id 	 VARCHAR(20)	  NOT NULL,
 			created_at        TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
 		);
     `)

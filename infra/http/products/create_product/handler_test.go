@@ -4,6 +4,7 @@ import (
 	"bom-pedido-api/application/usecase/product/create_product"
 	"bom-pedido-api/infra/factory"
 	"bom-pedido-api/infra/json"
+	"bom-pedido-api/infra/tenant"
 	"bytes"
 	"context"
 	"github.com/go-faker/faker/v4"
@@ -32,6 +33,7 @@ func Test_CreateProduct(t *testing.T) {
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response := httptest.NewRecorder()
 	echoContext := e.NewContext(request, response)
+	echoContext.Set(tenant.Id, faker.WORD)
 
 	err = Handle(applicationFactory)(echoContext)
 	assert.NoError(t, err)

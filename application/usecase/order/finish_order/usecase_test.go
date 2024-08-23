@@ -8,6 +8,7 @@ import (
 	"bom-pedido-api/domain/value_object"
 	"bom-pedido-api/infra/factory"
 	"context"
+	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -30,7 +31,7 @@ func Test_UseCase(t *testing.T) {
 	t.Run("should mark an order in delivering", func(t *testing.T) {
 		ctx := context.Background()
 		customerId := value_object.NewID()
-		order, err := order2.New(customerId, enums.CreditCard, enums.InReceiving, enums.Withdraw, "", 0, time.Now())
+		order, err := order2.New(customerId, enums.CreditCard, enums.InReceiving, enums.Withdraw, "", 0, time.Now(), faker.WORD)
 		err = order.Approve(time.Now(), "")
 		assert.NoError(t, err)
 		err = order.MarkAsInProgress(time.Now(), "")
@@ -67,7 +68,7 @@ func Test_UseCase(t *testing.T) {
 				ctx := context.Background()
 				orderId := value_object.NewID()
 				customerId := value_object.NewID()
-				order, err := order2.Restore(orderId, customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", currentStatus, time.Now(), 0, 1, time.Now(), []order2.Item{}, make([]status.History, 0))
+				order, err := order2.Restore(orderId, customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", currentStatus, time.Now(), 0, 1, time.Now(), []order2.Item{}, make([]status.History, 0), faker.WORD)
 				err = applicationFactory.OrderRepository.Create(ctx, order)
 				assert.NoError(t, err)
 				input := Input{

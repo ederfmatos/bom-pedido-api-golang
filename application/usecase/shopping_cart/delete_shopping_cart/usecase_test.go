@@ -5,6 +5,7 @@ import (
 	"bom-pedido-api/domain/value_object"
 	"bom-pedido-api/infra/factory"
 	"context"
+	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -13,7 +14,7 @@ func TestUseCase_Execute(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
 	useCase := New(applicationFactory)
 	customerId := value_object.NewID()
-	aShoppingCart := shopping_cart.New(customerId)
+	aShoppingCart := shopping_cart.New(customerId, faker.WORD)
 	input := Input{
 		CustomerId: customerId,
 	}

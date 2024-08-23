@@ -39,9 +39,9 @@ func TestShoppingCart_Checkout(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(fmt.Sprintf("should return errors %v", test.Errors), func(t *testing.T) {
-			shoppingCart := New(value_object.NewID())
+			shoppingCart := New(value_object.NewID(), faker.WORD)
 
-			newProduct, _ := product.New(faker.Name(), faker.Word(), 11.0)
+			newProduct, _ := product.New(faker.Name(), faker.Word(), 11.0, faker.WORD)
 			err := shoppingCart.AddItem(newProduct, 1, faker.Word())
 			assert.NoError(t, err)
 
@@ -53,13 +53,13 @@ func TestShoppingCart_Checkout(t *testing.T) {
 	}
 
 	t.Run("should return product errors", func(t *testing.T) {
-		product1, _ := product.New(faker.Name(), faker.Word(), 11.0)
-		product2, _ := product.New(faker.Name(), faker.Word(), 12.0)
-		product3, _ := product.New(faker.Name(), faker.Word(), 13.0)
+		product1, _ := product.New(faker.Name(), faker.Word(), 11.0, faker.WORD)
+		product2, _ := product.New(faker.Name(), faker.Word(), 12.0, faker.WORD)
+		product3, _ := product.New(faker.Name(), faker.Word(), 13.0, faker.WORD)
 
 		products := map[string]*product.Product{product1.Id: product1, product2.Id: product2}
 
-		shoppingCart := New(value_object.NewID())
+		shoppingCart := New(value_object.NewID(), faker.WORD)
 		err := shoppingCart.AddItem(product2, 1, faker.Word())
 		assert.NoError(t, err)
 		err = shoppingCart.AddItem(product3, 1, faker.Word())
@@ -75,13 +75,13 @@ func TestShoppingCart_Checkout(t *testing.T) {
 	})
 
 	t.Run("should checkout a shopping cart", func(t *testing.T) {
-		product1, _ := product.New(faker.Name(), faker.Word(), 11.0)
-		product2, _ := product.New(faker.Name(), faker.Word(), 12.0)
-		product3, _ := product.New(faker.Name(), faker.Word(), 13.0)
+		product1, _ := product.New(faker.Name(), faker.Word(), 11.0, faker.WORD)
+		product2, _ := product.New(faker.Name(), faker.Word(), 12.0, faker.WORD)
+		product3, _ := product.New(faker.Name(), faker.Word(), 13.0, faker.WORD)
 
 		products := map[string]*product.Product{product1.Id: product1, product2.Id: product2, product3.Id: product3}
 
-		shoppingCart := New(value_object.NewID())
+		shoppingCart := New(value_object.NewID(), faker.WORD)
 		err := shoppingCart.AddItem(product1, 1, faker.Word())
 		assert.NoError(t, err)
 		err = shoppingCart.AddItem(product2, 1, faker.Word())

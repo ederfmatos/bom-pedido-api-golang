@@ -20,15 +20,15 @@ func Test_GetCustomer(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
 
 	t.Run("should success get customer", func(t *testing.T) {
-		customer, _ := customer.New(faker.Name(), faker.Email())
-		_ = customer.SetPhoneNumber(faker.Phonenumber())
-		_ = applicationFactory.CustomerRepository.Create(context.TODO(), customer)
+		aCustomer, _ := customer.New(faker.Name(), faker.Email(), faker.WORD)
+		_ = aCustomer.SetPhoneNumber(faker.Phonenumber())
+		_ = applicationFactory.CustomerRepository.Create(context.TODO(), aCustomer)
 
 		e := echo.New()
 		request := httptest.NewRequest(http.MethodGet, "/v1/customers/me", nil)
 		response := httptest.NewRecorder()
 		echoContext := e.NewContext(request, response)
-		echoContext.Set("customerId", customer.Id)
+		echoContext.Set("customerId", aCustomer.Id)
 
 		err := Handle(applicationFactory)(echoContext)
 		assert.NoError(t, err)
@@ -36,9 +36,9 @@ func Test_GetCustomer(t *testing.T) {
 
 		var output get_customer.Output
 		_ = json.Decode(request.Context(), response.Body, &output)
-		assert.Equal(t, customer.Name, output.Name)
-		assert.Equal(t, customer.GetEmail(), output.Email)
-		assert.Equal(t, customer.GetPhoneNumber(), output.PhoneNumber)
+		assert.Equal(t, aCustomer.Name, output.Name)
+		assert.Equal(t, aCustomer.GetEmail(), output.Email)
+		assert.Equal(t, aCustomer.GetPhoneNumber(), output.PhoneNumber)
 	})
 
 	t.Run("should return CustomerNotFoundError if customer does not exists", func(t *testing.T) {

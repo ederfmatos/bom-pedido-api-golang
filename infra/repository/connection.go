@@ -2,6 +2,7 @@ package repository
 
 import (
 	"bom-pedido-api/infra/telemetry"
+	"bom-pedido-api/infra/tenant"
 	"context"
 	"database/sql"
 	"errors"
@@ -175,6 +176,10 @@ func (builder *DefaultConnectionBuilder) createSpan(ctx context.Context) trace.S
 	frame, _ := frames.Next()
 	function := strings.Split(frame.Function, "/")
 	functionName := spanRegex.ReplaceAllString(function[len(function)-1], "")
-	ctx, span := telemetry.StartSpan(ctx, functionName, "sql", *builder.sql)
+	var tenantId string
+	if tenantValue := ctx.Value(tenant.Id); tenantValue != nil {
+		tenantId = tenantValue.(string)
+	}
+	ctx, span := telemetry.StartSpan(ctx, functionName, "sql", *builder.sql, "tenant.id", tenantId)
 	return span
 }

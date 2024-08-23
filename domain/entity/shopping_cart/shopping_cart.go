@@ -11,6 +11,7 @@ import (
 type (
 	ShoppingCart struct {
 		CustomerId string             `bson:"_id"`
+		TenantId   string             `bson:"tenantId"`
 		Items      []ShoppingCartItem `bson:"items"`
 	}
 	ShoppingCartItem struct {
@@ -22,9 +23,10 @@ type (
 	}
 )
 
-func New(customerId string) *ShoppingCart {
+func New(customerId, tenantId string) *ShoppingCart {
 	return &ShoppingCart{
 		CustomerId: customerId,
+		TenantId:   tenantId,
 		Items:      []ShoppingCartItem{},
 	}
 }
@@ -72,7 +74,7 @@ func (shoppingCart *ShoppingCart) Checkout(
 	if shoppingCart.IsEmpty() {
 		return nil, errors.ShoppingCartEmptyError
 	}
-	anOrder, err := order.New(shoppingCart.CustomerId, paymentMethodString, paymentModeString, deliveryModeString, cardToken, payback, time.Now().Add(deliveryTime))
+	anOrder, err := order.New(shoppingCart.CustomerId, paymentMethodString, paymentModeString, deliveryModeString, cardToken, payback, time.Now().Add(deliveryTime), shoppingCart.TenantId)
 	if err != nil {
 		return nil, err
 	}

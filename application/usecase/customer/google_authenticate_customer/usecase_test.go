@@ -34,7 +34,7 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 
 	t.Run("ShouldReturnsErrorIfGoogleReturnsError", func(t *testing.T) {
 		googleAuthenticateCustomerUseCase := New(applicationFactory)
-		input := Input{Token: "error"}
+		input := Input{Token: "error", TenantId: faker.Word()}
 		googleGateway.On("GetUserByToken", "error").Return(nil, errors.New("any token"))
 
 		output, err := googleAuthenticateCustomerUseCase.Execute(nil, input)
@@ -50,7 +50,7 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 		}
 
 		googleAuthenticateCustomerUseCase := New(applicationFactory)
-		input := Input{Token: "token"}
+		input := Input{Token: "token", TenantId: faker.Word()}
 		googleGateway.On("GetUserByToken", "token").Return(googleUser, nil).Once()
 
 		output, err := googleAuthenticateCustomerUseCase.Execute(nil, input)
@@ -66,7 +66,7 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 		tokenManager.On("Encrypt", mock.Anything).Return("token", nil).Once()
 
 		googleAuthenticateCustomerUseCase := New(applicationFactory)
-		input := Input{Token: "google Token"}
+		input := Input{Token: "google Token", TenantId: faker.Word()}
 
 		output, err := googleAuthenticateCustomerUseCase.Execute(nil, input)
 
@@ -80,9 +80,9 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 		tokenManager.On("Encrypt", mock.Anything).Return("token", nil).Once()
 
 		googleAuthenticateCustomerUseCase := New(applicationFactory)
-		customer, _ := customer.New(faker.Name(), faker.Email())
+		customer, _ := customer.New(faker.Name(), faker.Email(), faker.Word())
 		_ = applicationFactory.CustomerRepository.Create(context.TODO(), customer)
-		input := Input{Token: "google Token"}
+		input := Input{Token: "google Token", TenantId: faker.Word()}
 
 		output, err := googleAuthenticateCustomerUseCase.Execute(nil, input)
 

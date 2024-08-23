@@ -45,7 +45,9 @@
   "paths": {
     "/v1/auth/google/customer": {
       "post": {
-        "security": [],
+        "security": [
+          { "TenantId": [] }
+        ],
         "summary": "Autenticar Cliente com Google",
         "tags": [
           "Authentication"
@@ -991,8 +993,8 @@
   },
   "security": [
     {
-      "JWE": [
-      ]
+      "JWE": [],
+      "TenantId": []
     }
   ],
   "components": {
@@ -1002,6 +1004,12 @@
         "scheme": "bearer",
         "bearerFormat": "JWE",
         "description": "JWE token para autenticação. O token deve ser obtido através do endpoint de autenticação e enviado em cada requisição protegida."
+      },
+      "TenantId": {
+        "type": "apiKey",
+        "name": "X-Tenant-Id",
+        "in": "header",
+        "description": "Tenant Identifier"
       }
     },
     "schemas": {

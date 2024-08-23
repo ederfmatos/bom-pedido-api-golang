@@ -4,6 +4,7 @@ import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/application/usecase/customer/google_authenticate_customer"
 	"bom-pedido-api/infra/http/response"
+	"bom-pedido-api/infra/tenant"
 	"github.com/labstack/echo/v4"
 )
 
@@ -20,7 +21,8 @@ func Handle(factory *factory.ApplicationFactory) func(context echo.Context) erro
 			return err
 		}
 		input := google_authenticate_customer.Input{
-			Token: request.Token,
+			Token:    request.Token,
+			TenantId: context.Get(tenant.Id).(string),
 		}
 		output, err := useCase.Execute(context.Request().Context(), input)
 		return response.Ok(context, output, err)
