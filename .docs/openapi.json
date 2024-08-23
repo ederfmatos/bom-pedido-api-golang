@@ -109,7 +109,7 @@
           {
             "lang": "cUrl",
             "label": "Curl",
-            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/auth/google/customer \\\n  --header 'content-type: application/json' \\\n  --data '{\n  \"token\": \"<GOOGLE_TOKEN>\"\n}'"
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/auth/google/customer \\\n  --header 'X-Tenant-Id: {TENANT_ID}' \\\n  --header 'content-type: application/json' \\\n  --data '{\n  \"token\": \"<GOOGLE_TOKEN>\"\n}'"
           }
         ]
       }
@@ -159,7 +159,7 @@
           {
             "lang": "cUrl",
             "label": "Curl",
-            "source": "curl --request GET \\\n  --url https://api.bompedido.app/api/v1/customers/me"
+            "source": "curl --request GET \\\n \\\n  --header 'X-Tenant-Id: {TENANT_ID}'  --url https://api.bompedido.app/api/v1/customers/me"
           }
         ]
       }
@@ -227,7 +227,7 @@
           {
             "lang": "cUrl",
             "label": "Curl",
-            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/products \\\n  --header 'content-type: application/json' \\\n  --data '{\n  \"name\": \"Produto 1\", \"description\": \"Descrição do Produto\", \"price\": 59.90\n}'"
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/products \\\n  --header 'X-Tenant-Id: {TENANT_ID}' \\\n  --header 'content-type: application/json' \\\n  --data '{\n  \"name\": \"Produto 1\", \"description\": \"Descrição do Produto\", \"price\": 59.90\n}'"
           }
         ]
       },
@@ -272,7 +272,7 @@
           {
             "lang": "cUrl",
             "label": "Curl",
-            "source": "curl --request GET \\\n  --url https://api.bompedido.app/api/v1/products"
+            "source": "curl --request GET \\\n  --header 'X-Tenant-Id: {TENANT_ID}' \\\n  --url https://api.bompedido.app/api/v1/products"
           }
         ]
       }
@@ -333,7 +333,7 @@
           {
             "lang": "cUrl",
             "label": "Curl",
-            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/shopping-cart/checkout \\\n --header 'content-type: application/json' \\\n --data '{\n  \"paymentMethod\": \"CREDIT_CARD\",\n  \"paymentMode\": \"IN_APP\",\n  \"deliveryMode\": \"DELIVERY\",\n  \"creditCardToken\": \"0191656a-eb08-7aad-9856-52caa3f1cd99\",\n  \"addressId\": \"abc123\"\n}' "
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/shopping-cart/checkout \\\n  --header 'X-Tenant-Id: {TENANT_ID}' \\\n --header 'content-type: application/json' \\\n --data '{\n  \"paymentMethod\": \"CREDIT_CARD\",\n  \"paymentMode\": \"IN_APP\",\n  \"deliveryMode\": \"DELIVERY\",\n  \"creditCardToken\": \"0191656a-eb08-7aad-9856-52caa3f1cd99\",\n  \"addressId\": \"abc123\"\n}' "
           }
         ]
       }
@@ -394,7 +394,7 @@
           {
             "lang": "cUrl",
             "label": "Curl",
-            "source": "curl --request PATCH \\\n  --url https://api.bompedido.app/api/v1/shopping-cart/items \\\n  --header 'content-type: application/json' \\\n  --data '{\n  \"productId\": \"01916125-fb78-765d-80dc-3ab8106d569b\",\n  \"description\": \"Sem Cebola\",\n  \"quantity\": 2\n}'"
+            "source": "curl --request PATCH \\\n  --url https://api.bompedido.app/api/v1/shopping-cart/items \\\n  --header 'X-Tenant-Id: {TENANT_ID}' \\\n  --header 'content-type: application/json' \\\n  --data '{\n  \"productId\": \"01916125-fb78-765d-80dc-3ab8106d569b\",\n  \"description\": \"Sem Cebola\",\n  \"quantity\": 2\n}'"
           }
         ]
       }
@@ -455,7 +455,7 @@
           {
             "lang": "cUrl",
             "label": "Curl",
-            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/approve \\\n  --header 'content-type: application/json'"
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/approve \\\n  --header 'X-Tenant-Id: {TENANT_ID}' \\\n  --header 'content-type: application/json'"
           }
         ]
       }
@@ -537,7 +537,7 @@
           {
             "lang": "cUrl",
             "label": "Curl",
-            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/reject \\\n  --header 'content-type: application/json' \\\n  --data '{\n  \"reason\": \"Solicitação do Cliente\"\n}'"
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/reject \\\n  --header 'X-Tenant-Id: {TENANT_ID}' \\\n  --header 'content-type: application/json' \\\n  --data '{\n  \"reason\": \"Solicitação do Cliente\"\n}'"
           }
         ]
       }
@@ -619,7 +619,7 @@
           {
             "lang": "cUrl",
             "label": "Curl",
-            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/cancel \\\n  --header 'content-type: application/json' \\\n  --data '{\n  \"reason\": \"Solicitação do Cliente\"\n}'"
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/cancel \\\n  --header 'X-Tenant-Id: {TENANT_ID}' \\\n  --header 'content-type: application/json' \\\n  --data '{\n  \"reason\": \"Solicitação do Cliente\"\n}'"
           }
         ]
       }
@@ -680,7 +680,7 @@
           {
             "lang": "cUrl",
             "label": "Curl",
-            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/finish \\\n  --header 'content-type: application/json'"
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/finish \\\n  --header 'X-Tenant-Id: {TENANT_ID}' \\\n  --header 'content-type: application/json'"
           }
         ]
       }
@@ -741,7 +741,7 @@
           {
             "lang": "cUrl",
             "label": "Curl",
-            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/in-progress \\\n  --header 'content-type: application/json'"
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/in-progress \\\n  --header 'X-Tenant-Id: {TENANT_ID}' \\\n  --header 'content-type: application/json'"
           }
         ]
       }
@@ -802,7 +802,7 @@
           {
             "lang": "cUrl",
             "label": "Curl",
-            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/delivering \\\n  --header 'content-type: application/json'"
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/delivering \\\n  --header 'X-Tenant-Id: {TENANT_ID}' \\\n  --header 'content-type: application/json'"
           }
         ]
       }
@@ -863,7 +863,7 @@
           {
             "lang": "cUrl",
             "label": "Curl",
-            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/awaiting-withdraw \\\n  --header 'content-type: application/json'"
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/awaiting-withdraw \\\n  --header 'X-Tenant-Id: {TENANT_ID}' \\\n  --header 'content-type: application/json'"
           }
         ]
       }
@@ -924,7 +924,7 @@
           {
             "lang": "cUrl",
             "label": "Curl",
-            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/awaiting-delivery \\\n  --header 'content-type: application/json'"
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/awaiting-delivery \\\n  --header 'X-Tenant-Id: {TENANT_ID}' \\\n  --header 'content-type: application/json'"
           }
         ]
       }
@@ -985,7 +985,7 @@
           {
             "lang": "cUrl",
             "label": "Curl",
-            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/clone \\\n  --header 'content-type: application/json'"
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/orders/{id}/clone \\\n  --header 'X-Tenant-Id: {TENANT_ID}' \\\n  --header 'content-type: application/json'"
           }
         ]
       }
