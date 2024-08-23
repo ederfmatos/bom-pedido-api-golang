@@ -29,7 +29,7 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 	applicationFactory := &factory.ApplicationFactory{
 		GatewayFactory:    &factory.GatewayFactory{GoogleGateway: googleGateway},
 		RepositoryFactory: &factory.RepositoryFactory{CustomerRepository: customerRepository},
-		TokenFactory:      &factory.TokenFactory{CustomerTokenManager: tokenManager},
+		TokenFactory:      &factory.TokenFactory{TokenManager: tokenManager},
 	}
 
 	t.Run("ShouldReturnsErrorIfGoogleReturnsError", func(t *testing.T) {
@@ -61,7 +61,6 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 	})
 
 	t.Run("Should_Create_Customer_If_Does_Not_Exists", func(t *testing.T) {
-
 		googleGateway.On("GetUserByToken", "google Token").Return(googleUser, nil).Once()
 		tokenManager.On("Encrypt", mock.Anything).Return("token", nil).Once()
 

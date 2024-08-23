@@ -5,9 +5,9 @@ import (
 )
 
 type TokenFactory struct {
-	CustomerTokenManager token.CustomerTokenManager
+	TokenManager token.Manager
 }
 
-func NewTokenFactory(customerTokenManager token.CustomerTokenManager) *TokenFactory {
-	return &TokenFactory{CustomerTokenManager: customerTokenManager}
+func NewTokenFactory(tokenManager token.Manager) *TokenFactory {
+	return &TokenFactory{TokenManager: tokenManager}
 }

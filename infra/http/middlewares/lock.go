@@ -24,7 +24,7 @@ func LockByParam(name string, factory *factory.ApplicationFactory) echo.Middlewa
 			if err != nil {
 				return err
 			}
-			go ReleaseOnContextDone(c.Request().Context(), factory, param)
+			go releaseOnContextDone(c.Request().Context(), factory, param)
 			defer factory.Locker.Release(context.Background(), param)
 			return next(c)
 		}
@@ -42,14 +42,14 @@ func LockByCustomerId(factory *factory.ApplicationFactory) echo.MiddlewareFunc {
 			if err != nil {
 				return err
 			}
-			go ReleaseOnContextDone(c.Request().Context(), factory, id)
+			go releaseOnContextDone(c.Request().Context(), factory, id)
 			defer factory.Locker.Release(context.Background(), id)
 			return next(c)
 		}
 	}
 }
 
-func ReleaseOnContextDone(ctx context.Context, factory *factory.ApplicationFactory, id string) {
+func releaseOnContextDone(ctx context.Context, factory *factory.ApplicationFactory, id string) {
 	select {
 	case <-ctx.Done():
 		factory.Locker.Release(context.Background(), id)

@@ -11,9 +11,9 @@ import (
 
 type (
 	UseCase struct {
-		googleGateway        gateway.GoogleGateway
-		customerRepository   repository.CustomerRepository
-		customerTokenManager token.CustomerTokenManager
+		googleGateway      gateway.GoogleGateway
+		customerRepository repository.CustomerRepository
+		tokenManager       token.Manager
 	}
 	Input struct {
 		Token    string
@@ -26,9 +26,9 @@ type (
 
 func New(factory *factory.ApplicationFactory) *UseCase {
 	return &UseCase{
-		googleGateway:        factory.GoogleGateway,
-		customerRepository:   factory.CustomerRepository,
-		customerTokenManager: factory.CustomerTokenManager,
+		googleGateway:      factory.GoogleGateway,
+		customerRepository: factory.CustomerRepository,
+		tokenManager:       factory.TokenManager,
 	}
 }
 
@@ -51,6 +51,14 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) (*Output, erro
 			return nil, err
 		}
 	}
-	customerToken, err := useCase.customerTokenManager.Encrypt(ctx, aCustomer.Id)
-	return &Output{Token: customerToken}, err
+	tokenData := token.Data{
+		Type:     "CUSTOMER",
+		Id:       aCustomer.Id,
+		TenantId: input.TenantId,
+	}
+	customerToken, err := useCase.tokenManager.Encrypt(ctx, tokenData)
+	if err != nil {
+		return nil, err
+	}
+	return &Output{Token: customerToken}, nil
 }

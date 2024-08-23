@@ -1,6 +1,7 @@
 package token
 
 import (
+	"bom-pedido-api/application/token"
 	"context"
 	"github.com/stretchr/testify/mock"
 )
@@ -13,12 +14,12 @@ func NewFakeCustomerTokenManager() *CustomerTokenManagerMock {
 	return &CustomerTokenManagerMock{}
 }
 
-func (tokenManager *CustomerTokenManagerMock) Encrypt(_ context.Context, id string) (string, error) {
-	args := tokenManager.Called(id)
+func (c *CustomerTokenManagerMock) Encrypt(_ context.Context, data token.Data) (string, error) {
+	args := c.Called(data)
 	return args.String(0), args.Error(1)
 }
 
-func (tokenManager *CustomerTokenManagerMock) Decrypt(_ context.Context, token string) (string, error) {
-	args := tokenManager.Called(token)
-	return args.String(0), args.Error(1)
+func (c *CustomerTokenManagerMock) Decrypt(_ context.Context, rawToken string) (*token.Data, error) {
+	args := c.Called(rawToken)
+	return args.Get(0).(*token.Data), args.Error(1)
 }

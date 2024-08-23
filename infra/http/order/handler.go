@@ -16,7 +16,7 @@ import (
 )
 
 func ConfigureRoutes(server *echo.Group, applicationFactory *factory.ApplicationFactory) {
-	orderRoutes := server.Group("/v1/orders/:id", middlewares.LockByParam("id", applicationFactory))
+	orderRoutes := server.Group("/v1/orders/:id", middlewares.OnlyAdmin, middlewares.LockByParam("id", applicationFactory))
 	orderRoutes.POST("/approve", approve.Handle(applicationFactory))
 	orderRoutes.POST("/reject", reject.Handle(applicationFactory))
 	orderRoutes.POST("/cancel", cancel.Handle(applicationFactory))

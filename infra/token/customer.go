@@ -1,6 +1,7 @@
 package token
 
 import (
+	"bom-pedido-api/application/token"
 	"bom-pedido-api/infra/json"
 	"context"
 	"crypto/rsa"
@@ -9,51 +10,56 @@ import (
 	"time"
 )
 
-type CustomerTokenManager struct {
+type DefaultTokenManager struct {
 	privateKey *rsa.PrivateKey
 }
 
-func NewCustomerTokenManager(privateKey *rsa.PrivateKey) *CustomerTokenManager {
-	return &CustomerTokenManager{privateKey: privateKey}
+func NewCustomerTokenManager(privateKey *rsa.PrivateKey) token.Manager {
+	return &DefaultTokenManager{privateKey: privateKey}
 }
 
-func (tokenManager *CustomerTokenManager) Encrypt(ctx context.Context, id string) (string, error) {
+func (tokenManager *DefaultTokenManager) Encrypt(ctx context.Context, data token.Data) (string, error) {
 	claims := jwt.StandardClaims{
 		ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
-		Id:        id,
+		Id:        data.Id,
 		IssuedAt:  time.Now().Unix(),
 		Issuer:    "BOM_PEDIDO_API",
 		NotBefore: time.Now().Unix(),
-		Subject:   id,
+		Subject:   data.TenantId,
+		Audience:  data.Type,
 	}
 	tokenContent, err := json.Marshal(ctx, claims)
 	if err != nil {
 		return "", err
 	}
-	token, err := jwe.NewJWE(jwe.KeyAlgorithmRSAOAEP, &tokenManager.privateKey.PublicKey, jwe.EncryptionTypeA256GCM, tokenContent)
+	tokenJwe, err := jwe.NewJWE(jwe.KeyAlgorithmRSAOAEP, &tokenManager.privateKey.PublicKey, jwe.EncryptionTypeA256GCM, tokenContent)
 	if err != nil {
 		return "", err
 	}
-	return token.CompactSerialize()
+	return tokenJwe.CompactSerialize()
 }
 
-func (tokenManager *CustomerTokenManager) Decrypt(ctx context.Context, token string) (string, error) {
-	tokenContent, err := jwe.ParseEncrypted(token)
+func (tokenManager *DefaultTokenManager) Decrypt(ctx context.Context, rawToken string) (*token.Data, error) {
+	tokenContent, err := jwe.ParseEncrypted(rawToken)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	content, err := tokenContent.Decrypt(tokenManager.privateKey)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	var claims jwt.StandardClaims
 	err = json.Unmarshal(ctx, content, &claims)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	err = claims.Valid()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return claims.Id, nil
+	return &token.Data{
+		Type:     claims.Audience,
+		Id:       claims.Id,
+		TenantId: claims.Subject,
+	}, nil
 }
