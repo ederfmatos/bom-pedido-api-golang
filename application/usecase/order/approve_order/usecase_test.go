@@ -1,7 +1,7 @@
 package approve_order
 
 import (
-	order2 "bom-pedido-api/domain/entity/order"
+	"bom-pedido-api/domain/entity/order"
 	"bom-pedido-api/domain/entity/order/status"
 	"bom-pedido-api/domain/enums"
 	"bom-pedido-api/domain/errors"
@@ -46,16 +46,16 @@ func Test_UseCase(t *testing.T) {
 				ctx := context.Background()
 				orderId := value_object.NewID()
 				customerId := value_object.NewID()
-				order, err := order2.Restore(orderId, customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", currentStatus, time.Now(), 0, 1, time.Now(), []order2.Item{}, make([]status.History, 0), faker.WORD)
-				err = applicationFactory.OrderRepository.Create(ctx, order)
+				anOrder, err := order.Restore(orderId, customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", currentStatus, time.Now(), 0, 1, 1, time.Now(), []order.Item{}, make([]status.History, 0), faker.WORD)
+				err = applicationFactory.OrderRepository.Create(ctx, anOrder)
 				assert.NoError(t, err)
 				input := Input{
-					OrderId:    order.Id,
+					OrderId:    anOrder.Id,
 					ApprovedBy: value_object.NewID(),
 				}
 				err = useCase.Execute(ctx, input)
 				assert.ErrorIs(t, err, status.OperationNotAllowedError)
-				savedOrder, err := applicationFactory.OrderRepository.FindById(ctx, order.Id)
+				savedOrder, err := applicationFactory.OrderRepository.FindById(ctx, anOrder.Id)
 				assert.NoError(t, err)
 				assert.Equal(t, savedOrder.GetStatus(), currentStatus)
 			})
@@ -65,16 +65,16 @@ func Test_UseCase(t *testing.T) {
 	t.Run("should approve order", func(t *testing.T) {
 		ctx := context.Background()
 		customerId := value_object.NewID()
-		order, err := order2.New(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, time.Now(), faker.WORD)
-		err = applicationFactory.OrderRepository.Create(ctx, order)
+		anOrder, err := order.New(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, 10.0, time.Now(), faker.WORD)
+		err = applicationFactory.OrderRepository.Create(ctx, anOrder)
 		assert.NoError(t, err)
 		input := Input{
-			OrderId:    order.Id,
+			OrderId:    anOrder.Id,
 			ApprovedBy: value_object.NewID(),
 		}
 		err = useCase.Execute(ctx, input)
 		assert.NoError(t, err)
-		savedOrder, err := applicationFactory.OrderRepository.FindById(ctx, order.Id)
+		savedOrder, err := applicationFactory.OrderRepository.FindById(ctx, anOrder.Id)
 		assert.NoError(t, err)
 		assert.Equal(t, savedOrder.GetStatus(), status.ApprovedStatus.Name())
 	})

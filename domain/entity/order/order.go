@@ -32,6 +32,7 @@ type (
 		Items           []Item
 		History         []status.History
 		TenantId        string
+		Amount          float64
 	}
 
 	Item struct {
@@ -44,7 +45,7 @@ type (
 	}
 )
 
-func New(customerID, paymentMethodString, paymentModeString, deliveryModeString, creditCardToken string, payback float64, deliveryTime time.Time, tenantId string) (*Order, error) {
+func New(customerID, paymentMethodString, paymentModeString, deliveryModeString, creditCardToken string, payback, amount float64, deliveryTime time.Time, tenantId string) (*Order, error) {
 	paymentMethod, deliveryMode, paymentMode, err := validateOrder(paymentMethodString, deliveryModeString, paymentModeString, creditCardToken, payback)
 	if err != nil {
 		return nil, err
@@ -64,13 +65,14 @@ func New(customerID, paymentMethodString, paymentModeString, deliveryModeString,
 		Items:           make([]Item, 0),
 		History:         make([]status.History, 0),
 		TenantId:        tenantId,
+		Amount:          amount,
 	}, nil
 }
 
 func Restore(
 	Id, customerID, paymentMethodString, paymentModeString, deliveryModeString, creditCardToken, orderStatusString string,
 	createdAt time.Time,
-	payback float64,
+	payback, amount float64,
 	code int32,
 	deliveryTime time.Time,
 	items []Item,
@@ -100,6 +102,7 @@ func Restore(
 		Items:           items,
 		History:         history,
 		TenantId:        tenantId,
+		Amount:          amount,
 	}, nil
 }
 
@@ -231,4 +234,8 @@ func (order *Order) Cancel(at time.Time, by, reason string) error {
 
 func (order *Order) GetStatus() string {
 	return order.state.Name()
+}
+
+func (order *Order) IsPixInApp() bool {
+	return order.PaymentMethod == enums.PaymentMethodPix && order.PaymentMode == enums.PaymentModeInApp
 }

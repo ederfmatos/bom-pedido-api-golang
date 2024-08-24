@@ -23,17 +23,18 @@ CREATE TABLE IF NOT EXISTS products
 
 CREATE TABLE IF NOT EXISTS orders
 (
-    id                VARCHAR(36) NOT NULL PRIMARY KEY,
-    code              SERIAL      NOT NULL UNIQUE,
-    customer_id       VARCHAR(36) NOT NULL,
-    payment_method    VARCHAR(30) NOT NULL,
-    payment_mode      VARCHAR(30) NOT NULL,
-    delivery_mode     VARCHAR(30) NOT NULL,
-    status            VARCHAR(30) NOT NULL,
+    id                VARCHAR(36)   NOT NULL PRIMARY KEY,
+    code              SERIAL        NOT NULL UNIQUE,
+    customer_id       VARCHAR(36)   NOT NULL,
+    payment_method    VARCHAR(30)   NOT NULL,
+    payment_mode      VARCHAR(30)   NOT NULL,
+    delivery_mode     VARCHAR(30)   NOT NULL,
+    status            VARCHAR(30)   NOT NULL,
     credit_card_token VARCHAR(255),
     payback           DECIMAL(6, 2),
-    delivery_time     TIMESTAMP   NOT NULL,
-    created_at        TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    amount            DECIMAL(6, 2) NOT NULL,
+    delivery_time     TIMESTAMP     NOT NULL,
+    created_at        TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_orders_customer FOREIGN KEY (customer_id) REFERENCES customers (id)
 );
 

@@ -9,7 +9,7 @@ import (
 )
 
 func ConfigureRoutes(server *echo.Group, applicationFactory *factory.ApplicationFactory) {
-	shoppingCartRoutes := server.Group("/v1/shopping-cart", middlewares.LockByCustomerId(applicationFactory), middlewares.OnlyCustomer)
+	shoppingCartRoutes := server.Group("/v1/shopping-cart", middlewares.OnlyCustomer, middlewares.LockByCustomerId(applicationFactory))
 	shoppingCartRoutes.POST("/checkout", checkout_shopping_cart.Handle(applicationFactory))
 	shoppingCartRoutes.PATCH("/items", add_item_to_shopping_cart.Handle(applicationFactory))
 }

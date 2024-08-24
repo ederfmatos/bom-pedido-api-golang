@@ -4,6 +4,7 @@ import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/application/usecase/shopping_cart/add_item_to_shopping_cart"
 	"bom-pedido-api/infra/http/response"
+	"bom-pedido-api/infra/tenant"
 	"github.com/labstack/echo/v4"
 )
 
@@ -26,6 +27,7 @@ func Handle(factory *factory.ApplicationFactory) func(context echo.Context) erro
 			ProductId:   request.ProductId,
 			Quantity:    request.Quantity,
 			Observation: request.Observation,
+			TenantId:    context.Get(tenant.Id).(string),
 		}
 		err = useCase.Execute(context.Request().Context(), input)
 		return response.NoContent(context, err)

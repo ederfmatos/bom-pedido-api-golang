@@ -74,7 +74,8 @@ func (shoppingCart *ShoppingCart) Checkout(
 	if shoppingCart.IsEmpty() {
 		return nil, errors.ShoppingCartEmptyError
 	}
-	anOrder, err := order.New(shoppingCart.CustomerId, paymentMethodString, paymentModeString, deliveryModeString, cardToken, payback, time.Now().Add(deliveryTime), shoppingCart.TenantId)
+	price := shoppingCart.GetPrice()
+	anOrder, err := order.New(shoppingCart.CustomerId, paymentMethodString, paymentModeString, deliveryModeString, cardToken, payback, price, time.Now().Add(deliveryTime), shoppingCart.TenantId)
 	if err != nil {
 		return nil, err
 	}
