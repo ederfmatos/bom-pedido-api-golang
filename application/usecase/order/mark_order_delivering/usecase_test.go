@@ -31,7 +31,7 @@ func Test_UseCase(t *testing.T) {
 	t.Run("should mark an order in delivering", func(t *testing.T) {
 		ctx := context.Background()
 		customerId := value_object.NewID()
-		order, err := order2.New(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, time.Now(), faker.WORD)
+		order, err := order2.New(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, 0, time.Now(), faker.WORD)
 		err = order.Approve(time.Now(), "")
 		assert.NoError(t, err)
 		err = order.MarkAsInProgress(time.Now(), "")
