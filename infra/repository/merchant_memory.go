@@ -7,30 +7,31 @@ import (
 )
 
 type MerchantMemoryRepository struct {
-	merchants map[string]*merchant.Merchant
+	merchants           map[string]*merchant.Merchant
+	merchantsByTenantId map[string]*merchant.Merchant
 }
 
 func NewMerchantMemoryRepository() repository.MerchantRepository {
-	return &MerchantMemoryRepository{merchants: make(map[string]*merchant.Merchant)}
+	return &MerchantMemoryRepository{
+		merchants:           make(map[string]*merchant.Merchant),
+		merchantsByTenantId: make(map[string]*merchant.Merchant),
+	}
 }
 
 func (repository *MerchantMemoryRepository) Create(_ context.Context, merchant *merchant.Merchant) error {
 	repository.merchants[merchant.Id] = merchant
+	repository.merchantsByTenantId[merchant.TenantId] = merchant
 	return nil
 }
 
 func (repository *MerchantMemoryRepository) Update(_ context.Context, merchant *merchant.Merchant) error {
 	repository.merchants[merchant.Id] = merchant
+	repository.merchantsByTenantId[merchant.TenantId] = merchant
 	return nil
 }
 
 func (repository *MerchantMemoryRepository) FindByTenantId(_ context.Context, tenantId string) (*merchant.Merchant, error) {
-	for _, aMerchant := range repository.merchants {
-		if aMerchant.TenantId == tenantId {
-			return aMerchant, nil
-		}
-	}
-	return nil, nil
+	return repository.merchantsByTenantId[tenantId], nil
 }
 
 func (repository *MerchantMemoryRepository) IsActive(_ context.Context, merchantId string) (bool, error) {

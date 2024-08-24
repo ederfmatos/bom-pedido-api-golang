@@ -5,6 +5,7 @@ import (
 	"bom-pedido-api/infra/event"
 	"bom-pedido-api/infra/gateway"
 	"bom-pedido-api/infra/gateway/email"
+	"bom-pedido-api/infra/gateway/pix"
 	"bom-pedido-api/infra/lock"
 	"bom-pedido-api/infra/repository"
 	"bom-pedido-api/infra/test"
@@ -13,7 +14,7 @@ import (
 
 func NewTestApplicationFactory() *factory.ApplicationFactory {
 	return factory.NewApplicationFactory(
-		factory.NewGatewayFactory(gateway.NewFakeGoogleGateway()),
+		factory.NewGatewayFactory(gateway.NewFakeGoogleGateway(), pix.NewFakePixGateway()),
 		factory.NewRepositoryFactory(
 			repository.NewCustomerMemoryRepository(),
 			repository.NewProductMemoryRepository(),
@@ -21,6 +22,7 @@ func NewTestApplicationFactory() *factory.ApplicationFactory {
 			repository.NewOrderMemoryRepository(),
 			repository.NewAdminMemoryRepository(),
 			repository.NewMerchantMemoryRepository(),
+			repository.NewTransactionMemoryRepository(),
 		),
 		factory.NewTokenFactory(token.NewFakeCustomerTokenManager()),
 		factory.NewEventFactory(event.NewMemoryEventHandler()),
@@ -31,7 +33,7 @@ func NewTestApplicationFactory() *factory.ApplicationFactory {
 func NewContainerApplicationFactory(container *test.Container) *factory.ApplicationFactory {
 	sqlConnection := repository.NewDefaultSqlConnection(container.Database)
 	return factory.NewApplicationFactory(
-		factory.NewGatewayFactory(gateway.NewFakeGoogleGateway()),
+		factory.NewGatewayFactory(gateway.NewFakeGoogleGateway(), pix.NewFakePixGateway()),
 		factory.NewRepositoryFactory(
 			repository.NewDefaultCustomerRepository(sqlConnection),
 			repository.NewDefaultProductRepository(sqlConnection),
@@ -39,6 +41,7 @@ func NewContainerApplicationFactory(container *test.Container) *factory.Applicat
 			repository.NewDefaultOrderRepository(sqlConnection),
 			repository.NewDefaultAdminRepository(sqlConnection),
 			repository.NewDefaultMerchantRepository(sqlConnection),
+			repository.NewDefaultTransactionRepository(sqlConnection),
 		),
 		factory.NewTokenFactory(token.NewFakeCustomerTokenManager()),
 		factory.NewEventFactory(event.NewMemoryEventHandler()),

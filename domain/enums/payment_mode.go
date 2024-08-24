@@ -11,6 +11,11 @@ const (
 	InReceiving                        = string(PaymentModeInReceiving)
 )
 
+var AllPaymentModes = []PaymentMode{
+	PaymentModeInApp,
+	PaymentModeInReceiving,
+}
+
 var InvalidPaymentModeError = errors.New("Invalid payment mode")
 
 func ParsePaymentMode(value string) (PaymentMode, error) {

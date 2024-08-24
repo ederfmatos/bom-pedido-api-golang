@@ -23,8 +23,9 @@ func newOrderEvent(order *order.Order, name string) *Event {
 		CorrelationId: order.Id,
 		Name:          name,
 		Data: map[string]string{
-			"orderId":    order.Id,
-			"customerId": order.CustomerID,
+			"orderId":       order.Id,
+			"customerId":    order.CustomerID,
+			"paymentMethod": order.PaymentMethod.String(),
 		},
 	}
 }

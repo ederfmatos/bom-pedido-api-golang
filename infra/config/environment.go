@@ -1,34 +1,53 @@
 package config
 
 import (
+	"log"
 	"os"
+	"strconv"
 )
 
-type Environment struct {
-	DatabaseUrl                   string
-	DatabaseDriver                string
-	RedisUrl                      string
-	JwePrivateKeyPath             string
-	RabbitMqServer                string
-	GoogleAuthUrl                 string
-	MongoUrl                      string
-	MongoDatabaseName             string
-	MongoOutboxCollectionName     string
-	Port                          string
-	KafkaBootstrapServer          string
-	KafkaClientId                 string
-	OpenTelemetryEndpointExporter string
-	MessagingStrategy             string
-	AdminMagicLinkBaseUrl         string
-	EmailFrom                     string
-	ResendMailKey                 string
-}
+type (
+	PixPaymentGatewayEnv struct {
+		NotificationUrl         string
+		ExpirationTimeInMinutes int
+	}
+
+	Environment struct {
+		DatabaseUrl                   string
+		DatabaseDriver                string
+		RedisUrl                      string
+		JwePrivateKeyPath             string
+		RabbitMqServer                string
+		GoogleAuthUrl                 string
+		MongoUrl                      string
+		MongoDatabaseName             string
+		MongoOutboxCollectionName     string
+		Port                          string
+		KafkaBootstrapServer          string
+		KafkaClientId                 string
+		OpenTelemetryEndpointExporter string
+		MessagingStrategy             string
+		AdminMagicLinkBaseUrl         string
+		EmailFrom                     string
+		ResendMailKey                 string
+		PixPaymentGateway             PixPaymentGatewayEnv
+	}
+)
 
 func requiredEnv(name string) string {
 	if value := os.Getenv(name); value != "" {
 		return value
 	}
-	panic(`Environment variable ` + name + ` is required`)
+	log.Fatalf(`Environment variable ` + name + ` is required`)
+	return ""
+}
+
+func requiredIntEnv(name string) int {
+	value, err := strconv.Atoi(requiredEnv(name))
+	if err != nil {
+		log.Fatal(err)
+	}
+	return value
 }
 
 func optionalEnv(name, defaultValue string) string {
@@ -57,5 +76,9 @@ func LoadEnvironment() *Environment {
 		AdminMagicLinkBaseUrl:         requiredEnv("ADMIN_MAGIC_LINK_BASE_URL"),
 		EmailFrom:                     requiredEnv("EMAIL_FROM"),
 		ResendMailKey:                 requiredEnv("RESEND_MAIL_KEY"),
+		PixPaymentGateway: PixPaymentGatewayEnv{
+			NotificationUrl:         requiredEnv("PIX_PAYMENT_GATEWAY_NOTIFICATION_URL"),
+			ExpirationTimeInMinutes: requiredIntEnv("PIX_PAYMENT_GATEWAY_EXPIRATION_TIME_IN_MINUTES"),
+		},
 	}
 }

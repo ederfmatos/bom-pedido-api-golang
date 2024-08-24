@@ -15,6 +15,13 @@ const (
 	Money                                 = string(PaymentMethodMoney)
 )
 
+var AllPaymentMethods = []PaymentMethod{
+	PaymentMethodCreditCard,
+	PaymentMethodDebitCard,
+	PaymentMethodPix,
+	PaymentMethodMoney,
+}
+
 var InvalidPaymentMethodError = errors.New("Invalid payment method")
 
 func ParsePaymentMethod(value string) (PaymentMethod, error) {
@@ -38,4 +45,8 @@ func (paymentMethod PaymentMethod) IsCreditCard() bool {
 
 func (paymentMethod PaymentMethod) String() string {
 	return string(paymentMethod)
+}
+
+func (paymentMethod PaymentMethod) IsPix() bool {
+	return paymentMethod == PaymentMethodPix
 }

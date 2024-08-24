@@ -17,7 +17,7 @@ func NewApplicationFactory(database *sql.DB, environment *config.Environment, re
 	mongoDatabase := mongoClient.Database(environment.MongoDatabaseName)
 	emailGateway := email.NewResendEmailGateway(email.NewTemplateLoader(), environment.EmailFrom, environment.ResendMailKey)
 	return factory.NewApplicationFactory(
-		gatewayFactory(environment),
+		gatewayFactory(environment, connection),
 		repositoryFactory(connection, mongoDatabase),
 		tokenFactory(environment),
 		eventFactory(environment, locker, mongoDatabase),

@@ -7,18 +7,13 @@ import (
 )
 
 func repositoryFactory(connection repository.SqlConnection, mongoDatabase *mongo.Database) *factory.RepositoryFactory {
-	customerRepository := repository.NewDefaultCustomerRepository(connection)
-	productRepository := repository.NewDefaultProductRepository(connection)
-	orderRepository := repository.NewDefaultOrderRepository(connection)
-	shoppingCartRepository := repository.NewShoppingCartMongoRepository(mongoDatabase)
-	adminRepository := repository.NewDefaultAdminRepository(connection)
-	merchantRepository := repository.NewDefaultMerchantRepository(connection)
 	return factory.NewRepositoryFactory(
-		customerRepository,
-		productRepository,
-		shoppingCartRepository,
-		orderRepository,
-		adminRepository,
-		merchantRepository,
+		repository.NewDefaultCustomerRepository(connection),
+		repository.NewDefaultProductRepository(connection),
+		repository.NewShoppingCartMongoRepository(mongoDatabase),
+		repository.NewDefaultOrderRepository(connection),
+		repository.NewDefaultAdminRepository(connection),
+		repository.NewDefaultMerchantRepository(connection),
+		repository.NewDefaultTransactionRepository(connection),
 	)
 }

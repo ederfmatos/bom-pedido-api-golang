@@ -237,5 +237,5 @@ func (order *Order) GetStatus() string {
 }
 
 func (order *Order) IsPixInApp() bool {
-	return order.PaymentMethod == enums.PaymentMethodPix && order.PaymentMode == enums.PaymentModeInApp
+	return order.PaymentMethod.IsPix() && order.PaymentMode.IsInApp()
 }

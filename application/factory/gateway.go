@@ -6,8 +6,9 @@ import (
 
 type GatewayFactory struct {
 	GoogleGateway gateway.GoogleGateway
+	PixGateway    gateway.PixGateway
 }
 
-func NewGatewayFactory(googleGateway gateway.GoogleGateway) *GatewayFactory {
-	return &GatewayFactory{GoogleGateway: googleGateway}
+func NewGatewayFactory(googleGateway gateway.GoogleGateway, pixGateway gateway.PixGateway) *GatewayFactory {
+	return &GatewayFactory{GoogleGateway: googleGateway, PixGateway: pixGateway}
 }
