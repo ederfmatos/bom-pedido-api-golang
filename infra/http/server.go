@@ -52,8 +52,8 @@ func (s *Server) ConfigureRoutes(applicationFactory *factory.ApplicationFactory)
 	server.Use(middlewares.RedocDocumentation())
 	server.Use(echoPrometheus.NewMiddleware("bom_pedido_api"))
 	server.Use(otelecho.Middleware("bom-pedido-api"))
-	server.Use(middlewares.SetContextTenantId())
 	server.Use(middlewares.AuthenticateMiddleware(applicationFactory))
+	server.Use(middlewares.SetContextTenantId())
 	server.HTTPErrorHandler = middlewares.HandleError
 
 	server.GET("/metrics", echoPrometheus.NewHandler())

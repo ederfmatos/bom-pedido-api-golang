@@ -4,10 +4,12 @@ import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/domain/errors"
 	"bom-pedido-api/infra/telemetry"
+	"bom-pedido-api/infra/tenant"
 	"github.com/labstack/echo/v4"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"net/http"
+	"strings"
 )
 
 const (
@@ -24,7 +26,7 @@ func AuthenticateMiddleware(factory *factory.ApplicationFactory) echo.Middleware
 				return next(c)
 			}
 			ctx, span := telemetry.StartSpan(c.Request().Context(), "AuthenticateMiddleware")
-			tokenData, err := customerTokenManager.Decrypt(ctx, token)
+			tokenData, err := customerTokenManager.Decrypt(ctx, strings.ReplaceAll(token, "Bearer ", ""))
 			if err != nil {
 				span.SetStatus(codes.Error, err.Error())
 				span.RecordError(err)
@@ -46,6 +48,7 @@ func AuthenticateMiddleware(factory *factory.ApplicationFactory) echo.Middleware
 				span.End()
 				return errors.New("Invalid token type")
 			}
+			c.Set(tenant.Id, tokenData.TenantId)
 			span.End()
 			return next(c)
 		}
