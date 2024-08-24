@@ -7,7 +7,11 @@ meta {
 post {
   url: {{API_BASE_URL}}/v1/shopping-cart/checkout
   body: json
-  auth: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{CUSTOMER_TOKEN}}
 }
 
 body:json {
