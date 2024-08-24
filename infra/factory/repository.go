@@ -12,5 +12,13 @@ func repositoryFactory(connection repository.SqlConnection, mongoDatabase *mongo
 	orderRepository := repository.NewDefaultOrderRepository(connection)
 	shoppingCartRepository := repository.NewShoppingCartMongoRepository(mongoDatabase)
 	adminRepository := repository.NewDefaultAdminRepository(connection)
-	return factory.NewRepositoryFactory(customerRepository, productRepository, shoppingCartRepository, orderRepository, adminRepository)
+	merchantRepository := repository.NewDefaultMerchantRepository(connection)
+	return factory.NewRepositoryFactory(
+		customerRepository,
+		productRepository,
+		shoppingCartRepository,
+		orderRepository,
+		adminRepository,
+		merchantRepository,
+	)
 }

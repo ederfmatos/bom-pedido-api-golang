@@ -16,10 +16,11 @@ const (
 
 type (
 	UseCase struct {
-		adminRepository repository.AdminRepository
-		eventEmitter    event.Emitter
-		tokenManager    token.Manager
-		baseUrl         string
+		adminRepository    repository.AdminRepository
+		merchantRepository repository.MerchantRepository
+		eventEmitter       event.Emitter
+		tokenManager       token.Manager
+		baseUrl            string
 	}
 
 	Input struct {
@@ -29,10 +30,11 @@ type (
 
 func New(baseUrl string, factory *factory.ApplicationFactory) *UseCase {
 	return &UseCase{
-		adminRepository: factory.AdminRepository,
-		eventEmitter:    factory.EventEmitter,
-		tokenManager:    factory.TokenManager,
-		baseUrl:         baseUrl,
+		adminRepository:    factory.AdminRepository,
+		merchantRepository: factory.MerchantRepository,
+		eventEmitter:       factory.EventEmitter,
+		tokenManager:       factory.TokenManager,
+		baseUrl:            baseUrl,
 	}
 }
 
@@ -42,6 +44,10 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) error {
 		return err
 	}
 	if admin == nil {
+		return nil
+	}
+	isActive, err := uc.merchantRepository.IsActive(ctx, admin.MerchantId)
+	if err != nil || !isActive {
 		return nil
 	}
 	tokenData := token.Data{

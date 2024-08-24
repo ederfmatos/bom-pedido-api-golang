@@ -2,6 +2,7 @@ package send_authentication_magic_link
 
 import (
 	"bom-pedido-api/domain/entity/admin"
+	"bom-pedido-api/domain/entity/merchant"
 	"bom-pedido-api/infra/event"
 	"bom-pedido-api/infra/factory"
 	"bom-pedido-api/infra/token"
@@ -27,8 +28,29 @@ func TestUseCase_Execute(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
+	t.Run("it should return nil if merchant is inactive", func(t *testing.T) {
+		ctx := context.TODO()
+		aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+		assert.Nil(t, err)
+		aMerchant.Inactive()
+		_ = applicationFactory.MerchantRepository.Create(ctx, aMerchant)
+
+		anAdmin, _ := admin.New(faker.Name(), faker.Email(), aMerchant.Id)
+		_ = applicationFactory.AdminRepository.Create(ctx, anAdmin)
+
+		useCase := New(baseUrl, applicationFactory)
+		input := Input{Email: anAdmin.GetEmail()}
+		err = useCase.Execute(ctx, input)
+		assert.Nil(t, err)
+	})
+
 	t.Run("should return nil on success", func(t *testing.T) {
-		anAdmin, _ := admin.New(faker.Name(), faker.Email(), faker.UUIDHyphenated())
+		ctx := context.TODO()
+		aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+		assert.Nil(t, err)
+		_ = applicationFactory.MerchantRepository.Create(ctx, aMerchant)
+
+		anAdmin, _ := admin.New(faker.Name(), faker.Email(), aMerchant.Id)
 		_ = applicationFactory.AdminRepository.Create(context.TODO(), anAdmin)
 
 		magicLinkToken := faker.UUIDHyphenated()
@@ -38,8 +60,7 @@ func TestUseCase_Execute(t *testing.T) {
 		useCase := New(baseUrl, applicationFactory)
 		input := Input{Email: anAdmin.GetEmail()}
 
-		ctx := context.TODO()
-		err := useCase.Execute(ctx, input)
+		err = useCase.Execute(ctx, input)
 		assert.NoError(t, err)
 
 		eventEmitter.AssertNumberOfCalls(t, "Emit", 1)
