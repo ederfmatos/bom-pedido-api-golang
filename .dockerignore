@@ -7,7 +7,9 @@ Dockerfile
 **/*_memory.go
 **/*_test.go
 **/*_mock.go
+**/mock.go
 **/test.go
+**/test
 .git
 .idea
 bom-pedido-api.iml
@@ -15,3 +17,5 @@ bom-pedido-api.iml
 .dockerignore
 Makefile
 .github
+.sql
+.docs/Bom Pedido API Golang
