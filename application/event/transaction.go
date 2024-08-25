@@ -5,8 +5,10 @@ import (
 )
 
 var (
-	refundTransactionEvent = "REFUND_TRANSACTION"
-	pixTransactionCreated  = "PIX_TRANSACTION_CREATED"
+	refundTransactionEvent  = "REFUND_TRANSACTION"
+	pixTransactionCreated   = "PIX_TRANSACTION_CREATED"
+	pixTransactionRefunded  = "PIX_TRANSACTION_REFUNDED"
+	paymentCallbackReceived = "PAYMENT_CALLBACK_RECEIVED"
 )
 
 func NewRefundTransactionEvent(orderId, transactionId string) *Event {
@@ -29,6 +31,31 @@ func NewPixTransactionCreated(orderId, transactionId string) *Event {
 		Data: map[string]string{
 			"transactionId": transactionId,
 			"orderId":       orderId,
+		},
+	}
+}
+
+func NewPixTransactionRefunded(orderId, transactionId string) *Event {
+	return &Event{
+		Id:            value_object.NewID(),
+		CorrelationId: orderId,
+		Name:          pixTransactionRefunded,
+		Data: map[string]string{
+			"transactionId": transactionId,
+			"orderId":       orderId,
+		},
+	}
+}
+
+func NewPaymentCallbackReceived(gateway, orderId, eventName string) *Event {
+	return &Event{
+		Id:            value_object.NewID(),
+		CorrelationId: orderId,
+		Name:          paymentCallbackReceived,
+		Data: map[string]string{
+			"gateway":   gateway,
+			"orderId":   orderId,
+			"eventName": eventName,
 		},
 	}
 }

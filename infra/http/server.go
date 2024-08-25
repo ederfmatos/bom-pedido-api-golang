@@ -4,6 +4,7 @@ import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/infra/config"
 	"bom-pedido-api/infra/http/admin"
+	"bom-pedido-api/infra/http/callback"
 	"bom-pedido-api/infra/http/customer"
 	"bom-pedido-api/infra/http/health"
 	"bom-pedido-api/infra/http/middlewares"
@@ -70,6 +71,7 @@ func (s *Server) ConfigureRoutes(applicationFactory *factory.ApplicationFactory)
 	products.ConfigureRoutes(api, applicationFactory)
 	customer.ConfigureRoutes(api, applicationFactory)
 	shopping_cart.ConfigureRoutes(api, applicationFactory)
+	callback.ConfigureCallbackRoutes(api, applicationFactory)
 
 	server.GET("/api/health", health.Handle(s.database, s.redisClient, s.mongoClient))
 	s.server = server

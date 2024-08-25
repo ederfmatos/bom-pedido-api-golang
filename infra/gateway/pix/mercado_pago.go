@@ -6,8 +6,10 @@ import (
 	"bom-pedido-api/domain/errors"
 	"bom-pedido-api/infra/telemetry"
 	"context"
+	"fmt"
 	"github.com/mercadopago/sdk-go/pkg/config"
 	"github.com/mercadopago/sdk-go/pkg/payment"
+	"log/slog"
 	"strconv"
 	"time"
 )
@@ -40,9 +42,15 @@ func (g *MercadoPagoPixGateway) Name() string {
 }
 
 func (g *MercadoPagoPixGateway) CreateQrCodePix(ctx context.Context, input gateway.CreateQrCodePixInput) (*gateway.CreateQrCodePixOutput, error) {
+	slog.Info("Iniciando criação de pagamento PIX no Mercado Pago")
 	ctx, span := telemetry.StartSpan(ctx, "MercadoPagoPixGateway.CreateQrCodePix")
 	defer span.End()
 	gatewayConfig, err := g.merchantPaymentGatewayConfigRepository.FindByMerchantAndGateway(ctx, input.Merchant.Id, mercadoPago)
+	defer func() {
+		if err != nil {
+			slog.Error("Ocorreu um erro na criação de pagamento Pix no Mercado Pago", "error", err)
+		}
+	}()
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +68,7 @@ func (g *MercadoPagoPixGateway) CreateQrCodePix(ctx context.Context, input gatew
 		Description:       input.Description,
 		PaymentMethodID:   "pix",
 		DateOfExpiration:  &expiresAt,
-		NotificationURL:   g.notificationUrl,
+		NotificationURL:   fmt.Sprintf("%s/%s/%s", g.notificationUrl, mercadoPago, input.InternalOrderId),
 		Payer: &payment.PayerRequest{
 			FirstName: input.Merchant.Name,
 			Email:     input.Merchant.Email,
@@ -70,13 +78,12 @@ func (g *MercadoPagoPixGateway) CreateQrCodePix(ctx context.Context, input gatew
 		},
 	}
 	_, mercadoPagoSpan := telemetry.StartSpan(ctx, "MercadoPagoPixGateway.CreatePayment")
+	defer mercadoPagoSpan.End()
 	resource, err := client.Create(ctx, request)
 	if err != nil {
 		mercadoPagoSpan.RecordError(err)
-		mercadoPagoSpan.End()
 		return nil, err
 	}
-	mercadoPagoSpan.End()
 	return &gateway.CreateQrCodePixOutput{
 		Id:             strconv.Itoa(resource.ID),
 		QrCode:         resource.PointOfInteraction.TransactionData.QRCode,

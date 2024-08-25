@@ -18,7 +18,7 @@ func SetContextTenantId() echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			request := c.Request()
 			path := request.URL.Path
-			if !strings.HasPrefix(path, "/api") || path == "/api/health" || c.Get(tenant.Id) != nil {
+			if !strings.HasPrefix(path, "/api") || path == "/api/health" || c.Get(tenant.Id) != nil || strings.HasPrefix(path, "/api/v1/callback") {
 				return next(c)
 			}
 			tenantId := request.Header.Get(tenantIdHeader)
