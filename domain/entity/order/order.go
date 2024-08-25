@@ -50,6 +50,10 @@ func New(customerID, paymentMethodString, paymentModeString, deliveryModeString,
 	if err != nil {
 		return nil, err
 	}
+	state := status.AwaitingApprovalStatus
+	if paymentMode.IsInApp() {
+		state = status.AwaitingPaymentStatus
+	}
 	return &Order{
 		Id:              value_object.NewID(),
 		CustomerID:      customerID,
@@ -61,7 +65,7 @@ func New(customerID, paymentMethodString, paymentModeString, deliveryModeString,
 		Payback:         payback,
 		Code:            0,
 		DeliveryTime:    deliveryTime,
-		state:           status.AwaitingApprovalStatus,
+		state:           state,
 		Items:           make([]Item, 0),
 		History:         make([]status.History, 0),
 		TenantId:        tenantId,

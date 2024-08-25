@@ -9,6 +9,7 @@ var (
 	OperationNotAllowedError = errors.New("operation not allowed")
 	InvalidStatusError       = errors.New("invalid status")
 
+	AwaitingPaymentStatus  = NewAwaitingPayment()
 	AwaitingApprovalStatus = NewAwaitingApproval()
 	ApprovedStatus         = NewApproved()
 	InProgressStatus       = NewInProgress()
