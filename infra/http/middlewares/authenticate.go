@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	adminIdParam    = "adminIdParam"
-	customerIdParam = "customerId"
+	AdminIdParam    = "adminId"
+	CustomerIdParam = "customerId"
 )
 
 func AuthenticateMiddleware(factory *factory.ApplicationFactory) echo.MiddlewareFunc {
@@ -35,12 +35,12 @@ func AuthenticateMiddleware(factory *factory.ApplicationFactory) echo.Middleware
 			}
 			switch tokenData.Type {
 			case "ADMIN":
-				c.Set(adminIdParam, tokenData.Id)
-				span.SetAttributes(attribute.String(adminIdParam, tokenData.Id))
+				c.Set(AdminIdParam, tokenData.Id)
+				span.SetAttributes(attribute.String(AdminIdParam, tokenData.Id))
 				break
 			case "CUSTOMER":
-				c.Set(customerIdParam, tokenData.Id)
-				span.SetAttributes(attribute.String(customerIdParam, tokenData.Id))
+				c.Set(CustomerIdParam, tokenData.Id)
+				span.SetAttributes(attribute.String(CustomerIdParam, tokenData.Id))
 				break
 			default:
 				span.SetStatus(codes.Error, err.Error())
@@ -56,11 +56,11 @@ func AuthenticateMiddleware(factory *factory.ApplicationFactory) echo.Middleware
 }
 
 func OnlyAdmin(next echo.HandlerFunc) echo.HandlerFunc {
-	return requiredParam(adminIdParam, next)
+	return requiredParam(AdminIdParam, next)
 }
 
 func OnlyCustomer(next echo.HandlerFunc) echo.HandlerFunc {
-	return requiredParam(customerIdParam, next)
+	return requiredParam(CustomerIdParam, next)
 }
 
 func requiredParam(name string, next echo.HandlerFunc) func(c echo.Context) error {

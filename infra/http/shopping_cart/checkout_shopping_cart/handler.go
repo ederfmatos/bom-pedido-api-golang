@@ -3,6 +3,7 @@ package checkout_shopping_cart
 import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/application/usecase/shopping_cart/checkout"
+	"bom-pedido-api/infra/http/middlewares"
 	"bom-pedido-api/infra/http/response"
 	"github.com/labstack/echo/v4"
 )
@@ -25,7 +26,7 @@ func Handle(factory *factory.ApplicationFactory) func(context echo.Context) erro
 			return err
 		}
 		input := checkout.Input{
-			CustomerId:      context.Get("customerId").(string),
+			CustomerId:      context.Get(middlewares.CustomerIdParam).(string),
 			PaymentMethod:   request.PaymentMethod,
 			DeliveryMode:    request.DeliveryMode,
 			PaymentMode:     request.PaymentMode,

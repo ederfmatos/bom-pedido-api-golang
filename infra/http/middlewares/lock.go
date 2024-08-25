@@ -34,7 +34,7 @@ func LockByParam(name string, factory *factory.ApplicationFactory) echo.Middlewa
 func LockByCustomerId(factory *factory.ApplicationFactory) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			id := c.Get("customerId").(string)
+			id := c.Get(CustomerIdParam).(string)
 			ctx, span := telemetry.StartSpan(c.Request().Context(), "LockByCustomerId", "customerId", id)
 			defer span.End()
 			c.SetRequest(c.Request().WithContext(ctx))

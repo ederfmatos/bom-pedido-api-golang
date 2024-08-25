@@ -3,6 +3,7 @@ package cancel
 import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/application/usecase/order/cancel_order"
+	"bom-pedido-api/infra/http/middlewares"
 	"bom-pedido-api/infra/http/response"
 	"github.com/labstack/echo/v4"
 )
@@ -21,7 +22,7 @@ func Handle(factory *factory.ApplicationFactory) func(context echo.Context) erro
 		}
 		input := cancel_order.Input{
 			OrderId:     context.Param("id"),
-			CancelledBy: context.Get("adminId").(string),
+			CancelledBy: context.Get(middlewares.AdminIdParam).(string),
 			Reason:      request.Reason,
 		}
 		err = useCase.Execute(context.Request().Context(), input)

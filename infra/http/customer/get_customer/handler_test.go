@@ -6,6 +6,7 @@ import (
 	"bom-pedido-api/domain/errors"
 	"bom-pedido-api/domain/value_object"
 	"bom-pedido-api/infra/factory"
+	"bom-pedido-api/infra/http/middlewares"
 	"bom-pedido-api/infra/json"
 	"context"
 	"github.com/go-faker/faker/v4"
@@ -28,7 +29,7 @@ func Test_GetCustomer(t *testing.T) {
 		request := httptest.NewRequest(http.MethodGet, "/v1/customers/me", nil)
 		response := httptest.NewRecorder()
 		echoContext := e.NewContext(request, response)
-		echoContext.Set("customerId", aCustomer.Id)
+		echoContext.Set(middlewares.CustomerIdParam, aCustomer.Id)
 
 		err := Handle(applicationFactory)(echoContext)
 		assert.NoError(t, err)
@@ -46,7 +47,7 @@ func Test_GetCustomer(t *testing.T) {
 		request := httptest.NewRequest(http.MethodGet, "/v1/customers/me", nil)
 		response := httptest.NewRecorder()
 		echoContext := instance.NewContext(request, response)
-		echoContext.Set("customerId", value_object.NewID())
+		echoContext.Set(middlewares.CustomerIdParam, value_object.NewID())
 
 		err := Handle(applicationFactory)(echoContext)
 		assert.Equal(t, errors.CustomerNotFoundError, err)
