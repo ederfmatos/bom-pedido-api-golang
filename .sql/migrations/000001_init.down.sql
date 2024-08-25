@@ -9,8 +9,7 @@ DROP INDEX IF EXISTS ids_order_customer;
 DROP INDEX IF EXISTS idx_transactions_order;
 DROP INDEX IF EXISTS ids_merchant_payment_gateway_configs_merchant_id;
 
-DROP TYPE IF EXISTS transaction_type;
-
+DROP TABLE IF EXISTS transaction_refunds;
 DROP TABLE IF EXISTS pix_transactions;
 DROP TABLE IF EXISTS transactions;
 DROP TABLE IF EXISTS order_history;
@@ -23,3 +22,5 @@ DROP TABLE IF EXISTS merchant_payment_gateway_configs;
 DROP TABLE IF EXISTS merchant_opening_hour;
 DROP TABLE IF EXISTS merchant_address;
 DROP TABLE IF EXISTS merchants;
+
+DROP TYPE IF EXISTS transaction_type;
