@@ -1,2 +1,0 @@
-DROP INDEX ids_merchant_payment_gateway_configs_merchant_id;
-DROP TABLE merchant_payment_gateway_configs;

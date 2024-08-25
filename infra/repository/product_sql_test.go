@@ -55,17 +55,18 @@ func runProductTests(t *testing.T, repository repository.ProductRepository) {
 		aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.WORD)
 		assert.NoError(t, err)
 
-		err = repository.Create(context.Background(), aProduct)
+		ctx := context.Background()
+		err = repository.Create(ctx, aProduct)
 		assert.NoError(t, err)
 
-		anotherProduct, err := product.New(aProduct.Name, aProduct.Description, aProduct.Price, faker.WORD)
+		anotherProduct, err := product.New(aProduct.Name, aProduct.Description, aProduct.Price, aProduct.TenantId)
 		assert.NoError(t, err)
 
-		err = repository.Create(context.Background(), anotherProduct)
+		err = repository.Create(ctx, anotherProduct)
 		assert.Error(t, err)
 
 		anotherProduct.Name = faker.Name()
-		err = repository.Create(context.Background(), anotherProduct)
+		err = repository.Create(ctx, anotherProduct)
 		assert.NoError(t, err)
 	})
 

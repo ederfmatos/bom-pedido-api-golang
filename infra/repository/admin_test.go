@@ -3,6 +3,7 @@ package repository
 import (
 	"bom-pedido-api/application/repository"
 	"bom-pedido-api/domain/entity/admin"
+	"bom-pedido-api/domain/entity/merchant"
 	"bom-pedido-api/infra/test"
 	"context"
 	"github.com/go-faker/faker/v4"
@@ -14,18 +15,26 @@ func Test_AdminSqlRepository(t *testing.T) {
 	container := test.NewContainer()
 	sqlConnection := NewDefaultSqlConnection(container.Database)
 	adminSqlRepository := NewDefaultAdminRepository(sqlConnection)
-	runAdminTests(t, adminSqlRepository)
+	merchantRepository := NewDefaultMerchantRepository(sqlConnection)
+	runAdminTests(t, adminSqlRepository, merchantRepository)
 }
 
 func Test_AdminMemoryRepository(t *testing.T) {
-	adminSqlRepository := NewAdminMemoryRepository()
-	runAdminTests(t, adminSqlRepository)
+	adminRepository := NewAdminMemoryRepository()
+	merchantRepository := NewMerchantMemoryRepository()
+	runAdminTests(t, adminRepository, merchantRepository)
 }
 
-func runAdminTests(t *testing.T, repository repository.AdminRepository) {
+func runAdminTests(t *testing.T, repository repository.AdminRepository, merchantRepository repository.MerchantRepository) {
 	ctx := context.TODO()
 
-	aAdmin, err := admin.New(faker.Name(), faker.Email(), faker.Word())
+	aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+	assert.NoError(t, err)
+
+	err = merchantRepository.Create(ctx, aMerchant)
+	assert.NoError(t, err)
+
+	aAdmin, err := admin.New(faker.Name(), faker.Email(), aMerchant.Id)
 	assert.NoError(t, err)
 
 	savedAdmin, err := repository.FindByEmail(ctx, aAdmin.GetEmail())

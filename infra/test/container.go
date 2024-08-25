@@ -101,99 +101,19 @@ func databaseConnection() (*sql.DB, func()) {
 	database, err := sql.Open("postgres", connectionString)
 	failOnError(err)
 	_, err = database.Exec(`
-		CREATE TABLE IF NOT EXISTS customers
-		(
-			id           VARCHAR(36)                NOT NULL PRIMARY KEY,
-			name         VARCHAR(255)               NOT NULL,
-			email        VARCHAR(255)               NOT NULL UNIQUE,
-			phone_number VARCHAR(11)                UNIQUE,
-			status       VARCHAR(20)				NOT NULL,
-			tenant_id 	 VARCHAR(20) 				NOT NULL,
-			created_at   TIMESTAMP                  NOT NULL DEFAULT CURRENT_TIMESTAMP
-		);
-		
-    `)
-	failOnError(err)
-	_, err = database.Exec(`
-		CREATE TABLE IF NOT EXISTS products
-		(
-			id          VARCHAR(36)                            NOT NULL PRIMARY KEY,
-			name        VARCHAR(255)                           NOT NULL UNIQUE,
-			description TEXT,
-			price       DECIMAL(6, 2)                          NOT NULL,
-			status       VARCHAR(20)						   NOT NULL,
-			tenant_id 	 VARCHAR(20) 						   NOT NULL,
-			created_at  TIMESTAMP                              NOT NULL DEFAULT CURRENT_TIMESTAMP
-		);
-    `)
-	failOnError(err)
-	_, err = database.Exec(`
-		CREATE TABLE IF NOT EXISTS orders
-		(
-			id                VARCHAR(36) NOT NULL PRIMARY KEY,
-			code              SERIAL      NOT NULL UNIQUE,
-			customer_id       VARCHAR(36) NOT NULL,
-			payment_method    VARCHAR(30) NOT NULL,
-			payment_mode      VARCHAR(30) NOT NULL,
-			delivery_mode     VARCHAR(30) NOT NULL,
-			status            VARCHAR(30) NOT NULL,
-			credit_card_token VARCHAR(255),
-			payback           DECIMAL(6, 2),
-			amount            DECIMAL(6, 2) NOT NULL,
-			delivery_time     TIMESTAMP   NOT NULL,
-			tenant_id 	 VARCHAR(20)	  NOT NULL,
-			created_at        TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
-		);
-    `)
-	failOnError(err)
-	_, err = database.Exec(`
-		CREATE TABLE IF NOT EXISTS order_items
-		(
-			id          VARCHAR(36) NOT NULL PRIMARY KEY,
-			order_id    VARCHAR(36) NOT NULL,
-			product_id  VARCHAR(36) NOT NULL,
-			status      VARCHAR(30) NOT NULL,
-			quantity    NUMERIC     NOT NULL,
-			observation TEXT,
-			price       DECIMAL(6, 2),
-			created_at  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-			CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES orders (id)
-		);
-    `)
-	failOnError(err)
-	_, err = database.Exec(`
-		CREATE TABLE IF NOT EXISTS order_history
-		(
-			id         SERIAL      NOT NULL PRIMARY KEY,
-			order_id   VARCHAR(36) NOT NULL,
-			changed_by VARCHAR(36) NOT NULL,
-			changed_at TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-			status     VARCHAR(30) NOT NULL,
-			data       TEXT,
-			CONSTRAINT fk_order_history_order FOREIGN KEY (order_id) REFERENCES orders (id)
-		);
-
-		CREATE TABLE admins
-		(
-			id          VARCHAR(36) PRIMARY KEY,
-			name        VARCHAR(255) NOT NULL,
-			email       VARCHAR(255) NOT NULL UNIQUE,
-			merchant_id VARCHAR(36),
-			created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
-		);
-
 		CREATE TABLE merchants
 		(
 			id           VARCHAR(36) PRIMARY KEY,
 			name         VARCHAR(255) NOT NULL,
-			email        VARCHAR(255) NOT NULL UNIQUE,
-			phone_number VARCHAR(11)  NOT NULL UNIQUE,
-			tenant_id    VARCHAR(36)  NOT NULL,
+			email        VARCHAR(255) NOT NULL,
+			phone_number VARCHAR(11)  NOT NULL,
+			tenant_id    VARCHAR(36)  NOT NULL UNIQUE,
 			domain       VARCHAR(20)  NOT NULL,
 			status       VARCHAR(30)  NOT NULL DEFAULT 'ACTIVE',
-			created_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+			created_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			CONSTRAINT uk_merchant_email UNIQUE (email, tenant_id),
+			CONSTRAINT uk_merchant_phone_number UNIQUE (phone_number, tenant_id)
 		);
-		
 		CREATE INDEX ids_merchants_domain ON merchants (domain);
 		CREATE INDEX ids_merchants_tenant_id ON merchants (tenant_id);
 		
@@ -224,7 +144,102 @@ func databaseConnection() (*sql.DB, func()) {
 			CONSTRAINT fk_merchant_opening_hour_merchant FOREIGN KEY (merchant_id) REFERENCES merchants (id)
 		);
 		CREATE INDEX ids_merchant_opening_hour_merchant_id ON merchant_opening_hour (merchant_id);
-
+		
+		CREATE TABLE merchant_payment_gateway_configs
+		(
+			id          SERIAL      NOT NULL PRIMARY KEY,
+			merchant_id VARCHAR(36) NOT NULL,
+			gateway     VARCHAR(50) NOT NULL,
+			credentials TEXT        NOT NULL,
+			CONSTRAINT fk_merchant_payment_gateway_configs_merchant FOREIGN KEY (merchant_id) REFERENCES merchants (id)
+		);
+		CREATE INDEX ids_merchant_payment_gateway_configs_merchant_id ON merchant_payment_gateway_configs (merchant_id);
+		
+		CREATE TABLE admins
+		(
+			id          VARCHAR(36) PRIMARY KEY,
+			name        VARCHAR(255) NOT NULL,
+			email       VARCHAR(255) NOT NULL,
+			merchant_id VARCHAR(36)  NOT NULL,
+			created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			CONSTRAINT fk_admins_merchant FOREIGN KEY (merchant_id) REFERENCES merchants (id),
+			CONSTRAINT uk_admin_email UNIQUE (email, merchant_id)
+		);
+		CREATE INDEX ids_admin_email ON admins (email);
+		
+		CREATE TABLE customers
+		(
+			id           VARCHAR(36)  NOT NULL PRIMARY KEY,
+			name         VARCHAR(255) NOT NULL,
+			email        VARCHAR(255) NOT NULL,
+			phone_number VARCHAR(11),
+			status       VARCHAR(20)  NOT NULL,
+			tenant_id    VARCHAR(30)  NOT NULL,
+			created_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			CONSTRAINT uk_customer_email UNIQUE (email, tenant_id),
+			CONSTRAINT uk_customer_phone_number UNIQUE (phone_number, tenant_id)
+		);
+		CREATE INDEX ids_customer_email_tenant ON customers (email, tenant_id);
+		
+		CREATE TABLE products
+		(
+			id          VARCHAR(36)   NOT NULL PRIMARY KEY,
+			name        VARCHAR(255)  NOT NULL,
+			description TEXT,
+			price       DECIMAL(6, 2) NOT NULL,
+			status      VARCHAR(20)   NOT NULL,
+			tenant_id   VARCHAR(30)   NOT NULL,
+			created_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    		CONSTRAINT uk_product_name UNIQUE (name, tenant_id)
+		);
+		CREATE INDEX ids_product_tenant ON products (tenant_id);
+		
+		CREATE TABLE orders
+		(
+			id                VARCHAR(36)   NOT NULL PRIMARY KEY,
+			code              SERIAL        NOT NULL,
+			customer_id       VARCHAR(36)   NOT NULL,
+			payment_method    VARCHAR(30)   NOT NULL,
+			payment_mode      VARCHAR(30)   NOT NULL,
+			delivery_mode     VARCHAR(30)   NOT NULL,
+			status            VARCHAR(30)   NOT NULL,
+			credit_card_token VARCHAR(255),
+			payback           DECIMAL(6, 2),
+			amount            DECIMAL(6, 2) NOT NULL,
+			delivery_time     TIMESTAMP     NOT NULL,
+			tenant_id         VARCHAR(30)   NOT NULL,
+			created_at        TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			CONSTRAINT fk_orders_customer FOREIGN KEY (customer_id) REFERENCES customers (id)
+		);
+		CREATE INDEX ids_order_customer ON orders (customer_id, tenant_id);
+		
+		CREATE TABLE order_items
+		(
+			id          VARCHAR(36) NOT NULL PRIMARY KEY,
+			order_id    VARCHAR(36) NOT NULL,
+			product_id  VARCHAR(36) NOT NULL,
+			status      VARCHAR(30) NOT NULL,
+			quantity    NUMERIC     NOT NULL,
+			observation TEXT,
+			price       DECIMAL(6, 2),
+			created_at  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES orders (id),
+			CONSTRAINT fk_order_items_product FOREIGN KEY (product_id) REFERENCES products (id)
+		);
+		
+		CREATE TABLE order_history
+		(
+			id         SERIAL      NOT NULL PRIMARY KEY,
+			order_id   VARCHAR(36) NOT NULL,
+			changed_by VARCHAR(36) NOT NULL,
+			changed_at TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			status     VARCHAR(30) NOT NULL,
+			data       TEXT,
+			CONSTRAINT fk_order_history_order FOREIGN KEY (order_id) REFERENCES orders (id)
+		);
+		
+		CREATE TYPE transaction_type AS ENUM ('PIX', 'CREDIT_CARD');
+		
 		CREATE TABLE transactions
 		(
 			id         VARCHAR(36) PRIMARY KEY NOT NULL,
@@ -232,9 +247,9 @@ func databaseConnection() (*sql.DB, func()) {
 			amount     NUMERIC(6, 2)           NOT NULL,
 			status     VARCHAR(20)             NOT NULL,
 			created_at TIMESTAMP               NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			type       transaction_type        NOT NULL,
 			CONSTRAINT fk_transactions_order_id FOREIGN KEY (order_id) REFERENCES orders (id)
 		);
-		
 		CREATE INDEX idx_transactions_order ON transactions (order_id);
 		
 		CREATE TABLE pix_transactions

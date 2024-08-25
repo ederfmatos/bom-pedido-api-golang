@@ -2,6 +2,7 @@ package repository
 
 import (
 	"bom-pedido-api/application/repository"
+	"bom-pedido-api/domain/entity/customer"
 	"bom-pedido-api/domain/entity/order"
 	"bom-pedido-api/domain/entity/product"
 	"bom-pedido-api/domain/enums"
@@ -19,21 +20,28 @@ func Test_OrderSqlRepository(t *testing.T) {
 	sqlConnection := NewDefaultSqlConnection(container.Database)
 	orderRepository := NewDefaultOrderRepository(sqlConnection)
 	productRepository := NewDefaultProductRepository(sqlConnection)
-	orderTests(t, orderRepository, productRepository)
+	customerRepository := NewDefaultCustomerRepository(sqlConnection)
+	orderTests(t, orderRepository, productRepository, customerRepository)
 }
 
 func Test_OrderMemoryRepository(t *testing.T) {
 	orderRepository := NewOrderMemoryRepository()
 	productRepository := NewProductMemoryRepository()
-	orderTests(t, orderRepository, productRepository)
+	customerRepository := NewCustomerMemoryRepository()
+	orderTests(t, orderRepository, productRepository, customerRepository)
 }
 
-func orderTests(t *testing.T, orderRepository repository.OrderRepository, productRepository repository.ProductRepository) {
+func orderTests(t *testing.T, orderRepository repository.OrderRepository, productRepository repository.ProductRepository, customerRepository repository.CustomerRepository) {
 	ctx := context.TODO()
 
-	customerId := value_object.NewID()
+	aCustomer, err := customer.New(faker.Name(), faker.Email(), faker.Word())
+	assert.NoError(t, err)
+
+	err = customerRepository.Create(ctx, aCustomer)
+	assert.NoError(t, err)
+
 	adminId := value_object.NewID()
-	anOrder, err := order.New(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 10.0, 100, time.Now(), faker.WORD)
+	anOrder, err := order.New(aCustomer.Id, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 10.0, 100, time.Now(), faker.WORD)
 	assert.NoError(t, err)
 
 	aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.WORD)
