@@ -8,5 +8,5 @@ import (
 
 func ConfigureCallbackRoutes(server *echo.Group, factory *factory.ApplicationFactory) {
 	callbackRoutes := server.Group("/v1/payments/callback")
-	callbackRoutes.POST("/mercado_pago/:orderId", mercado_pago.Handle(factory))
+	callbackRoutes.POST("/MERCADO_PAGO/:orderId", mercado_pago.Handle(factory))
 }
