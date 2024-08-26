@@ -21,6 +21,7 @@ var (
 	FinishedStatus         = NewFinished()
 
 	AllStatus = []Status{
+		AwaitingPaymentStatus,
 		AwaitingApprovalStatus,
 		ApprovedStatus,
 		InProgressStatus,
