@@ -5,7 +5,16 @@ import (
 	"time"
 )
 
+const (
+	TransactionPending   PaymentStatus = "PENDING"
+	TransactionPaid      PaymentStatus = "PAID"
+	TransactionRefunded  PaymentStatus = "REFUNDED"
+	TransactionCancelled PaymentStatus = "CANCELLED"
+)
+
 type (
+	PaymentStatus string
+
 	PixMerchant struct {
 		Id    string
 		Name  string
@@ -27,5 +36,6 @@ type (
 	PixGateway interface {
 		CreateQrCodePix(ctx context.Context, input CreateQrCodePixInput) (*CreateQrCodePixOutput, error)
 		Name() string
+		GetPaymentStatus(ctx context.Context, merchantId, id string) (*PaymentStatus, error)
 	}
 )

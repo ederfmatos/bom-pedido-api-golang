@@ -8,4 +8,5 @@ func HandleEvents(factory *factory.ApplicationFactory) {
 	HandleShoppingCart(factory)
 	HandleOrderEvents(factory)
 	HandleEmailEvents(factory)
+	HandleTransactionCallback(factory)
 }

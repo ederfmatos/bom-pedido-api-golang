@@ -243,3 +243,7 @@ func (order *Order) GetStatus() string {
 func (order *Order) IsPixInApp() bool {
 	return order.PaymentMethod.IsPix() && order.PaymentMode.IsInApp()
 }
+
+func (order *Order) IsAwaitingPayment() bool {
+	return order.state == status.AwaitingPaymentStatus
+}

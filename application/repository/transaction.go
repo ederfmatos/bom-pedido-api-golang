@@ -7,5 +7,7 @@ import (
 
 type TransactionRepository interface {
 	CreatePixTransaction(ctx context.Context, transaction *transaction.PixTransaction) error
+	UpdatePixTransaction(ctx context.Context, transaction *transaction.PixTransaction) error
 	ExistsByOrderId(ctx context.Context, id string) (bool, error)
+	FindPendingByOrderId(ctx context.Context, id string) (*transaction.PixTransaction, error)
 }

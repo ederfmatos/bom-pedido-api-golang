@@ -26,3 +26,12 @@ func (f *MockPixGateway) CreateQrCodePix(ctx context.Context, input gateway.Crea
 	}
 	return output.(*gateway.CreateQrCodePixOutput), args.Error(1)
 }
+
+func (f *MockPixGateway) GetPaymentStatus(ctx context.Context, merchantId, id string) (*gateway.PaymentStatus, error) {
+	args := f.Called(ctx, merchantId, id)
+	var output = args.Get(0)
+	if output == nil {
+		return nil, args.Error(1)
+	}
+	return output.(*gateway.PaymentStatus), args.Error(1)
+}
