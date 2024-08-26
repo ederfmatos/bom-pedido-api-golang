@@ -56,7 +56,8 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) error {
 	}
 	err = uc.createPixTransaction(ctx, createPixOutput, anOrder)
 	if err != nil {
-		return uc.eventEmitter.Emit(ctx, event.NewRefundTransactionEvent(anOrder.Id, createPixOutput.Id))
+		_ = uc.eventEmitter.Emit(ctx, event.NewRefundTransactionEvent(anOrder.Id, createPixOutput.Id))
+		return err
 	}
 	return uc.eventEmitter.Emit(ctx, event.NewPixTransactionCreated(anOrder.Id, createPixOutput.Id))
 }
