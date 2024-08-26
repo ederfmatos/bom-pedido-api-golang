@@ -1,0 +1,43 @@
+colors: true
+
+pre-commit:
+  parallel: true
+  commands:
+    test:
+      run: go test ./...
+
+    check_style:
+      run: |
+        error_files=""
+         for dir in application infra domain; do
+           bad_files=$(find $dir -name '*[A-Z]*' -o -name '* *')
+           if [ -n "$bad_files" ]; then
+             error_files="$error_files\n$bad_files"
+           fi
+         done
+         if [ -n "$error_files" ]; then
+           echo "The following files or directories do not follow the naming convention:"
+           echo -e "$error_files"
+           exit 1
+         fi
+
+    unused_files:
+      run: |
+        go mod tidy -v > /dev/null
+        unused=$(go mod tidy -v 2>&1 | grep '^unused')
+        if [ -n "$unused" ]; then
+          echo "There are unused files or modules."
+          exit 1
+        fi
+
+    check_dependencies:
+      run: |
+        go mod tidy
+        go mod verify
+        if [ $? -ne 0 ]; then
+          echo "Dependencies check failed. Please fix the issues."
+          exit 1
+        fi
+
+    format:
+      run: go fmt ./...
