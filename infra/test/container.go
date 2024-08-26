@@ -207,7 +207,7 @@ func databaseConnection() (*sql.DB, func()) {
 			payback           DECIMAL(6, 2),
 			amount            DECIMAL(6, 2) NOT NULL,
 			delivery_time     TIMESTAMP     NOT NULL,
-			merchant_id       VARCHAR(30)   NOT NULL,
+			merchant_id       VARCHAR(36)   NOT NULL,
 			created_at        TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			CONSTRAINT fk_orders_customer FOREIGN KEY (customer_id) REFERENCES customers (id)
 		);

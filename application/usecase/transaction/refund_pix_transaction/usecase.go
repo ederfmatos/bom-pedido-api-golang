@@ -1,4 +1,4 @@
-package pay_pix_transaction
+package refund_pix_transaction
 
 import (
 	"bom-pedido-api/application/event"
@@ -37,21 +37,24 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) error {
 	if err != nil || anOrder == nil || !anOrder.IsPixInApp() || !anOrder.IsAwaitingPayment() {
 		return err
 	}
-	pendingTransaction, err := uc.transactionRepository.FindByOrderId(ctx, anOrder.Id)
-	if err != nil || pendingTransaction == nil {
+	aTransaction, err := uc.transactionRepository.FindByOrderId(ctx, anOrder.Id)
+	if err != nil || aTransaction == nil {
 		return err
 	}
-	paymentStatus, err := uc.pixGateway.GetPaymentStatus(ctx, anOrder.MerchantId, pendingTransaction.Id)
+	paymentStatus, err := uc.pixGateway.GetPaymentStatus(ctx, anOrder.MerchantId, aTransaction.Id)
 	if err != nil || paymentStatus != nil {
 		return err
 	}
 	if *paymentStatus != gateway.TransactionPaid {
 		return err
 	}
-	pendingTransaction.Pay()
-	err = uc.transactionRepository.UpdatePixTransaction(ctx, pendingTransaction)
+	refundInput := gateway.RefundPixInput{
+		PaymentId:  aTransaction.Id,
+		MerchantId: anOrder.MerchantId,
+	}
+	err = uc.pixGateway.RefundPix(ctx, refundInput)
 	if err != nil {
 		return err
 	}
-	return uc.eventEmitter.Emit(ctx, event.NewTransactionPaid(anOrder.Id, pendingTransaction.Id))
+	return uc.eventEmitter.Emit(ctx, event.NewPixTransactionRefunded(anOrder.Id, aTransaction.Id))
 }

@@ -35,3 +35,8 @@ func (f *MockPixGateway) GetPaymentStatus(ctx context.Context, merchantId, id st
 	}
 	return output.(*gateway.PaymentStatus), args.Error(1)
 }
+
+func (f *MockPixGateway) RefundPix(ctx context.Context, input gateway.RefundPixInput) error {
+	args := f.Called(ctx, input)
+	return args.Error(0)
+}

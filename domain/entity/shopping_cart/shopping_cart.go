@@ -65,17 +65,12 @@ func (shoppingCart *ShoppingCart) GetItems() []ShoppingCartItem {
 	return shoppingCart.Items
 }
 
-func (shoppingCart *ShoppingCart) Checkout(
-	paymentMethodString, deliveryModeString, paymentModeString, cardToken string,
-	payback float64,
-	products map[string]*product.Product,
-	deliveryTime time.Duration,
-) (*order.Order, error) {
+func (shoppingCart *ShoppingCart) Checkout(paymentMethodString, deliveryModeString, paymentModeString, cardToken string, payback float64, products map[string]*product.Product, deliveryTime time.Duration, merchantId string) (*order.Order, error) {
 	if shoppingCart.IsEmpty() {
 		return nil, errors.ShoppingCartEmptyError
 	}
 	price := shoppingCart.GetPrice()
-	anOrder, err := order.New(shoppingCart.CustomerId, paymentMethodString, paymentModeString, deliveryModeString, cardToken, payback, price, time.Now().Add(deliveryTime), shoppingCart.TenantId)
+	anOrder, err := order.New(shoppingCart.CustomerId, paymentMethodString, paymentModeString, deliveryModeString, cardToken, payback, price, time.Now().Add(deliveryTime), merchantId)
 	if err != nil {
 		return nil, err
 	}

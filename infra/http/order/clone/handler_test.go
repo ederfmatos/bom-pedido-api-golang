@@ -5,6 +5,7 @@ import (
 	"bom-pedido-api/application/usecase/shopping_cart/add_item_to_shopping_cart"
 	"bom-pedido-api/application/usecase/shopping_cart/checkout"
 	"bom-pedido-api/domain/entity/customer"
+	"bom-pedido-api/domain/entity/merchant"
 	"bom-pedido-api/domain/enums"
 	"bom-pedido-api/infra/factory"
 	"bom-pedido-api/infra/test"
@@ -24,7 +25,13 @@ func TestHandle(t *testing.T) {
 	defer container.Down()
 	applicationFactory := factory.NewContainerApplicationFactory(container)
 
-	aCustomer, err := customer.New(faker.Name(), faker.Email(), faker.WORD)
+	aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+	assert.NoError(t, err)
+
+	err = applicationFactory.MerchantRepository.Create(ctx, aMerchant)
+	assert.NoError(t, err)
+
+	aCustomer, err := customer.New(faker.Name(), faker.Email(), aMerchant.TenantId)
 	assert.NoError(t, err)
 	err = applicationFactory.CustomerRepository.Create(ctx, aCustomer)
 	assert.NoError(t, err)
@@ -34,7 +41,7 @@ func TestHandle(t *testing.T) {
 		Name:        faker.Name(),
 		Description: faker.Word(),
 		Price:       10.0,
-		TenantId:    faker.WORD,
+		TenantId:    aMerchant.TenantId,
 	})
 	assert.NoError(t, err)
 
@@ -44,7 +51,7 @@ func TestHandle(t *testing.T) {
 		ProductId:   createProductOutput.Id,
 		Quantity:    1,
 		Observation: "",
-		TenantId:    faker.WORD,
+		TenantId:    aMerchant.TenantId,
 	})
 	assert.NoError(t, err)
 

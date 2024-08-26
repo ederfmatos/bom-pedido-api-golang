@@ -7,11 +7,11 @@ import (
 )
 
 const (
-	sqlCreatePixTransaction            = "INSERT INTO pix_transactions (id, order_id, amount, status, qr_code, payment_gateway, qr_code_link, type) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
-	sqlFindPendingTransactionByOrderId = "SELECT id, order_id, amount, status, qr_code, payment_gateway, qr_code_link FROM pix_transactions WHERE order_id = $1 AND status = $2 LIMIT 1"
-	sqlUpdatePixTransaction            = "UPDATE pix_transactions SET status = $1 where id = $2"
-	sqlExistsTransactionByOrderId      = "SELECT 1 FROM transactions WHERE order_id = $1 LIMIT 1"
-	pix                                = "PIX"
+	sqlCreatePixTransaction       = "INSERT INTO pix_transactions (id, order_id, amount, status, qr_code, payment_gateway, qr_code_link, type) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
+	sqlFindTransactionByOrderId   = "SELECT id, order_id, amount, status, qr_code, payment_gateway, qr_code_link FROM pix_transactions WHERE order_id = $1 LIMIT 1"
+	sqlUpdatePixTransaction       = "UPDATE pix_transactions SET status = $1 where id = $2"
+	sqlExistsTransactionByOrderId = "SELECT 1 FROM transactions WHERE order_id = $1 LIMIT 1"
+	pix                           = "PIX"
 )
 
 type DefaultTransactionRepository struct {
@@ -38,10 +38,10 @@ func (repository *DefaultTransactionRepository) UpdatePixTransaction(ctx context
 		Update(ctx)
 }
 
-func (repository *DefaultTransactionRepository) FindPendingByOrderId(ctx context.Context, id string) (*transaction.PixTransaction, error) {
+func (repository *DefaultTransactionRepository) FindByOrderId(ctx context.Context, id string) (*transaction.PixTransaction, error) {
 	var pixTransaction transaction.PixTransaction
-	found, err := repository.Sql(sqlFindPendingTransactionByOrderId).
-		Values(id, transaction.CREATED).
+	found, err := repository.Sql(sqlFindTransactionByOrderId).
+		Values(id).
 		FindOne(ctx, &pixTransaction.Id, &pixTransaction.OrderId, &pixTransaction.Amount, &pixTransaction.Status, &pixTransaction.QrCode, &pixTransaction.PaymentGateway, &pixTransaction.QrCodeLink)
 	if err != nil || !found {
 		return nil, err

@@ -1,6 +1,7 @@
 package checkout
 
 import (
+	"bom-pedido-api/domain/entity/merchant"
 	"bom-pedido-api/domain/entity/product"
 	"bom-pedido-api/domain/entity/shopping_cart"
 	"bom-pedido-api/domain/enums"
@@ -46,11 +47,17 @@ func Test_CheckoutShoppingCart(t *testing.T) {
 			Payback:         0,
 			CreditCardToken: "",
 		}
-		aProduct, _ := product.New(faker.Name(), faker.Word(), 11.0, faker.Word())
-		err := productRepository.Create(ctx, aProduct)
+		aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
 		assert.NoError(t, err)
 
-		shoppingCart := shopping_cart.New(input.CustomerId, faker.WORD)
+		err = applicationFactory.MerchantRepository.Create(ctx, aMerchant)
+		assert.NoError(t, err)
+
+		aProduct, _ := product.New(faker.Name(), faker.Word(), 11.0, aMerchant.TenantId)
+		err = productRepository.Create(ctx, aProduct)
+		assert.NoError(t, err)
+
+		shoppingCart := shopping_cart.New(input.CustomerId, aMerchant.TenantId)
 		err = shoppingCart.AddItem(aProduct, 1, "")
 		assert.NoError(t, err)
 

@@ -45,7 +45,7 @@ func TestShoppingCart_Checkout(t *testing.T) {
 			err := shoppingCart.AddItem(newProduct, 1, faker.Word())
 			assert.NoError(t, err)
 
-			order, err := shoppingCart.Checkout(test.paymentMethod, test.deliveryMode, test.paymentMode, test.cardToken, test.payback, make(map[string]*product.Product), time.Second)
+			order, err := shoppingCart.Checkout(test.paymentMethod, test.deliveryMode, test.paymentMode, test.cardToken, test.payback, make(map[string]*product.Product), time.Second, "")
 			assert.Nil(t, order)
 			expectedError := errors.NewCompositeWithError(test.Errors...)
 			assert.Equal(t, err, expectedError)
@@ -67,7 +67,7 @@ func TestShoppingCart_Checkout(t *testing.T) {
 
 		product2.MarkUnAvailable()
 
-		order, err := shoppingCart.Checkout(enums.CreditCard, enums.Delivery, enums.InReceiving, "", 0, products, time.Second)
+		order, err := shoppingCart.Checkout(enums.CreditCard, enums.Delivery, enums.InReceiving, "", 0, products, time.Second, "")
 		assert.Nil(t, order)
 
 		expectedError := errors.NewCompositeWithError(errors.ProductUnAvailableError, errors.ProductNotFoundError)
@@ -87,7 +87,7 @@ func TestShoppingCart_Checkout(t *testing.T) {
 		err = shoppingCart.AddItem(product2, 1, faker.Word())
 		assert.NoError(t, err)
 
-		order, err := shoppingCart.Checkout(enums.CreditCard, enums.Delivery, enums.InReceiving, "", 0, products, time.Second)
+		order, err := shoppingCart.Checkout(enums.CreditCard, enums.Delivery, enums.InReceiving, "", 0, products, time.Second, "")
 		assert.NoError(t, err)
 		assert.NotNil(t, order)
 		assert.Equal(t, shoppingCart.CustomerId, order.CustomerID)

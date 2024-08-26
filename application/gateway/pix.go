@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"bom-pedido-api/domain/errors"
 	"context"
 	"time"
 )
@@ -11,6 +12,8 @@ const (
 	TransactionRefunded  PaymentStatus = "REFUNDED"
 	TransactionCancelled PaymentStatus = "CANCELLED"
 )
+
+var MerchantGatewayConfigNotFoundError = errors.New("merchant gateway config not found")
 
 type (
 	PaymentStatus string
@@ -33,8 +36,14 @@ type (
 		PaymentGateway string
 		QrCodeLink     string
 	}
+	RefundPixInput struct {
+		PaymentId  string
+		MerchantId string
+	}
+
 	PixGateway interface {
 		CreateQrCodePix(ctx context.Context, input CreateQrCodePixInput) (*CreateQrCodePixOutput, error)
+		RefundPix(ctx context.Context, input RefundPixInput) error
 		Name() string
 		GetPaymentStatus(ctx context.Context, merchantId, id string) (*PaymentStatus, error)
 	}

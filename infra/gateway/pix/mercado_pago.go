@@ -4,12 +4,11 @@ import (
 	"bom-pedido-api/application/gateway"
 	"bom-pedido-api/application/repository"
 	"bom-pedido-api/domain/errors"
-	"bom-pedido-api/infra/telemetry"
 	"context"
 	"fmt"
 	"github.com/mercadopago/sdk-go/pkg/config"
 	"github.com/mercadopago/sdk-go/pkg/payment"
-	"log/slog"
+	"github.com/mercadopago/sdk-go/pkg/refund"
 	"strconv"
 	"time"
 )
@@ -52,20 +51,26 @@ func (g *MercadoPagoPixGateway) getMerchantConfig(ctx context.Context, merchantI
 	return &gatewayConfig.AccessToken, nil
 }
 
-func (g *MercadoPagoPixGateway) CreateQrCodePix(ctx context.Context, input gateway.CreateQrCodePixInput) (*gateway.CreateQrCodePixOutput, error) {
-	slog.Info("Iniciando criação de pagamento PIX no Mercado Pago")
-	ctx, span := telemetry.StartSpan(ctx, "MercadoPagoPixGateway.CreateQrCodePix")
-	defer span.End()
-	accessToken, err := g.getMerchantConfig(ctx, input.MerchantId)
-	defer func() {
-		if err != nil {
-			slog.Error("Ocorreu um erro na criação de pagamento Pix no Mercado Pago", "error", err)
-		}
-	}()
+func (g *MercadoPagoPixGateway) getConfig(ctx context.Context, merchantId string) (*config.Config, error) {
+	gatewayConfig, err := g.merchantPaymentGatewayConfigRepository.FindByMerchantAndGateway(ctx, merchantId, mercadoPago)
 	if err != nil {
 		return nil, err
 	}
-	cfg, err := config.New(*accessToken, config.WithPlatformID(applicationName))
+	if gatewayConfig == nil {
+		return nil, gateway.MerchantGatewayConfigNotFoundError
+	}
+	if err != nil {
+		return nil, err
+	}
+	cfg, err := config.New(gatewayConfig.AccessToken, config.WithPlatformID(applicationName))
+	if err != nil {
+		return nil, err
+	}
+	return cfg, nil
+}
+
+func (g *MercadoPagoPixGateway) CreateQrCodePix(ctx context.Context, input gateway.CreateQrCodePixInput) (*gateway.CreateQrCodePixOutput, error) {
+	cfg, err := g.getConfig(ctx, input.MerchantId)
 	if err != nil {
 		return nil, err
 	}
@@ -85,14 +90,10 @@ func (g *MercadoPagoPixGateway) CreateQrCodePix(ctx context.Context, input gatew
 			"orderId": input.InternalOrderId,
 		},
 	}
-	_, mercadoPagoSpan := telemetry.StartSpan(ctx, "MercadoPagoPixGateway.CreatePayment")
-	defer mercadoPagoSpan.End()
 	resource, err := client.Create(ctx, request)
 	if err != nil {
-		mercadoPagoSpan.RecordError(err)
 		return nil, err
 	}
-	slog.Info("Sucesso na criação de pagamento PIX no Mercado Pago")
 	return &gateway.CreateQrCodePixOutput{
 		Id:             strconv.Itoa(resource.ID),
 		QrCode:         resource.PointOfInteraction.TransactionData.QRCode,
@@ -103,19 +104,7 @@ func (g *MercadoPagoPixGateway) CreateQrCodePix(ctx context.Context, input gatew
 }
 
 func (g *MercadoPagoPixGateway) GetPaymentStatus(ctx context.Context, merchantId, id string) (*gateway.PaymentStatus, error) {
-	slog.Info("Iniciando busca de status de pagamento PIX no Mercado Pago")
-	ctx, span := telemetry.StartSpan(ctx, "MercadoPagoPixGateway.GetPaymentStatus")
-	defer span.End()
-	accessToken, err := g.getMerchantConfig(ctx, merchantId)
-	defer func() {
-		if err != nil {
-			slog.Error("Ocorreu um erro na busca de status de pagamento Pix no Mercado Pago", "error", err)
-		}
-	}()
-	if err != nil {
-		return nil, err
-	}
-	cfg, err := config.New(*accessToken, config.WithPlatformID(applicationName))
+	cfg, err := g.getConfig(ctx, merchantId)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +117,6 @@ func (g *MercadoPagoPixGateway) GetPaymentStatus(ctx context.Context, merchantId
 	if err != nil {
 		return nil, err
 	}
-	slog.Info("Busca de status de pagamento PIX no Mercado Pago finalizada", "status", paymentResponse.Status)
 	var status gateway.PaymentStatus
 	switch paymentResponse.Status {
 	case "pending", "authorized", "in_process":
@@ -146,4 +134,18 @@ func (g *MercadoPagoPixGateway) GetPaymentStatus(ctx context.Context, merchantId
 	default:
 		return nil, nil
 	}
+}
+
+func (g *MercadoPagoPixGateway) RefundPix(ctx context.Context, input gateway.RefundPixInput) error {
+	paymentId, err := strconv.Atoi(input.PaymentId)
+	if err != nil {
+		return err
+	}
+	cfg, err := g.getConfig(ctx, input.MerchantId)
+	if err != nil {
+		return err
+	}
+	client := refund.NewClient(cfg)
+	_, err = client.Create(ctx, paymentId)
+	return err
 }

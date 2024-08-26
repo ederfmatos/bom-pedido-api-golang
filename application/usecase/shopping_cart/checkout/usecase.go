@@ -12,6 +12,7 @@ import (
 type (
 	UseCase struct {
 		shoppingCartRepository repository.ShoppingCartRepository
+		merchantRepository     repository.MerchantRepository
 		productRepository      repository.ProductRepository
 		orderRepository        repository.OrderRepository
 		eventEmitter           event.Emitter
@@ -33,6 +34,7 @@ type (
 func New(factory *factory.ApplicationFactory) *UseCase {
 	return &UseCase{
 		shoppingCartRepository: factory.ShoppingCartRepository,
+		merchantRepository:     factory.MerchantRepository,
 		productRepository:      factory.ProductRepository,
 		orderRepository:        factory.OrderRepository,
 		eventEmitter:           factory.EventEmitter,
@@ -46,6 +48,10 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) (*Output, erro
 	}
 	if shoppingCart == nil || shoppingCart.IsEmpty() {
 		return nil, errors.ShoppingCartEmptyError
+	}
+	aMerchant, err := useCase.merchantRepository.FindByTenantId(ctx, shoppingCart.TenantId)
+	if err != nil || aMerchant == nil {
+		return nil, err
 	}
 	var productIds []string
 	for _, item := range shoppingCart.GetItems() {
@@ -65,6 +71,7 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) (*Output, erro
 		input.Payback,
 		products,
 		deliveryTimeInMinutes,
+		aMerchant.Id,
 	)
 	if err != nil {
 		return nil, err

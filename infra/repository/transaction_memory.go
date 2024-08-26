@@ -31,6 +31,6 @@ func (repository *TransactionMemoryRepository) UpdatePixTransaction(_ context.Co
 	return nil
 }
 
-func (repository *TransactionMemoryRepository) FindPendingByOrderId(_ context.Context, id string) (*transaction.PixTransaction, error) {
+func (repository *TransactionMemoryRepository) FindByOrderId(_ context.Context, id string) (*transaction.PixTransaction, error) {
 	return repository.pixTransactionsByOrder[id], nil
 }
