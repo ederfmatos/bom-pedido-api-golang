@@ -6,7 +6,6 @@ import (
 
 func HandleEvents(factory *factory.ApplicationFactory) {
 	HandleShoppingCart(factory)
-	HandleProductEvents(factory)
 	HandleOrderEvents(factory)
 	HandleEmailEvents(factory)
 }

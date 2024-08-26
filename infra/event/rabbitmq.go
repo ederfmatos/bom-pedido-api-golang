@@ -72,6 +72,12 @@ func (adapter *RabbitMqAdapter) Consume(options *event.ConsumerOptions, handler 
 	_, err := adapter.consumerChannel.QueueDeclare(options.Queue, true, false, false, false, nil)
 	if err != nil {
 		slog.Error("Error on declare queue", "queue", options.Queue, "error", err)
+		return
+	}
+	err = adapter.consumerChannel.QueueBind(options.Queue, options.TopicName, exchange, false, nil)
+	if err != nil {
+		slog.Error("Error on bind queue", "queue", options.Queue, "error", err)
+		return
 	}
 	messages, err := adapter.consumerChannel.Consume(
 		options.Queue,
@@ -99,6 +105,7 @@ func (adapter *RabbitMqAdapter) Consume(options *event.ConsumerOptions, handler 
 func (adapter *RabbitMqAdapter) handleMessage(message amqp.Delivery, handler event.HandlerFunc) {
 	ctx, span := telemetry.StartSpan(context.Background(), "RabbitMq.Process")
 	defer span.End()
+	slog.Info("Mensagem recebida", "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
 	var applicationEvent event.Event
 	err := json.Unmarshal(ctx, message.Body, &applicationEvent)
 	messageEvent := &event.MessageEvent{
@@ -115,10 +122,12 @@ func (adapter *RabbitMqAdapter) handleMessage(message amqp.Delivery, handler eve
 			span.RecordError(err)
 			span.SetStatus(codes.Error, err.Error())
 			messageEvent.Nack(ctx)
+			slog.Error("Ocorreu um erro no consumo da mensagem", "error", err, "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
 		}
 	}()
 	if err != nil {
 		return
 	}
+	slog.Info("Mensagem consumida com sucesso", "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
 	err = handler(ctx, messageEvent)
 }

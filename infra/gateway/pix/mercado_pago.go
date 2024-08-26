@@ -84,6 +84,7 @@ func (g *MercadoPagoPixGateway) CreateQrCodePix(ctx context.Context, input gatew
 		mercadoPagoSpan.RecordError(err)
 		return nil, err
 	}
+	slog.Info("Sucesso na criação de pagamento PIX no Mercado Pago")
 	return &gateway.CreateQrCodePixOutput{
 		Id:             strconv.Itoa(resource.ID),
 		QrCode:         resource.PointOfInteraction.TransactionData.QRCode,
