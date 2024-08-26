@@ -1,14 +1,10 @@
 FROM golang:1.23-alpine AS builder
-ENV PATH="/go/bin:${PATH}"
-ENV GO111MODULE=on
-ENV CGO_ENABLED=1
-ENV GOOS=linux
-ENV GOARCH=amd64
 RUN apk add --no-progress --no-cache gcc musl-dev ca-certificates && update-ca-certificates
 WORKDIR /build
 COPY . .
-RUN go mod tidy && go mod download
-RUN go build -tags musl -ldflags '-s -w -extldflags "-static"' -o app
+RUN PATH="/go/bin:${PATH}" GO111MODULE=on CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go mod tidy && \
+    go mod download && \
+    go build -tags musl -ldflags '-s -w -extldflags "-static"' -o app
 
 FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
