@@ -25,3 +25,12 @@ func (repository *TransactionMemoryRepository) ExistsByOrderId(_ context.Context
 	_, ok := repository.pixTransactionsByOrder[id]
 	return ok, nil
 }
+
+func (repository *TransactionMemoryRepository) UpdatePixTransaction(_ context.Context, transaction *transaction.PixTransaction) error {
+	repository.pixTransactionsByOrder[transaction.OrderId] = transaction
+	return nil
+}
+
+func (repository *TransactionMemoryRepository) FindPendingByOrderId(_ context.Context, id string) (*transaction.PixTransaction, error) {
+	return repository.pixTransactionsByOrder[id], nil
+}

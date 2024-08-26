@@ -41,11 +41,22 @@ func (g *MercadoPagoPixGateway) Name() string {
 	return mercadoPago
 }
 
+func (g *MercadoPagoPixGateway) getMerchantConfig(ctx context.Context, merchantId string) (*string, error) {
+	gatewayConfig, err := g.merchantPaymentGatewayConfigRepository.FindByMerchantAndGateway(ctx, merchantId, mercadoPago)
+	if err != nil {
+		return nil, err
+	}
+	if gatewayConfig == nil {
+		return nil, errors.New("gateway config not found")
+	}
+	return &gatewayConfig.AccessToken, nil
+}
+
 func (g *MercadoPagoPixGateway) CreateQrCodePix(ctx context.Context, input gateway.CreateQrCodePixInput) (*gateway.CreateQrCodePixOutput, error) {
 	slog.Info("Iniciando criação de pagamento PIX no Mercado Pago")
 	ctx, span := telemetry.StartSpan(ctx, "MercadoPagoPixGateway.CreateQrCodePix")
 	defer span.End()
-	gatewayConfig, err := g.merchantPaymentGatewayConfigRepository.FindByMerchantAndGateway(ctx, input.Merchant.Id, mercadoPago)
+	accessToken, err := g.getMerchantConfig(ctx, input.Merchant.Id)
 	defer func() {
 		if err != nil {
 			slog.Error("Ocorreu um erro na criação de pagamento Pix no Mercado Pago", "error", err)
@@ -54,10 +65,7 @@ func (g *MercadoPagoPixGateway) CreateQrCodePix(ctx context.Context, input gatew
 	if err != nil {
 		return nil, err
 	}
-	if gatewayConfig == nil {
-		return nil, errors.New("gateway config not found")
-	}
-	cfg, err := config.New(gatewayConfig.AccessToken, config.WithPlatformID(applicationName))
+	cfg, err := config.New(*accessToken, config.WithPlatformID(applicationName))
 	if err != nil {
 		return nil, err
 	}
@@ -92,4 +100,50 @@ func (g *MercadoPagoPixGateway) CreateQrCodePix(ctx context.Context, input gatew
 		PaymentGateway: mercadoPago,
 		QrCodeLink:     resource.PointOfInteraction.TransactionData.TicketURL,
 	}, nil
+}
+
+func (g *MercadoPagoPixGateway) GetPaymentStatus(ctx context.Context, merchantId, id string) (*gateway.PaymentStatus, error) {
+	slog.Info("Iniciando busca de status de pagamento PIX no Mercado Pago")
+	ctx, span := telemetry.StartSpan(ctx, "MercadoPagoPixGateway.GetPaymentStatus")
+	defer span.End()
+	accessToken, err := g.getMerchantConfig(ctx, merchantId)
+	defer func() {
+		if err != nil {
+			slog.Error("Ocorreu um erro na busca de status de pagamento Pix no Mercado Pago", "error", err)
+		}
+	}()
+	if err != nil {
+		return nil, err
+	}
+	cfg, err := config.New(*accessToken, config.WithPlatformID(applicationName))
+	if err != nil {
+		return nil, err
+	}
+	client := payment.NewClient(cfg)
+	paymentId, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, err
+	}
+	paymentResponse, err := client.Get(ctx, paymentId)
+	if err != nil {
+		return nil, err
+	}
+	slog.Info("Busca de status de pagamento PIX no Mercado Pago finalizada", "status", paymentResponse.Status)
+	var status gateway.PaymentStatus
+	switch paymentResponse.Status {
+	case "pending", "authorized", "in_process":
+		status = gateway.TransactionPending
+		return &status, nil
+	case "rejected", "cancelled":
+		status = gateway.TransactionCancelled
+		return &status, nil
+	case "refunded":
+		status = gateway.TransactionRefunded
+		return &status, nil
+	case "approved":
+		status = gateway.TransactionPaid
+		return &status, nil
+	default:
+		return nil, nil
+	}
 }

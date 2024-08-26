@@ -2,6 +2,7 @@ package transaction
 
 const (
 	CREATED Status = "CREATED"
+	PAID    Status = "PAID"
 )
 
 type (
@@ -34,4 +35,8 @@ func NewPixTransaction(id, orderId, qrCode, paymentGateway, qrCodeLink string, a
 			Amount:  amount,
 		},
 	}
+}
+
+func (t *PixTransaction) Pay() {
+	t.Status = PAID
 }

@@ -3,11 +3,13 @@ package event
 import (
 	"bom-pedido-api/application/event"
 	"bom-pedido-api/infra/json"
+	"bom-pedido-api/infra/retry"
 	"bom-pedido-api/infra/telemetry"
 	"context"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.opentelemetry.io/otel/codes"
 	"log/slog"
+	"time"
 )
 
 const exchange = "bompedido"
@@ -118,16 +120,19 @@ func (adapter *RabbitMqAdapter) handleMessage(message amqp.Delivery, handler eve
 		},
 	}
 	defer func() {
-		if err != nil {
-			span.RecordError(err)
-			span.SetStatus(codes.Error, err.Error())
-			messageEvent.Nack(ctx)
-			slog.Error("Ocorreu um erro no consumo da mensagem", "error", err, "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
+		if err == nil {
+			slog.Info("Mensagem consumida com sucesso", "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
+			return
 		}
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		messageEvent.Nack(ctx)
+		slog.Error("Ocorreu um erro no consumo da mensagem", "error", err, "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
 	}()
 	if err != nil {
 		return
 	}
-	slog.Info("Mensagem consumida com sucesso", "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
-	err = handler(ctx, messageEvent)
+	err = retry.Func(ctx, 5, time.Second, time.Second*30, func(ctx context.Context) error {
+		return handler(ctx, messageEvent)
+	})
 }
