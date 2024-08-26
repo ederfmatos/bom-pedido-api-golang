@@ -56,7 +56,7 @@ func (g *MercadoPagoPixGateway) CreateQrCodePix(ctx context.Context, input gatew
 	slog.Info("Iniciando criação de pagamento PIX no Mercado Pago")
 	ctx, span := telemetry.StartSpan(ctx, "MercadoPagoPixGateway.CreateQrCodePix")
 	defer span.End()
-	accessToken, err := g.getMerchantConfig(ctx, input.Merchant.Id)
+	accessToken, err := g.getMerchantConfig(ctx, input.MerchantId)
 	defer func() {
 		if err != nil {
 			slog.Error("Ocorreu um erro na criação de pagamento Pix no Mercado Pago", "error", err)
@@ -78,8 +78,8 @@ func (g *MercadoPagoPixGateway) CreateQrCodePix(ctx context.Context, input gatew
 		DateOfExpiration:  &expiresAt,
 		NotificationURL:   fmt.Sprintf("%s/%s/%s", g.notificationUrl, mercadoPago, input.InternalOrderId),
 		Payer: &payment.PayerRequest{
-			FirstName: input.Merchant.Name,
-			Email:     input.Merchant.Email,
+			FirstName: input.Customer.Name,
+			Email:     input.Customer.Email,
 		},
 		Metadata: map[string]any{
 			"orderId": input.InternalOrderId,

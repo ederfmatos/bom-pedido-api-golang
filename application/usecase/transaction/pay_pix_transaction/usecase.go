@@ -37,15 +37,11 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) error {
 	if err != nil || anOrder == nil || !anOrder.IsPixInApp() || !anOrder.IsAwaitingPayment() {
 		return err
 	}
-	aMerchant, err := uc.merchantRepository.FindByTenantId(ctx, anOrder.TenantId)
-	if err != nil || aMerchant == nil {
-		return err
-	}
 	pendingTransaction, err := uc.transactionRepository.FindPendingByOrderId(ctx, anOrder.Id)
 	if err != nil || pendingTransaction == nil {
 		return err
 	}
-	paymentStatus, err := uc.pixGateway.GetPaymentStatus(ctx, aMerchant.Id, pendingTransaction.Id)
+	paymentStatus, err := uc.pixGateway.GetPaymentStatus(ctx, anOrder.MerchantId, pendingTransaction.Id)
 	if err != nil || paymentStatus != nil {
 		return err
 	}

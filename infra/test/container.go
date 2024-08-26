@@ -207,11 +207,11 @@ func databaseConnection() (*sql.DB, func()) {
 			payback           DECIMAL(6, 2),
 			amount            DECIMAL(6, 2) NOT NULL,
 			delivery_time     TIMESTAMP     NOT NULL,
-			tenant_id         VARCHAR(30)   NOT NULL,
+			merchant_id       VARCHAR(30)   NOT NULL,
 			created_at        TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			CONSTRAINT fk_orders_customer FOREIGN KEY (customer_id) REFERENCES customers (id)
 		);
-		CREATE INDEX ids_order_customer ON orders (customer_id, tenant_id);
+		CREATE INDEX ids_order_customer ON orders (customer_id, merchant_id);
 		
 		CREATE TABLE order_items
 		(

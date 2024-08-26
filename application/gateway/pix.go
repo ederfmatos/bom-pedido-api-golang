@@ -15,8 +15,7 @@ const (
 type (
 	PaymentStatus string
 
-	PixMerchant struct {
-		Id    string
+	PixCustomer struct {
 		Name  string
 		Email string
 	}
@@ -24,7 +23,8 @@ type (
 		Amount          float64
 		InternalOrderId string
 		Description     string
-		Merchant        PixMerchant
+		MerchantId      string
+		Customer        PixCustomer
 	}
 	CreateQrCodePixOutput struct {
 		Id             string

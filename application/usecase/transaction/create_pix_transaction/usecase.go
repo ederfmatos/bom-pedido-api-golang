@@ -5,7 +5,7 @@ import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/application/gateway"
 	"bom-pedido-api/application/repository"
-	"bom-pedido-api/domain/entity/merchant"
+	"bom-pedido-api/domain/entity/customer"
 	"bom-pedido-api/domain/entity/order"
 	"bom-pedido-api/domain/entity/transaction"
 	"bom-pedido-api/infra/retry"
@@ -16,6 +16,7 @@ import (
 type (
 	UseCase struct {
 		orderRepository       repository.OrderRepository
+		customerRepository    repository.CustomerRepository
 		transactionRepository repository.TransactionRepository
 		merchantRepository    repository.MerchantRepository
 		pixGateway            gateway.PixGateway
@@ -30,6 +31,7 @@ type (
 func New(factory *factory.ApplicationFactory) *UseCase {
 	return &UseCase{
 		orderRepository:       factory.OrderRepository,
+		customerRepository:    factory.CustomerRepository,
 		transactionRepository: factory.TransactionRepository,
 		merchantRepository:    factory.MerchantRepository,
 		pixGateway:            factory.PixGateway,
@@ -42,15 +44,15 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) error {
 	if err != nil || anOrder == nil || !anOrder.IsPixInApp() {
 		return err
 	}
-	aMerchant, err := uc.merchantRepository.FindByTenantId(ctx, anOrder.TenantId)
-	if err != nil || aMerchant == nil {
+	aCustomer, err := uc.customerRepository.FindById(ctx, anOrder.CustomerID)
+	if err != nil || aCustomer == nil {
 		return err
 	}
 	existsTransaction, err := uc.transactionRepository.ExistsByOrderId(ctx, anOrder.Id)
 	if err != nil || existsTransaction {
 		return err
 	}
-	createPixOutput, err := uc.createQrCodePix(ctx, anOrder, aMerchant)
+	createPixOutput, err := uc.createQrCodePix(ctx, anOrder, aCustomer)
 	if err != nil {
 		return err
 	}
@@ -69,15 +71,15 @@ func (uc *UseCase) createPixTransaction(ctx context.Context, pix *gateway.Create
 	})
 }
 
-func (uc *UseCase) createQrCodePix(ctx context.Context, anOrder *order.Order, merchant *merchant.Merchant) (*gateway.CreateQrCodePixOutput, error) {
+func (uc *UseCase) createQrCodePix(ctx context.Context, anOrder *order.Order, customer *customer.Customer) (*gateway.CreateQrCodePixOutput, error) {
 	createPixInput := gateway.CreateQrCodePixInput{
 		Amount:          anOrder.Amount,
 		InternalOrderId: anOrder.Id,
 		Description:     "Pedido no Bom Pedido",
-		Merchant: gateway.PixMerchant{
-			Id:    merchant.Id,
-			Name:  merchant.Name,
-			Email: merchant.Email.Value(),
+		MerchantId:      anOrder.MerchantId,
+		Customer: gateway.PixCustomer{
+			Name:  customer.Name,
+			Email: customer.GetEmail(),
 		},
 	}
 	return uc.pixGateway.CreateQrCodePix(ctx, createPixInput)

@@ -2,6 +2,7 @@ package create_pix_transaction
 
 import (
 	"bom-pedido-api/application/gateway"
+	"bom-pedido-api/domain/entity/customer"
 	"bom-pedido-api/domain/entity/merchant"
 	"bom-pedido-api/domain/entity/order"
 	"bom-pedido-api/domain/entity/transaction"
@@ -26,8 +27,12 @@ func Test_UseCaseExecute(t *testing.T) {
 	applicationFactory.PixGateway = pixGateway
 	applicationFactory.EventEmitter = eventEmitter
 
-	customerId := value_object.NewID()
+	aCustomer, err := customer.New(faker.Name(), faker.Email(), value_object.NewTenantId())
+	assert.NoError(t, err)
+	err = applicationFactory.CustomerRepository.Create(context.TODO(), aCustomer)
+	assert.NoError(t, err)
 
+	customerId := aCustomer.Id
 	t.Run("should return nil if order does not exists", func(t *testing.T) {
 		useCase := New(applicationFactory)
 		input := Input{OrderId: value_object.NewID()}
@@ -54,10 +59,10 @@ func Test_UseCaseExecute(t *testing.T) {
 		}
 	}
 
-	t.Run("should return nil if merchant does not exists", func(t *testing.T) {
+	t.Run("should return nil if customer does not exists", func(t *testing.T) {
 		ctx := context.Background()
 
-		anOrder, err := order.New(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 0, time.Now(), faker.WORD)
+		anOrder, err := order.New(value_object.NewID(), enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 0, time.Now(), faker.WORD)
 		assert.NoError(t, err)
 
 		err = applicationFactory.OrderRepository.Create(ctx, anOrder)
