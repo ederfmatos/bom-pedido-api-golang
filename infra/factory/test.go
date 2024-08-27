@@ -26,7 +26,9 @@ func NewTestApplicationFactory() *factory.ApplicationFactory {
 		),
 		factory.NewTokenFactory(token.NewFakeCustomerTokenManager()),
 		factory.NewEventFactory(event.NewMemoryEventHandler()),
-		nil, nil, email.NewFakeEmailGateway(),
+		nil,
+		lock.NewMemoryLocker(),
+		email.NewFakeEmailGateway(),
 	)
 }
 

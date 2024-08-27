@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/redis/go-redis/v9"
+	"strings"
 	"time"
 )
 
@@ -18,28 +19,29 @@ func NewRedisLocker(client *redis.Client) lock.Locker {
 	return &redisLocker{client: client}
 }
 
-func (l *redisLocker) Lock(ctx context.Context, key string, ttl time.Duration) error {
-	locked, err := l.client.SetNX(ctx, key, "", ttl).Result()
+func (l *redisLocker) Lock(ctx context.Context, ttl time.Duration, key ...string) (string, error) {
+	lockKey := strings.Join(key, "")
+	locked, err := l.client.SetNX(ctx, lockKey, "", ttl).Result()
 	if err != nil {
-		return err
+		return "", err
 	}
 	if !locked {
-		return fmt.Errorf("resource locked")
+		return "", fmt.Errorf("resource locked")
 	}
 	go func() {
 		select {
 		case <-ctx.Done():
-			_ = l.Release(context.Background(), key)
+			_ = l.Release(context.Background(), lockKey)
 		}
 	}()
-	return nil
+	return lockKey, nil
 }
 func (l *redisLocker) LockFunc(ctx context.Context, key string, ttl time.Duration, lockedFunc func()) error {
-	err := l.Lock(ctx, key, ttl)
+	lockKey, err := l.Lock(ctx, ttl, key)
 	if err != nil {
 		return err
 	}
-	defer l.Release(context.Background(), key)
+	defer l.Release(context.Background(), lockKey)
 	lockedFunc()
 	return nil
 }

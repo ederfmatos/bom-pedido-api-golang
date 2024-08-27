@@ -1,8 +1,14 @@
 package transaction
 
+import "bom-pedido-api/domain/errors"
+
 const (
 	CREATED Status = "CREATED"
 	PAID    Status = "PAID"
+)
+
+var (
+	AlreadyPaidError = errors.New("Transaction already paid")
 )
 
 type (
@@ -37,6 +43,10 @@ func NewPixTransaction(id, orderId, qrCode, paymentGateway, qrCodeLink string, a
 	}
 }
 
-func (t *PixTransaction) Pay() {
+func (t *PixTransaction) Pay() error {
+	if t.Status == PAID {
+		return AlreadyPaidError
+	}
 	t.Status = PAID
+	return nil
 }

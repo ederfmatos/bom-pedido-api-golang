@@ -20,12 +20,12 @@ func LockByParam(name string, factory *factory.ApplicationFactory) echo.Middlewa
 			)
 			defer span.End()
 			c.SetRequest(c.Request().WithContext(ctx))
-			err := factory.Locker.Lock(c.Request().Context(), param, time.Minute)
+			lockKey, err := factory.Locker.Lock(c.Request().Context(), time.Minute, param)
 			if err != nil {
 				return err
 			}
-			go releaseOnContextDone(c.Request().Context(), factory, param)
-			defer factory.Locker.Release(context.Background(), param)
+			go releaseOnContextDone(c.Request().Context(), factory, lockKey)
+			defer factory.Locker.Release(context.Background(), lockKey)
 			return next(c)
 		}
 	}
@@ -38,12 +38,12 @@ func LockByCustomerId(factory *factory.ApplicationFactory) echo.MiddlewareFunc {
 			ctx, span := telemetry.StartSpan(c.Request().Context(), "LockByCustomerId", "customerId", id)
 			defer span.End()
 			c.SetRequest(c.Request().WithContext(ctx))
-			err := factory.Locker.Lock(c.Request().Context(), id, time.Minute)
+			lockKey, err := factory.Locker.Lock(c.Request().Context(), time.Minute, id)
 			if err != nil {
 				return err
 			}
-			go releaseOnContextDone(c.Request().Context(), factory, id)
-			defer factory.Locker.Release(context.Background(), id)
+			go releaseOnContextDone(c.Request().Context(), factory, lockKey)
+			defer factory.Locker.Release(context.Background(), lockKey)
 			return next(c)
 		}
 	}

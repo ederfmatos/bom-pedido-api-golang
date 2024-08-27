@@ -22,7 +22,7 @@ func TestRedisLocker(t *testing.T) {
 		key := "test_key"
 		ttl := 10 * time.Second
 
-		err := locker.Lock(ctx, key, ttl)
+		_, err := locker.Lock(ctx, ttl, key)
 		assert.NoError(t, err, "failed to lock:", err)
 
 		err = locker.Release(ctx, key)
@@ -52,10 +52,10 @@ func TestRedisLocker(t *testing.T) {
 		key := "test_key_locked"
 		ttl := 10 * time.Second
 
-		err := locker.Lock(ctx, key, ttl)
+		_, err := locker.Lock(ctx, ttl, key)
 		assert.NoError(t, err, "failed to lock:", err)
 
-		err = locker.Lock(ctx, key, ttl)
+		_, err = locker.Lock(ctx, ttl, key)
 		if err == nil {
 			t.Fatal("expected lock to fail but it succeeded")
 		}
@@ -71,12 +71,12 @@ func TestRedisLocker(t *testing.T) {
 		key := "test_key_expired"
 		ttl := 2 * time.Second
 
-		err := locker.Lock(ctx, key, ttl)
+		_, err := locker.Lock(ctx, ttl, key)
 		assert.NoError(t, err, "failed to lock:", err)
 
 		time.Sleep(3 * time.Second)
 
-		err = locker.Lock(ctx, key, ttl)
+		_, err = locker.Lock(ctx, ttl, key)
 		if err != nil {
 			t.Fatalf("failed to re-lock after TTL expired: %s", err)
 		}
@@ -92,7 +92,7 @@ func TestRedisLocker(t *testing.T) {
 		key := "test_key_cancel"
 		ttl := 10 * time.Second
 
-		err := locker.Lock(ctx, key, ttl)
+		_, err := locker.Lock(ctx, ttl, key)
 		assert.NoError(t, err, "failed to lock:", err)
 
 		cancel()
