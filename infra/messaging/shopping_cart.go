@@ -8,7 +8,7 @@ import (
 )
 
 func HandleShoppingCart(factory *factory.ApplicationFactory) {
-	factory.EventHandler.Consume(event.OptionsForTopic("ORDER_CREATED", "DELETE_SHOPPING_CART"), handleDeleteShoppingCart(factory))
+	factory.EventHandler.Consume(event.OptionsForTopics("DELETE_SHOPPING_CART", "ORDER_CREATED"), handleDeleteShoppingCart(factory))
 }
 
 func handleDeleteShoppingCart(factory *factory.ApplicationFactory) func(context.Context, *event.MessageEvent) error {

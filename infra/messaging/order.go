@@ -10,9 +10,8 @@ import (
 )
 
 func HandleOrderEvents(factory *factory.ApplicationFactory) {
-	factory.EventHandler.Consume(event.OptionsForTopic("ORDER_CREATED", "CREATE_PIX_TRANSACTION"), handleCreatePixTransaction(factory))
-	factory.EventHandler.Consume(event.OptionsForTopic("ORDER_REJECTED", "REFUND_PIX_TRANSACTION_ON_REJECT_ORDER"), handleRefundPixTransaction(factory))
-	factory.EventHandler.Consume(event.OptionsForTopic("ORDER_CANCELLED", "REFUND_PIX_TRANSACTION_ON_CANCEL_ORDER"), handleRefundPixTransaction(factory))
+	factory.EventHandler.Consume(event.OptionsForTopics("CREATE_PIX_TRANSACTION", "ORDER_CREATED"), handleCreatePixTransaction(factory))
+	factory.EventHandler.Consume(event.OptionsForTopics("REFUND_PIX_TRANSACTION", "ORDER_CANCELLED", "ORDER_REJECTED"), handleRefundPixTransaction(factory))
 }
 
 func handleCreatePixTransaction(factory *factory.ApplicationFactory) event.HandlerFunc {

@@ -76,10 +76,12 @@ func (adapter *RabbitMqAdapter) Consume(options *event.ConsumerOptions, handler 
 		slog.Error("Error on declare queue", "queue", options.Queue, "error", err)
 		return
 	}
-	err = adapter.consumerChannel.QueueBind(options.Queue, options.TopicName, exchange, false, nil)
-	if err != nil {
-		slog.Error("Error on bind queue", "queue", options.Queue, "error", err)
-		return
+	for _, topic := range options.Topics {
+		err = adapter.consumerChannel.QueueBind(options.Queue, topic, exchange, false, nil)
+		if err != nil {
+			slog.Error("Error on bind queue", "queue", options.Queue, "error", err, "key", topic)
+			return
+		}
 	}
 	messages, err := adapter.consumerChannel.Consume(
 		options.Queue,

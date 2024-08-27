@@ -48,15 +48,15 @@ func init() {
 type ConsumerOptions struct {
 	Id             string
 	Queue          string
-	TopicName      string
+	Topics         []string
 	WorkerPoolSize int
 }
 
-func OptionsForTopic(topicName, id string) *ConsumerOptions {
+func OptionsForTopics(id string, topics ...string) *ConsumerOptions {
 	return &ConsumerOptions{
 		Id:             id,
 		Queue:          id,
-		TopicName:      topicName,
+		Topics:         topics,
 		WorkerPoolSize: defaultWorkerPoolSize,
 	}
 }

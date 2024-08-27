@@ -86,9 +86,9 @@ func (handler *KafkaEventHandler) Consume(options *event.ConsumerOptions, handle
 	if err != nil {
 		panic(err)
 	}
-	err = consumer.SubscribeTopics([]string{options.TopicName}, nil)
+	err = consumer.SubscribeTopics(options.Topics, nil)
 	if err != nil {
-		slog.Error("Error on subscribe topic", slog.String("topic", options.TopicName), "error", err)
+		slog.Error("Error on subscribe topic", "topics", options.Topics, "error", err)
 		panic(err)
 	}
 	handler.consumers = append(handler.consumers, consumer)
@@ -99,7 +99,7 @@ func (handler *KafkaEventHandler) processMessages(consumer *kafka.Consumer, opti
 	for {
 		message, err := consumer.ReadMessage(-1)
 		if err != nil {
-			slog.Error("Error on consume message", "error", err, "topic", options.TopicName)
+			slog.Error("Error on consume message", "error", err, "topic", options.Topics)
 			continue
 		}
 		go handler.processMessage(message, consumer, handlerFunc)

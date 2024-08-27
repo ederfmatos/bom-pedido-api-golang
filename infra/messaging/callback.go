@@ -8,7 +8,7 @@ import (
 )
 
 func HandleTransactionCallback(factory *factory.ApplicationFactory) {
-	factory.EventHandler.Consume(event.OptionsForTopic("PAYMENT_CALLBACK_RECEIVED", "PAY_PIX_TRANSACTION"), handlePayPixTransaction(factory))
+	factory.EventHandler.Consume(event.OptionsForTopics("PAY_PIX_TRANSACTION", "PAYMENT_CALLBACK_RECEIVED"), handlePayPixTransaction(factory))
 }
 
 func handlePayPixTransaction(factory *factory.ApplicationFactory) func(context.Context, *event.MessageEvent) error {
