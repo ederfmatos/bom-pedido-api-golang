@@ -10,6 +10,7 @@ type (
 	PixPaymentGatewayEnv struct {
 		NotificationUrl         string
 		ExpirationTimeInMinutes int
+		WooviApiBaseUrl         string
 	}
 
 	Environment struct {
@@ -79,6 +80,7 @@ func LoadEnvironment() *Environment {
 		PixPaymentGateway: PixPaymentGatewayEnv{
 			NotificationUrl:         requiredEnv("PIX_PAYMENT_GATEWAY_NOTIFICATION_URL"),
 			ExpirationTimeInMinutes: requiredIntEnv("PIX_PAYMENT_GATEWAY_EXPIRATION_TIME_IN_MINUTES"),
+			WooviApiBaseUrl:         requiredEnv("WOOVI_API_BASE_URL"),
 		},
 	}
 }
