@@ -6,7 +6,7 @@ import (
 	errors2 "errors"
 	"fmt"
 	"github.com/go-faker/faker/v4"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -40,18 +40,18 @@ func TestProduct_Validate(t *testing.T) {
 		t.Run(fmt.Sprintf("should return errors %v", test.Errors), func(t *testing.T) {
 			err := test.Product.Validate()
 			if len(test.Errors) == 0 {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				return
 			}
 
-			assert.Error(t, err)
+			require.Error(t, err)
 			var composite *errors.CompositeError
 			errors2.As(err, &composite)
 
-			assert.ErrorAs(t, err, &composite)
-			assert.Equal(t, len(test.Errors), len(composite.Errors))
+			require.ErrorAs(t, err, &composite)
+			require.Equal(t, len(test.Errors), len(composite.Errors))
 			for index, err := range test.Errors {
-				assert.ErrorIs(t, composite.Errors[index], err)
+				require.ErrorIs(t, composite.Errors[index], err)
 			}
 		})
 	}

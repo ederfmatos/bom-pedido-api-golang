@@ -6,7 +6,7 @@ import (
 	"bom-pedido-api/infra/factory"
 	"context"
 	"github.com/go-faker/faker/v4"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -20,10 +20,10 @@ func TestUseCase_Execute(t *testing.T) {
 	}
 	ctx := context.Background()
 	err := applicationFactory.ShoppingCartRepository.Upsert(ctx, aShoppingCart)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	err = useCase.Execute(ctx, input)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	savedShoppingCart, err := applicationFactory.ShoppingCartRepository.FindByCustomerId(ctx, customerId)
-	assert.NoError(t, err)
-	assert.Nil(t, savedShoppingCart)
+	require.NoError(t, err)
+	require.Nil(t, savedShoppingCart)
 }

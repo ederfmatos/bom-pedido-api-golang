@@ -7,7 +7,7 @@ import (
 	"bom-pedido-api/infra/test"
 	"context"
 	"github.com/go-faker/faker/v4"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -29,23 +29,23 @@ func runAdminTests(t *testing.T, repository repository.AdminRepository, merchant
 	ctx := context.TODO()
 
 	aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = merchantRepository.Create(ctx, aMerchant)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	aAdmin, err := admin.New(faker.Name(), faker.Email(), aMerchant.Id)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	savedAdmin, err := repository.FindByEmail(ctx, aAdmin.GetEmail())
-	assert.NoError(t, err)
-	assert.Nil(t, savedAdmin)
+	require.NoError(t, err)
+	require.Nil(t, savedAdmin)
 
 	err = repository.Create(ctx, aAdmin)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	savedAdmin, err = repository.FindByEmail(ctx, aAdmin.GetEmail())
-	assert.NoError(t, err)
-	assert.NotNil(t, savedAdmin)
-	assert.Equal(t, aAdmin, savedAdmin)
+	require.NoError(t, err)
+	require.NotNil(t, savedAdmin)
+	require.Equal(t, aAdmin, savedAdmin)
 }

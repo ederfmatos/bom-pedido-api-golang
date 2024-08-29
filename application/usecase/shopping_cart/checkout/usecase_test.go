@@ -10,7 +10,7 @@ import (
 	"bom-pedido-api/infra/factory"
 	"context"
 	"github.com/go-faker/faker/v4"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -25,16 +25,16 @@ func Test_CheckoutShoppingCart(t *testing.T) {
 	t.Run("should return ShoppingCartEmptyError is shopping cart is empty", func(t *testing.T) {
 		input := Input{CustomerId: value_object.NewID()}
 		output, err := useCase.Execute(ctx, input)
-		assert.Nil(t, output)
-		assert.ErrorIs(t, err, errors.ShoppingCartEmptyError)
+		require.Nil(t, output)
+		require.ErrorIs(t, err, errors.ShoppingCartEmptyError)
 
 		shoppingCart := shopping_cart.New(input.CustomerId, faker.WORD)
 		err = shoppingCartRepository.Upsert(ctx, shoppingCart)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		output, err = useCase.Execute(ctx, input)
-		assert.Nil(t, output)
-		assert.ErrorIs(t, err, errors.ShoppingCartEmptyError)
+		require.Nil(t, output)
+		require.ErrorIs(t, err, errors.ShoppingCartEmptyError)
 	})
 
 	t.Run("should create a order", func(t *testing.T) {
@@ -48,36 +48,36 @@ func Test_CheckoutShoppingCart(t *testing.T) {
 			CreditCardToken: "",
 		}
 		aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		err = applicationFactory.MerchantRepository.Create(ctx, aMerchant)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		aProduct, _ := product.New(faker.Name(), faker.Word(), 11.0, aMerchant.TenantId)
 		err = productRepository.Create(ctx, aProduct)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		shoppingCart := shopping_cart.New(input.CustomerId, aMerchant.TenantId)
 		err = shoppingCart.AddItem(aProduct, 1, "")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		err = shoppingCartRepository.Upsert(ctx, shoppingCart)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		output, err := useCase.Execute(ctx, input)
-		assert.NoError(t, err)
-		assert.NotNil(t, output)
+		require.NoError(t, err)
+		require.NotNil(t, output)
 
 		order, err := orderRepository.FindById(ctx, output.Id)
-		assert.NoError(t, err)
-		assert.NotNil(t, order)
+		require.NoError(t, err)
+		require.NotNil(t, order)
 
-		assert.Equal(t, shoppingCart.CustomerId, order.CustomerID)
-		assert.Equal(t, enums.PaymentMethodCreditCard, order.PaymentMethod)
-		assert.Equal(t, enums.DeliveryModeWithdraw, order.DeliveryMode)
-		assert.Equal(t, enums.PaymentModeInReceiving, order.PaymentMode)
-		assert.Equal(t, "", order.CreditCardToken)
-		assert.Equal(t, float64(0), order.Payback)
-		assert.Equal(t, int32(1), order.Code)
+		require.Equal(t, shoppingCart.CustomerId, order.CustomerID)
+		require.Equal(t, enums.PaymentMethodCreditCard, order.PaymentMethod)
+		require.Equal(t, enums.DeliveryModeWithdraw, order.DeliveryMode)
+		require.Equal(t, enums.PaymentModeInReceiving, order.PaymentMode)
+		require.Equal(t, "", order.CreditCardToken)
+		require.Equal(t, float64(0), order.Payback)
+		require.Equal(t, int32(1), order.Code)
 	})
 }

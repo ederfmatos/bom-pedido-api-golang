@@ -6,7 +6,7 @@ import (
 	"bom-pedido-api/infra/factory"
 	"context"
 	"github.com/go-faker/faker/v4"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -19,8 +19,8 @@ func TestGetCustomerUseCase_Execute(t *testing.T) {
 
 		output, err := useCase.Execute(context.TODO(), input)
 
-		assert.Nil(t, output)
-		assert.ErrorIs(t, errors.CustomerNotFoundError, err)
+		require.Nil(t, output)
+		require.ErrorIs(t, errors.CustomerNotFoundError, err)
 	})
 
 	t.Run("should return a customer", func(t *testing.T) {
@@ -33,10 +33,10 @@ func TestGetCustomerUseCase_Execute(t *testing.T) {
 
 		output, err := useCase.Execute(context.TODO(), input)
 
-		assert.NoError(t, err)
-		assert.NotNil(t, output)
-		assert.Equal(t, aCustomer.Name, output.Name)
-		assert.Equal(t, aCustomer.GetEmail(), output.Email)
-		assert.Equal(t, aCustomer.GetPhoneNumber(), output.PhoneNumber)
+		require.NoError(t, err)
+		require.NotNil(t, output)
+		require.Equal(t, aCustomer.Name, output.Name)
+		require.Equal(t, aCustomer.GetEmail(), output.Email)
+		require.Equal(t, aCustomer.GetPhoneNumber(), output.PhoneNumber)
 	})
 }

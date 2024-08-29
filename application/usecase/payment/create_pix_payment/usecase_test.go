@@ -14,8 +14,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-faker/faker/v4"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )
@@ -28,9 +28,9 @@ func Test_UseCaseExecute(t *testing.T) {
 	applicationFactory.EventEmitter = eventEmitter
 
 	aCustomer, err := customer.New(faker.Name(), faker.Email(), value_object.NewTenantId())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	err = applicationFactory.CustomerRepository.Create(context.TODO(), aCustomer)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	customerId := aCustomer.Id
 	t.Run("should return nil if order does not exists", func(t *testing.T) {
@@ -38,7 +38,7 @@ func Test_UseCaseExecute(t *testing.T) {
 		input := Input{OrderId: value_object.NewID()}
 
 		err := useCase.Execute(context.Background(), input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	for _, paymentMethod := range enums.AllPaymentMethods {
@@ -48,13 +48,13 @@ func Test_UseCaseExecute(t *testing.T) {
 			}
 			t.Run(fmt.Sprintf("should return nil order is %s %s", paymentMethod.String(), paymentMode.String()), func(t *testing.T) {
 				anOrder, err := order.New(customerId, paymentMethod.String(), paymentMode.String(), enums.Withdraw, faker.Word(), 0, 0, time.Now(), faker.WORD)
-				assert.NoError(t, err)
+				require.NoError(t, err)
 
 				useCase := New(applicationFactory)
 				input := Input{OrderId: anOrder.Id}
 
 				err = useCase.Execute(context.Background(), input)
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			})
 		}
 	}
@@ -63,58 +63,58 @@ func Test_UseCaseExecute(t *testing.T) {
 		ctx := context.Background()
 
 		anOrder, err := order.New(value_object.NewID(), enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 0, time.Now(), faker.WORD)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		err = applicationFactory.OrderRepository.Create(ctx, anOrder)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		useCase := New(applicationFactory)
 		input := Input{OrderId: anOrder.Id}
 
 		err = useCase.Execute(ctx, input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("should return nil if already exists a transaction to the order", func(t *testing.T) {
 		ctx := context.Background()
 
 		aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		err = applicationFactory.MerchantRepository.Create(ctx, aMerchant)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		anOrder, err := order.New(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 10, time.Now(), aMerchant.TenantId)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		err = applicationFactory.OrderRepository.Create(ctx, anOrder)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		pixTransaction := transaction.NewPixTransaction(value_object.NewID(), anOrder.Id, "", faker.Word(), "", 10)
 		err = applicationFactory.TransactionRepository.CreatePixTransaction(ctx, pixTransaction)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		useCase := New(applicationFactory)
 		input := Input{OrderId: anOrder.Id}
 
 		err = useCase.Execute(ctx, input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("should create a pix transaction", func(t *testing.T) {
 		ctx := context.Background()
 
 		aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		err = applicationFactory.MerchantRepository.Create(ctx, aMerchant)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		anOrder, err := order.New(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 10, time.Now(), aMerchant.TenantId)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		err = applicationFactory.OrderRepository.Create(ctx, anOrder)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		pixOutput := &gateway.CreateQrCodePixOutput{
 			Id:             value_object.NewID(),
@@ -130,7 +130,7 @@ func Test_UseCaseExecute(t *testing.T) {
 		eventEmitter.On("Emit", ctx, mock.Anything).Return(nil)
 
 		err = useCase.Execute(ctx, input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		eventEmitter.AssertNumberOfCalls(t, "Emit", 1)
 	})

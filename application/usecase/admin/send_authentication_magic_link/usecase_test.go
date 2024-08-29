@@ -8,8 +8,8 @@ import (
 	"bom-pedido-api/infra/token"
 	"context"
 	"github.com/go-faker/faker/v4"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -25,13 +25,13 @@ func TestUseCase_Execute(t *testing.T) {
 		useCase := New(baseUrl, applicationFactory)
 		input := Input{Email: faker.Email()}
 		err := useCase.Execute(context.TODO(), input)
-		assert.Nil(t, err)
+		require.Nil(t, err)
 	})
 
 	t.Run("it should return nil if merchant is inactive", func(t *testing.T) {
 		ctx := context.TODO()
 		aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
-		assert.Nil(t, err)
+		require.Nil(t, err)
 		aMerchant.Inactive()
 		_ = applicationFactory.MerchantRepository.Create(ctx, aMerchant)
 
@@ -41,13 +41,13 @@ func TestUseCase_Execute(t *testing.T) {
 		useCase := New(baseUrl, applicationFactory)
 		input := Input{Email: anAdmin.GetEmail()}
 		err = useCase.Execute(ctx, input)
-		assert.Nil(t, err)
+		require.Nil(t, err)
 	})
 
 	t.Run("should return nil on success", func(t *testing.T) {
 		ctx := context.TODO()
 		aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
-		assert.Nil(t, err)
+		require.Nil(t, err)
 		_ = applicationFactory.MerchantRepository.Create(ctx, aMerchant)
 
 		anAdmin, _ := admin.New(faker.Name(), faker.Email(), aMerchant.Id)
@@ -61,7 +61,7 @@ func TestUseCase_Execute(t *testing.T) {
 		input := Input{Email: anAdmin.GetEmail()}
 
 		err = useCase.Execute(ctx, input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		eventEmitter.AssertNumberOfCalls(t, "Emit", 1)
 	})

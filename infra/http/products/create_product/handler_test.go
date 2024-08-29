@@ -9,7 +9,7 @@ import (
 	"context"
 	"github.com/go-faker/faker/v4"
 	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -36,18 +36,18 @@ func Test_CreateProduct(t *testing.T) {
 	echoContext.Set(tenant.Id, faker.WORD)
 
 	err = Handle(applicationFactory)(echoContext)
-	assert.NoError(t, err)
-	assert.Equal(t, http.StatusCreated, response.Code)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusCreated, response.Code)
 
 	var output create_product.Output
 	_ = json.Decode(request.Context(), response.Body, &output)
-	assert.NotEmpty(t, output.Id)
+	require.NotEmpty(t, output.Id)
 
 	savedProduct, err := applicationFactory.ProductRepository.FindById(context.TODO(), output.Id)
-	assert.NoError(t, err)
-	assert.NotNil(t, savedProduct)
-	assert.Equal(t, body.Name, savedProduct.Name)
-	assert.Equal(t, body.Description, savedProduct.Description)
-	assert.Equal(t, body.Price, savedProduct.Price)
-	assert.True(t, savedProduct.IsActive())
+	require.NoError(t, err)
+	require.NotNil(t, savedProduct)
+	require.Equal(t, body.Name, savedProduct.Name)
+	require.Equal(t, body.Description, savedProduct.Description)
+	require.Equal(t, body.Price, savedProduct.Price)
+	require.True(t, savedProduct.IsActive())
 }

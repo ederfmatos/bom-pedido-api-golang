@@ -8,7 +8,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-faker/faker/v4"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -32,8 +32,8 @@ func TestCreateProductUseCase_Execute(t *testing.T) {
 
 		output, err := useCase.Execute(ctx, input)
 
-		assert.ErrorIs(t, err, errors.ProductWithSameNameError)
-		assert.Nil(t, output)
+		require.ErrorIs(t, err, errors.ProductWithSameNameError)
+		require.Nil(t, output)
 	})
 
 	t.Run("should return an error is product is invalid", func(t *testing.T) {
@@ -58,8 +58,8 @@ func TestCreateProductUseCase_Execute(t *testing.T) {
 
 				output, err := useCase.Execute(ctx, input)
 
-				assert.Equal(t, err.Error(), tt.wantErr.Error())
-				assert.Nil(t, output)
+				require.Equal(t, err.Error(), tt.wantErr.Error())
+				require.Nil(t, output)
 			})
 		}
 	})
@@ -74,15 +74,15 @@ func TestCreateProductUseCase_Execute(t *testing.T) {
 
 		output, err := useCase.Execute(ctx, input)
 
-		assert.NoError(t, err)
-		assert.NotNil(t, output)
-		assert.NotEmpty(t, output.Id)
+		require.NoError(t, err)
+		require.NotNil(t, output)
+		require.NotEmpty(t, output.Id)
 		savedProduct, _ := applicationFactory.ProductRepository.FindById(ctx, output.Id)
-		assert.NotNil(t, savedProduct)
-		assert.Equal(t, input.Name, savedProduct.Name)
-		assert.Equal(t, input.Description, savedProduct.Description)
-		assert.Equal(t, input.Price, savedProduct.Price)
-		assert.Equal(t, input.TenantId, savedProduct.TenantId)
-		assert.True(t, savedProduct.IsActive())
+		require.NotNil(t, savedProduct)
+		require.Equal(t, input.Name, savedProduct.Name)
+		require.Equal(t, input.Description, savedProduct.Description)
+		require.Equal(t, input.Price, savedProduct.Price)
+		require.Equal(t, input.TenantId, savedProduct.TenantId)
+		require.True(t, savedProduct.IsActive())
 	})
 }

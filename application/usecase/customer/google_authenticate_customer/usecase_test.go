@@ -11,8 +11,8 @@ import (
 	"bom-pedido-api/infra/token"
 	"context"
 	"github.com/go-faker/faker/v4"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -39,8 +39,8 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 
 		output, err := googleAuthenticateCustomerUseCase.Execute(nil, input)
 
-		assert.Error(t, err, "expected error when using UseCase")
-		assert.Nil(t, output)
+		require.Error(t, err, "expected error when using UseCase")
+		require.Nil(t, output)
 	})
 
 	t.Run("ShouldReturnsErrorIfCustomerIsInvalid", func(t *testing.T) {
@@ -55,9 +55,9 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 
 		output, err := googleAuthenticateCustomerUseCase.Execute(nil, input)
 
-		assert.Error(t, err, "expected error when using UseCase")
-		assert.ErrorIs(t, err, value_object.InvalidEmailError)
-		assert.Nil(t, output)
+		require.Error(t, err, "expected error when using UseCase")
+		require.ErrorIs(t, err, value_object.InvalidEmailError)
+		require.Nil(t, output)
 	})
 
 	t.Run("Should_Create_Customer_If_Does_Not_Exists", func(t *testing.T) {
@@ -69,9 +69,9 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 
 		output, err := googleAuthenticateCustomerUseCase.Execute(nil, input)
 
-		assert.NoError(t, err)
-		assert.NotNil(t, output)
-		assert.Equal(t, "token", output.Token)
+		require.NoError(t, err)
+		require.NotNil(t, output)
+		require.Equal(t, "token", output.Token)
 	})
 
 	t.Run("Should_Authenticate_Existent_Customer", func(t *testing.T) {
@@ -85,8 +85,8 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 
 		output, err := googleAuthenticateCustomerUseCase.Execute(nil, input)
 
-		assert.NoError(t, err)
-		assert.NotNil(t, output)
-		assert.Equal(t, "token", output.Token)
+		require.NoError(t, err)
+		require.NotNil(t, output)
+		require.Equal(t, "token", output.Token)
 	})
 }

@@ -7,7 +7,7 @@ import (
 	"bom-pedido-api/infra/test"
 	"context"
 	"github.com/go-faker/faker/v4"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -29,13 +29,13 @@ func runTransactionTests(t *testing.T, repository repository.TransactionReposito
 	pixTransaction := transaction.NewPixTransaction(value_object.NewID(), value_object.NewID(), faker.Word(), faker.Word(), faker.Word(), 10)
 
 	existsByOrderId, err := repository.ExistsByOrderId(ctx, pixTransaction.OrderId)
-	assert.NoError(t, err)
-	assert.False(t, existsByOrderId)
+	require.NoError(t, err)
+	require.False(t, existsByOrderId)
 
 	err = repository.CreatePixTransaction(ctx, pixTransaction)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	existsByOrderId, err = repository.ExistsByOrderId(ctx, pixTransaction.OrderId)
-	assert.NoError(t, err)
-	assert.True(t, existsByOrderId)
+	require.NoError(t, err)
+	require.True(t, existsByOrderId)
 }

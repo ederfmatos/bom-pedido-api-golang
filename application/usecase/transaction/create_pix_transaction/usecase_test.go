@@ -14,8 +14,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-faker/faker/v4"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )
@@ -29,7 +29,7 @@ func Test_UseCaseExecute(t *testing.T) {
 	ctx := context.Background()
 
 	aCustomer, err := customer.New(faker.Name(), faker.Email(), value_object.NewTenantId())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	customerId := aCustomer.Id
 	useCase := New(applicationFactory)
@@ -37,7 +37,7 @@ func Test_UseCaseExecute(t *testing.T) {
 	t.Run("should return nil if order does not exists", func(t *testing.T) {
 		input := Input{OrderId: value_object.NewID()}
 		err := useCase.Execute(context.Background(), input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		eventEmitter.AssertNotCalled(t, "Emit")
 	})
@@ -49,11 +49,11 @@ func Test_UseCaseExecute(t *testing.T) {
 			}
 			t.Run(fmt.Sprintf("should return nil order is %s %s", paymentMethod.String(), paymentMode.String()), func(t *testing.T) {
 				anOrder, err := order.New(customerId, paymentMethod.String(), paymentMode.String(), enums.Withdraw, faker.Word(), 0, 0, time.Now(), faker.WORD)
-				assert.NoError(t, err)
+				require.NoError(t, err)
 
 				input := Input{OrderId: anOrder.Id, PaymentId: value_object.NewID()}
 				err = useCase.Execute(ctx, input)
-				assert.NoError(t, err)
+				require.NoError(t, err)
 
 				eventEmitter.AssertNotCalled(t, "Emit")
 			})
@@ -62,46 +62,46 @@ func Test_UseCaseExecute(t *testing.T) {
 
 	t.Run("should return nil if already exists a transaction to the order", func(t *testing.T) {
 		aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		err = applicationFactory.MerchantRepository.Create(ctx, aMerchant)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		anOrder, err := order.New(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 10, time.Now(), aMerchant.TenantId)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		err = applicationFactory.OrderRepository.Create(ctx, anOrder)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		pixTransaction := transaction.NewPixTransaction(value_object.NewID(), anOrder.Id, "", faker.Word(), "", 10)
 		err = applicationFactory.TransactionRepository.CreatePixTransaction(ctx, pixTransaction)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		input := Input{OrderId: anOrder.Id, PaymentId: value_object.NewID()}
 		err = useCase.Execute(ctx, input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		eventEmitter.AssertNotCalled(t, "Emit")
 	})
 
 	t.Run("should return nil payment does not exists", func(t *testing.T) {
 		aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		err = applicationFactory.MerchantRepository.Create(ctx, aMerchant)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		anOrder, err := order.New(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 10, time.Now(), aMerchant.Id)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		err = applicationFactory.OrderRepository.Create(ctx, anOrder)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		pixGateway.On("GetPaymentById", mock.Anything, mock.Anything, mock.Anything).Return(nil, nil).Once()
 
 		input := Input{OrderId: anOrder.Id, PaymentId: value_object.NewID()}
 		err = useCase.Execute(ctx, input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		eventEmitter.AssertNotCalled(t, "Emit")
 		pixGateway.AssertCalled(t, "GetPaymentById", ctx, anOrder.MerchantId, input.PaymentId)
@@ -109,16 +109,16 @@ func Test_UseCaseExecute(t *testing.T) {
 
 	t.Run("should create a pix transaction", func(t *testing.T) {
 		aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		err = applicationFactory.MerchantRepository.Create(ctx, aMerchant)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		anOrder, err := order.New(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 10, time.Now(), aMerchant.Id)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		err = applicationFactory.OrderRepository.Create(ctx, anOrder)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		gatewayPayment := &gateway.GetPaymentOutput{
 			Id:             value_object.NewID(),
@@ -133,17 +133,17 @@ func Test_UseCaseExecute(t *testing.T) {
 
 		input := Input{OrderId: anOrder.Id, PaymentId: gatewayPayment.Id}
 		err = useCase.Execute(ctx, input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		eventEmitter.AssertNumberOfCalls(t, "Emit", 1)
 		pixGateway.AssertCalled(t, "GetPaymentById", ctx, anOrder.MerchantId, gatewayPayment.Id)
 
 		savedTransaction, err := applicationFactory.TransactionRepository.FindByOrderId(ctx, anOrder.Id)
-		assert.NoError(t, err)
-		assert.Equal(t, savedTransaction.QrCode, gatewayPayment.QrCode)
-		assert.Equal(t, savedTransaction.QrCodeLink, gatewayPayment.QrCodeLink)
-		assert.Equal(t, savedTransaction.PaymentGateway, gatewayPayment.PaymentGateway)
-		assert.Equal(t, savedTransaction.OrderId, anOrder.Id)
-		assert.Equal(t, savedTransaction.Amount, anOrder.Amount)
+		require.NoError(t, err)
+		require.Equal(t, savedTransaction.QrCode, gatewayPayment.QrCode)
+		require.Equal(t, savedTransaction.QrCodeLink, gatewayPayment.QrCodeLink)
+		require.Equal(t, savedTransaction.PaymentGateway, gatewayPayment.PaymentGateway)
+		require.Equal(t, savedTransaction.OrderId, anOrder.Id)
+		require.Equal(t, savedTransaction.Amount, anOrder.Amount)
 	})
 }

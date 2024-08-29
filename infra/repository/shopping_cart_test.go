@@ -8,7 +8,7 @@ import (
 	"bom-pedido-api/infra/test"
 	"context"
 	"github.com/go-faker/faker/v4"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -28,24 +28,24 @@ func runTests(t *testing.T, shoppingCartRepository repository.ShoppingCartReposi
 	ctx := context.Background()
 
 	shoppingCart, err := shoppingCartRepository.FindByCustomerId(ctx, customerId)
-	assert.NoError(t, err)
-	assert.Nil(t, shoppingCart)
+	require.NoError(t, err)
+	require.Nil(t, shoppingCart)
 
 	shoppingCart = shopping_cart.New(customerId, faker.WORD)
 	product, err := product.New(faker.Name(), faker.Word(), 10.0, faker.WORD)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	assert.NoError(t, shoppingCart.AddItem(product, 2, ""))
-	assert.NoError(t, shoppingCartRepository.Upsert(ctx, shoppingCart))
+	require.NoError(t, shoppingCart.AddItem(product, 2, ""))
+	require.NoError(t, shoppingCartRepository.Upsert(ctx, shoppingCart))
 
 	savedShoppingCart, err := shoppingCartRepository.FindByCustomerId(ctx, customerId)
-	assert.NoError(t, err)
-	assert.Equal(t, shoppingCart, savedShoppingCart)
+	require.NoError(t, err)
+	require.Equal(t, shoppingCart, savedShoppingCart)
 
 	err = shoppingCartRepository.DeleteByCustomerId(ctx, customerId)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	savedShoppingCart, err = shoppingCartRepository.FindByCustomerId(ctx, customerId)
-	assert.NoError(t, err)
-	assert.Nil(t, savedShoppingCart)
+	require.NoError(t, err)
+	require.Nil(t, savedShoppingCart)
 }

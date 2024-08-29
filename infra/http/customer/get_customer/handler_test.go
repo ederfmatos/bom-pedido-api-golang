@@ -11,7 +11,7 @@ import (
 	"context"
 	"github.com/go-faker/faker/v4"
 	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -32,14 +32,14 @@ func Test_GetCustomer(t *testing.T) {
 		echoContext.Set(middlewares.CustomerIdParam, aCustomer.Id)
 
 		err := Handle(applicationFactory)(echoContext)
-		assert.NoError(t, err)
-		assert.Equal(t, http.StatusOK, response.Code)
+		require.NoError(t, err)
+		require.Equal(t, http.StatusOK, response.Code)
 
 		var output get_customer.Output
 		_ = json.Decode(request.Context(), response.Body, &output)
-		assert.Equal(t, aCustomer.Name, output.Name)
-		assert.Equal(t, aCustomer.GetEmail(), output.Email)
-		assert.Equal(t, aCustomer.GetPhoneNumber(), output.PhoneNumber)
+		require.Equal(t, aCustomer.Name, output.Name)
+		require.Equal(t, aCustomer.GetEmail(), output.Email)
+		require.Equal(t, aCustomer.GetPhoneNumber(), output.PhoneNumber)
 	})
 
 	t.Run("should return CustomerNotFoundError if customer does not exists", func(t *testing.T) {
@@ -50,6 +50,6 @@ func Test_GetCustomer(t *testing.T) {
 		echoContext.Set(middlewares.CustomerIdParam, value_object.NewID())
 
 		err := Handle(applicationFactory)(echoContext)
-		assert.Equal(t, errors.CustomerNotFoundError, err)
+		require.Equal(t, errors.CustomerNotFoundError, err)
 	})
 }

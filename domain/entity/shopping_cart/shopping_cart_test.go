@@ -7,7 +7,7 @@ import (
 	"bom-pedido-api/domain/value_object"
 	"fmt"
 	"github.com/go-faker/faker/v4"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )
@@ -43,12 +43,12 @@ func TestShoppingCart_Checkout(t *testing.T) {
 
 			newProduct, _ := product.New(faker.Name(), faker.Word(), 11.0, faker.WORD)
 			err := shoppingCart.AddItem(newProduct, 1, faker.Word())
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			order, err := shoppingCart.Checkout(test.paymentMethod, test.deliveryMode, test.paymentMode, test.cardToken, test.payback, make(map[string]*product.Product), time.Second, "")
-			assert.Nil(t, order)
+			require.Nil(t, order)
 			expectedError := errors.NewCompositeWithError(test.Errors...)
-			assert.Equal(t, err, expectedError)
+			require.Equal(t, err, expectedError)
 		})
 	}
 
@@ -61,17 +61,17 @@ func TestShoppingCart_Checkout(t *testing.T) {
 
 		shoppingCart := New(value_object.NewID(), faker.WORD)
 		err := shoppingCart.AddItem(product2, 1, faker.Word())
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		err = shoppingCart.AddItem(product3, 1, faker.Word())
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		product2.MarkUnAvailable()
 
 		order, err := shoppingCart.Checkout(enums.CreditCard, enums.Delivery, enums.InReceiving, "", 0, products, time.Second, "")
-		assert.Nil(t, order)
+		require.Nil(t, order)
 
 		expectedError := errors.NewCompositeWithError(errors.ProductUnAvailableError, errors.ProductNotFoundError)
-		assert.Equal(t, err, expectedError)
+		require.Equal(t, err, expectedError)
 	})
 
 	t.Run("should checkout a shopping cart", func(t *testing.T) {
@@ -83,18 +83,18 @@ func TestShoppingCart_Checkout(t *testing.T) {
 
 		shoppingCart := New(value_object.NewID(), faker.WORD)
 		err := shoppingCart.AddItem(product1, 1, faker.Word())
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		err = shoppingCart.AddItem(product2, 1, faker.Word())
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		order, err := shoppingCart.Checkout(enums.CreditCard, enums.Delivery, enums.InReceiving, "", 0, products, time.Second, "")
-		assert.NoError(t, err)
-		assert.NotNil(t, order)
-		assert.Equal(t, shoppingCart.CustomerId, order.CustomerID)
-		assert.Equal(t, enums.PaymentMethodCreditCard, order.PaymentMethod)
-		assert.Equal(t, enums.DeliveryModeDelivery, order.DeliveryMode)
-		assert.Equal(t, enums.PaymentModeInReceiving, order.PaymentMode)
-		assert.Equal(t, "", order.CreditCardToken)
-		assert.Equal(t, float64(0), order.Payback)
+		require.NoError(t, err)
+		require.NotNil(t, order)
+		require.Equal(t, shoppingCart.CustomerId, order.CustomerID)
+		require.Equal(t, enums.PaymentMethodCreditCard, order.PaymentMethod)
+		require.Equal(t, enums.DeliveryModeDelivery, order.DeliveryMode)
+		require.Equal(t, enums.PaymentModeInReceiving, order.PaymentMode)
+		require.Equal(t, "", order.CreditCardToken)
+		require.Equal(t, float64(0), order.Payback)
 	})
 }

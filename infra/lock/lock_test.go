@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"github.com/redis/go-redis/v9"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )
@@ -23,7 +23,7 @@ func TestRedisLocker(t *testing.T) {
 		ttl := 10 * time.Second
 
 		_, err := locker.Lock(ctx, ttl, key)
-		assert.NoError(t, err, "failed to lock:", err)
+		require.NoError(t, err, "failed to lock:", err)
 
 		err = locker.Release(ctx, key)
 		if err != nil {
@@ -40,7 +40,7 @@ func TestRedisLocker(t *testing.T) {
 		err := locker.LockFunc(ctx, key, ttl, func() {
 			called = true
 		})
-		assert.NoError(t, err, "failed to lock:", err)
+		require.NoError(t, err, "failed to lock:", err)
 
 		if !called {
 			t.Fatal("locked function was not called")
@@ -53,7 +53,7 @@ func TestRedisLocker(t *testing.T) {
 		ttl := 10 * time.Second
 
 		_, err := locker.Lock(ctx, ttl, key)
-		assert.NoError(t, err, "failed to lock:", err)
+		require.NoError(t, err, "failed to lock:", err)
 
 		_, err = locker.Lock(ctx, ttl, key)
 		if err == nil {
@@ -72,7 +72,7 @@ func TestRedisLocker(t *testing.T) {
 		ttl := 2 * time.Second
 
 		_, err := locker.Lock(ctx, ttl, key)
-		assert.NoError(t, err, "failed to lock:", err)
+		require.NoError(t, err, "failed to lock:", err)
 
 		time.Sleep(3 * time.Second)
 
@@ -93,7 +93,7 @@ func TestRedisLocker(t *testing.T) {
 		ttl := 10 * time.Second
 
 		_, err := locker.Lock(ctx, ttl, key)
-		assert.NoError(t, err, "failed to lock:", err)
+		require.NoError(t, err, "failed to lock:", err)
 
 		cancel()
 

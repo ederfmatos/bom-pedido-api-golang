@@ -6,7 +6,7 @@ import (
 	"bom-pedido-api/infra/test"
 	"context"
 	"github.com/go-faker/faker/v4"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -26,34 +26,34 @@ func runMerchantTests(t *testing.T, repository repository.MerchantRepository) {
 	ctx := context.TODO()
 
 	aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	savedMerchant, err := repository.FindByTenantId(ctx, aMerchant.TenantId)
-	assert.NoError(t, err)
-	assert.Nil(t, savedMerchant)
+	require.NoError(t, err)
+	require.Nil(t, savedMerchant)
 
 	merchantIsActive, err := repository.IsActive(ctx, aMerchant.Id)
-	assert.NoError(t, err)
-	assert.False(t, merchantIsActive)
+	require.NoError(t, err)
+	require.False(t, merchantIsActive)
 
 	err = repository.Create(ctx, aMerchant)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	savedMerchant, err = repository.FindByTenantId(ctx, aMerchant.TenantId)
-	assert.NoError(t, err)
-	assert.NotNil(t, savedMerchant)
-	assert.Equal(t, aMerchant, savedMerchant)
+	require.NoError(t, err)
+	require.NotNil(t, savedMerchant)
+	require.Equal(t, aMerchant, savedMerchant)
 
 	merchantIsActive, err = repository.IsActive(ctx, aMerchant.Id)
-	assert.NoError(t, err)
-	assert.True(t, merchantIsActive)
+	require.NoError(t, err)
+	require.True(t, merchantIsActive)
 
 	aMerchant.Inactive()
 
 	err = repository.Update(ctx, aMerchant)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	merchantIsActive, err = repository.IsActive(ctx, aMerchant.Id)
-	assert.NoError(t, err)
-	assert.False(t, merchantIsActive)
+	require.NoError(t, err)
+	require.False(t, merchantIsActive)
 }

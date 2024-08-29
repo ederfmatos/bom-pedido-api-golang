@@ -7,7 +7,7 @@ import (
 	"bom-pedido-api/infra/factory"
 	"context"
 	"github.com/go-faker/faker/v4"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -22,7 +22,7 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 			Quantity:  1,
 		}
 		err := useCase.Execute(ctx, input)
-		assert.ErrorIs(t, err, errors.ProductNotFoundError)
+		require.ErrorIs(t, err, errors.ProductNotFoundError)
 	})
 
 	t.Run("should return error is product is unavailable", func(t *testing.T) {
@@ -40,10 +40,10 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 			Observation: faker.Word(),
 		}
 		err = useCase.Execute(ctx, input)
-		assert.ErrorIs(t, err, errors.ProductUnAvailableError)
+		require.ErrorIs(t, err, errors.ProductUnAvailableError)
 
 		shoppingCart, _ := applicationFactory.ShoppingCartRepository.FindByCustomerId(ctx, input.CustomerId)
-		assert.Nil(t, shoppingCart)
+		require.Nil(t, shoppingCart)
 	})
 
 	t.Run("should create a shopping cart with one item", func(t *testing.T) {
@@ -60,19 +60,19 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 			Observation: faker.Word(),
 		}
 		err = useCase.Execute(ctx, input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		shoppingCart, err := applicationFactory.ShoppingCartRepository.FindByCustomerId(ctx, input.CustomerId)
-		assert.NoError(t, err)
-		assert.NotNil(t, shoppingCart)
-		assert.Equal(t, 20.0, shoppingCart.GetPrice())
+		require.NoError(t, err)
+		require.NotNil(t, shoppingCart)
+		require.Equal(t, 20.0, shoppingCart.GetPrice())
 		items := shoppingCart.GetItems()
-		assert.Equal(t, 1, len(items))
+		require.Equal(t, 1, len(items))
 		item := items[0]
-		assert.Equal(t, aProduct.Id, item.ProductId)
-		assert.Equal(t, input.Quantity, item.Quantity)
-		assert.Equal(t, input.Observation, item.Observation)
-		assert.Equal(t, 10.0, item.Price)
-		assert.Equal(t, 20.0, item.GetTotalPrice())
+		require.Equal(t, aProduct.Id, item.ProductId)
+		require.Equal(t, input.Quantity, item.Quantity)
+		require.Equal(t, input.Observation, item.Observation)
+		require.Equal(t, 10.0, item.Price)
+		require.Equal(t, 20.0, item.GetTotalPrice())
 	})
 }

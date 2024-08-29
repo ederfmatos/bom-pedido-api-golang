@@ -9,7 +9,7 @@ import (
 	"bom-pedido-api/infra/factory"
 	"context"
 	"github.com/go-faker/faker/v4"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )
@@ -25,7 +25,7 @@ func Test_UseCase(t *testing.T) {
 			By:      value_object.NewID(),
 		}
 		err := useCase.Execute(ctx, input)
-		assert.ErrorIs(t, err, errors.OrderNotFoundError)
+		require.ErrorIs(t, err, errors.OrderNotFoundError)
 	})
 
 	t.Run("should mark an order in progress", func(t *testing.T) {
@@ -33,17 +33,17 @@ func Test_UseCase(t *testing.T) {
 		customerId := value_object.NewID()
 		order, err := order2.New(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, 0, time.Now(), faker.WORD)
 		err = order.Approve(time.Now(), "")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		err = applicationFactory.OrderRepository.Create(ctx, order)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		input := Input{
 			OrderId: order.Id,
 			By:      value_object.NewID(),
 		}
 		err = useCase.Execute(ctx, input)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		savedOrder, err := applicationFactory.OrderRepository.FindById(ctx, order.Id)
-		assert.NoError(t, err)
-		assert.Equal(t, savedOrder.GetStatus(), status.InProgressStatus.Name())
+		require.NoError(t, err)
+		require.Equal(t, savedOrder.GetStatus(), status.InProgressStatus.Name())
 	})
 }
