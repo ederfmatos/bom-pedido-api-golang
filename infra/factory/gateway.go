@@ -13,11 +13,7 @@ func gatewayFactory(environment *config.Environment, connection repository.SqlCo
 	return factory.NewGatewayFactory(
 		gateway.NewDefaultGoogleGateway(environment.GoogleAuthUrl),
 		pix.NewLogPixGatewayDecorator(
-			pix.NewMercadoPagoPixGateway(
-				environment.PixPaymentGateway.NotificationUrl,
-				environment.PixPaymentGateway.ExpirationTimeInMinutes,
-				paymentGatewayConfigRepository,
-			),
+			pix.NewWooviPixGateway(environment.PixPaymentGateway.ExpirationTimeInMinutes, paymentGatewayConfigRepository),
 		),
 	)
 }
