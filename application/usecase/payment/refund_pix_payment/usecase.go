@@ -55,6 +55,7 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) error {
 	refundInput := gateway.RefundPixInput{
 		PaymentId:  pixTransaction.PaymentId,
 		MerchantId: anOrder.MerchantId,
+		Amount:     anOrder.Amount,
 	}
 	if err = uc.pixGateway.RefundPix(ctx, refundInput); err != nil {
 		return err

@@ -47,6 +47,7 @@ type (
 	RefundPixInput struct {
 		PaymentId  string
 		MerchantId string
+		Amount     float64
 	}
 
 	PixGateway interface {
