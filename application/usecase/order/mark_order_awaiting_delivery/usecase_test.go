@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-func Test_UseCase(t *testing.T) {
+func Test_MarkOrderAwaitingDelivery(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
 	useCase := New(applicationFactory)
 

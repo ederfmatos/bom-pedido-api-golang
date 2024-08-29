@@ -20,7 +20,7 @@ import (
 	"time"
 )
 
-func Test_UseCaseExecute(t *testing.T) {
+func Test_CreatePixPayment(t *testing.T) {
 	pixGateway := pix.NewFakePixGateway()
 	eventEmitter := event.NewMockEventHandler()
 	applicationFactory := factory.NewTestApplicationFactory()
