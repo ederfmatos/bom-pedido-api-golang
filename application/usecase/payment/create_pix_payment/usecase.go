@@ -1,4 +1,4 @@
-package pay_pix_transaction
+package create_pix_payment
 
 import (
 	"bom-pedido-api/application/event"
@@ -13,6 +13,7 @@ import (
 type (
 	UseCase struct {
 		orderRepository       repository.OrderRepository
+		customerRepository    repository.CustomerRepository
 		transactionRepository repository.TransactionRepository
 		pixGateway            gateway.PixGateway
 		eventEmitter          event.Emitter
@@ -27,6 +28,7 @@ type (
 func New(factory *factory.ApplicationFactory) *UseCase {
 	return &UseCase{
 		orderRepository:       factory.OrderRepository,
+		customerRepository:    factory.CustomerRepository,
 		transactionRepository: factory.TransactionRepository,
 		pixGateway:            factory.PixGateway,
 		eventEmitter:          factory.EventEmitter,
@@ -35,26 +37,36 @@ func New(factory *factory.ApplicationFactory) *UseCase {
 }
 
 func (uc *UseCase) Execute(ctx context.Context, input Input) error {
-	lockKey, err := uc.locker.Lock(ctx, time.Second*30, "PAY_PIX_TRANSACTION_", input.OrderId)
+	lockKey, err := uc.locker.Lock(ctx, time.Second*30, "CREATE_PIX_PAYMENT_", input.OrderId)
 	if err != nil {
 		return err
 	}
 	defer uc.locker.Release(ctx, lockKey)
 	anOrder, err := uc.orderRepository.FindById(ctx, input.OrderId)
-	if err != nil || anOrder == nil || !anOrder.IsPixInApp() || !anOrder.IsAwaitingPayment() {
+	if err != nil || anOrder == nil || !anOrder.IsPixInApp() {
 		return err
 	}
-	pixTransaction, err := uc.transactionRepository.FindByOrderId(ctx, anOrder.Id)
-	if err != nil || pixTransaction == nil || pixTransaction.IsPaid() {
+	aCustomer, err := uc.customerRepository.FindById(ctx, anOrder.CustomerID)
+	if err != nil || aCustomer == nil {
 		return err
 	}
-	payment, err := uc.pixGateway.GetPaymentById(ctx, anOrder.MerchantId, pixTransaction.PaymentId)
-	if err != nil || payment == nil || payment.Status != gateway.TransactionPaid {
+	existsTransaction, err := uc.transactionRepository.ExistsByOrderId(ctx, anOrder.Id)
+	if err != nil || existsTransaction {
 		return err
 	}
-	pixTransaction.Pay()
-	if err = uc.transactionRepository.UpdatePixTransaction(ctx, pixTransaction); err != nil {
+	createPixInput := gateway.CreateQrCodePixInput{
+		InternalOrderId: anOrder.Id,
+		Amount:          anOrder.Amount,
+		MerchantId:      anOrder.MerchantId,
+		Description:     "Pedido no Bom Pedido",
+		Customer: gateway.PixCustomer{
+			Name:  aCustomer.Name,
+			Email: aCustomer.GetEmail(),
+		},
+	}
+	createPixOutput, err := uc.pixGateway.CreateQrCodePix(ctx, createPixInput)
+	if err != nil {
 		return err
 	}
-	return uc.eventEmitter.Emit(ctx, event.NewPixTransactionPaid(anOrder.Id, pixTransaction.Id))
+	return uc.eventEmitter.Emit(ctx, event.NewPixPaymentCreated(anOrder.Id, createPixOutput.Id))
 }

@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	sendEmailEvent = "SEND_EMAIL"
+	SendEmail = "SEND_EMAIL"
 )
 
 func NewSendEmailEvent(to value_object.Email, subject string, data map[string]string) *Event {
@@ -15,7 +15,7 @@ func NewSendEmailEvent(to value_object.Email, subject string, data map[string]st
 	return &Event{
 		Id:            value_object.NewID(),
 		CorrelationId: to.Value(),
-		Name:          sendEmailEvent,
+		Name:          SendEmail,
 		Data:          emailData,
 	}
 }

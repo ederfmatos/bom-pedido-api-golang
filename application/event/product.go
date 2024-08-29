@@ -6,14 +6,14 @@ import (
 )
 
 var (
-	ProductCreatedEventName = "PRODUCT_CREATED"
+	ProductCreated = "PRODUCT_CREATED"
 )
 
 func NewProductCreatedEvent(product *product.Product) *Event {
 	return &Event{
 		Id:            value_object.NewID(),
 		CorrelationId: product.Id,
-		Name:          ProductCreatedEventName,
+		Name:          ProductCreated,
 		Data: map[string]string{
 			"productId": product.Id,
 		},

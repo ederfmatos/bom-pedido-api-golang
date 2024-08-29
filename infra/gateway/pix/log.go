@@ -37,16 +37,16 @@ func (g *LogPixGatewayDecorator) CreateQrCodePix(ctx context.Context, input gate
 	return output, nil
 }
 
-func (g *LogPixGatewayDecorator) GetPaymentStatus(ctx context.Context, merchantId, id string) (*gateway.PaymentStatus, error) {
-	g.logger.Info("Iniciando busca de status de pagamento PIX")
-	ctx, span := telemetry.StartSpan(ctx, "PixGateway.GetPaymentStatus")
+func (g *LogPixGatewayDecorator) GetPaymentById(ctx context.Context, merchantId, id string) (*gateway.GetPaymentOutput, error) {
+	g.logger.Info("Iniciando busca de pagamento PIX")
+	ctx, span := telemetry.StartSpan(ctx, "PixGateway.GetPaymentById")
 	defer span.End()
-	output, err := g.delegate.GetPaymentStatus(ctx, merchantId, id)
+	output, err := g.delegate.GetPaymentById(ctx, merchantId, id)
 	if err != nil {
-		g.logger.Error("Ocorreu um erro na busca de status de pagamento Pix", "error", err)
+		g.logger.Error("Ocorreu um erro na busca de pagamento Pix", "error", err)
 		return nil, err
 	}
-	g.logger.Info("Sucesso na busca de status de pagamento PIX", "status", output)
+	g.logger.Info("Sucesso na busca de pagamento PIX")
 	return output, nil
 }
 

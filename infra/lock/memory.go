@@ -30,7 +30,7 @@ func (l *memoryLocker) Lock(_ context.Context, _ time.Duration, key ...string) (
 
 	expiration, exists := l.locks[lockKey]
 	if exists && time.Now().Before(expiration) {
-		return "", errors.New("lock already acquired")
+		return "", lock.ResourceLockedError
 	}
 
 	return lockKey, nil

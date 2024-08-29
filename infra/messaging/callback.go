@@ -8,7 +8,7 @@ import (
 )
 
 func HandleTransactionCallback(factory *factory.ApplicationFactory) {
-	factory.EventHandler.Consume(event.OptionsForTopics("PAY_PIX_TRANSACTION", "PAYMENT_CALLBACK_RECEIVED"), handlePayPixTransaction(factory))
+	factory.EventHandler.Consume(event.OptionsForTopics("PAY_PIX_TRANSACTION", event.PaymentCallbackReceived), handlePayPixTransaction(factory))
 }
 
 func handlePayPixTransaction(factory *factory.ApplicationFactory) func(context.Context, *event.MessageEvent) error {
@@ -17,8 +17,9 @@ func handlePayPixTransaction(factory *factory.ApplicationFactory) func(context.C
 		if message.Event.Data["eventName"] != "payment.updated" {
 			return message.Ack(ctx)
 		}
-		customerId := message.Event.Data["orderId"]
-		input := pay_pix_transaction.Input{OrderId: customerId}
+		input := pay_pix_transaction.Input{
+			OrderId: message.Event.Data["orderId"],
+		}
 		err := useCase.Execute(ctx, input)
 		return message.AckIfNoError(ctx, err)
 	}

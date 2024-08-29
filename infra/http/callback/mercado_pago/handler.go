@@ -16,7 +16,7 @@ func Handle(factory *factory.ApplicationFactory) func(c echo.Context) error {
 	return func(c echo.Context) error {
 		var request callbackRequest
 		err := c.Bind(&request)
-		if err != nil || request.Action == "" {
+		if err != nil || request.Action != "payment.updated" {
 			return err
 		}
 		orderId := c.Param("orderId")

@@ -1,24 +1,24 @@
 package transaction
 
-import "bom-pedido-api/domain/errors"
-
-const (
-	CREATED Status = "CREATED"
-	PAID    Status = "PAID"
+import (
+	"bom-pedido-api/domain/value_object"
 )
 
-var (
-	AlreadyPaidError = errors.New("Transaction already paid")
+const (
+	created  Status = "CREATED"
+	paid     Status = "PAID"
+	refunded Status = "REFUNDED"
 )
 
 type (
 	Status string
 
 	Transaction struct {
-		Id      string
-		OrderId string
-		Status  Status
-		Amount  float64
+		Id        string
+		PaymentId string
+		OrderId   string
+		Status    Status
+		Amount    float64
 	}
 
 	PixTransaction struct {
@@ -29,24 +29,33 @@ type (
 	}
 )
 
-func NewPixTransaction(id, orderId, qrCode, paymentGateway, qrCodeLink string, amount float64) *PixTransaction {
+func NewPixTransaction(paymentId, orderId, qrCode, paymentGateway, qrCodeLink string, amount float64) *PixTransaction {
 	return &PixTransaction{
 		QrCode:         qrCode,
 		QrCodeLink:     qrCodeLink,
 		PaymentGateway: paymentGateway,
 		Transaction: Transaction{
-			Id:      id,
-			OrderId: orderId,
-			Status:  CREATED,
-			Amount:  amount,
+			Id:        value_object.NewID(),
+			PaymentId: paymentId,
+			OrderId:   orderId,
+			Status:    created,
+			Amount:    amount,
 		},
 	}
 }
 
-func (t *PixTransaction) Pay() error {
-	if t.Status == PAID {
-		return AlreadyPaidError
-	}
-	t.Status = PAID
-	return nil
+func (t *PixTransaction) Pay() {
+	t.Status = paid
+}
+
+func (t *PixTransaction) Refund() {
+	t.Status = refunded
+}
+
+func (t *PixTransaction) IsPaid() bool {
+	return t.Status == paid
+}
+
+func (t *PixTransaction) IsRefunded() bool {
+	return t.Status == refunded
 }

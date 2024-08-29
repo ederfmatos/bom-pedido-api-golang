@@ -1,9 +1,12 @@
 package lock
 
 import (
+	"bom-pedido-api/domain/errors"
 	"context"
 	"time"
 )
+
+var ResourceLockedError = errors.New("Resource locked")
 
 type Locker interface {
 	LockFunc(ctx context.Context, key string, ttl time.Duration, lockedFunc func()) error

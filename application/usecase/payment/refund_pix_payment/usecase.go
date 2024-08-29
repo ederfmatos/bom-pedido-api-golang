@@ -1,4 +1,4 @@
-package pay_pix_transaction
+package refund_pix_payment
 
 import (
 	"bom-pedido-api/application/event"
@@ -35,26 +35,29 @@ func New(factory *factory.ApplicationFactory) *UseCase {
 }
 
 func (uc *UseCase) Execute(ctx context.Context, input Input) error {
-	lockKey, err := uc.locker.Lock(ctx, time.Second*30, "PAY_PIX_TRANSACTION_", input.OrderId)
+	lockKey, err := uc.locker.Lock(ctx, time.Second*30, "REFUND_PIX_PAYMENT_", input.OrderId)
 	if err != nil {
 		return err
 	}
 	defer uc.locker.Release(ctx, lockKey)
 	anOrder, err := uc.orderRepository.FindById(ctx, input.OrderId)
-	if err != nil || anOrder == nil || !anOrder.IsPixInApp() || !anOrder.IsAwaitingPayment() {
+	if err != nil || anOrder == nil || !anOrder.IsPixInApp() || anOrder.IsAwaitingPayment() {
 		return err
 	}
 	pixTransaction, err := uc.transactionRepository.FindByOrderId(ctx, anOrder.Id)
-	if err != nil || pixTransaction == nil || pixTransaction.IsPaid() {
+	if err != nil || pixTransaction == nil {
 		return err
 	}
 	payment, err := uc.pixGateway.GetPaymentById(ctx, anOrder.MerchantId, pixTransaction.PaymentId)
 	if err != nil || payment == nil || payment.Status != gateway.TransactionPaid {
 		return err
 	}
-	pixTransaction.Pay()
-	if err = uc.transactionRepository.UpdatePixTransaction(ctx, pixTransaction); err != nil {
+	refundInput := gateway.RefundPixInput{
+		PaymentId:  pixTransaction.PaymentId,
+		MerchantId: anOrder.MerchantId,
+	}
+	if err = uc.pixGateway.RefundPix(ctx, refundInput); err != nil {
 		return err
 	}
-	return uc.eventEmitter.Emit(ctx, event.NewPixTransactionPaid(anOrder.Id, pixTransaction.Id))
+	return uc.eventEmitter.Emit(ctx, event.NewPixPaymentRefunded(anOrder.Id, pixTransaction.PaymentId))
 }

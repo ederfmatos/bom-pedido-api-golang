@@ -103,7 +103,7 @@ func (g *MercadoPagoPixGateway) CreateQrCodePix(ctx context.Context, input gatew
 	}, nil
 }
 
-func (g *MercadoPagoPixGateway) GetPaymentStatus(ctx context.Context, merchantId, id string) (*gateway.PaymentStatus, error) {
+func (g *MercadoPagoPixGateway) GetPaymentById(ctx context.Context, merchantId, id string) (*gateway.GetPaymentOutput, error) {
 	cfg, err := g.getConfig(ctx, merchantId)
 	if err != nil {
 		return nil, err
@@ -121,19 +121,27 @@ func (g *MercadoPagoPixGateway) GetPaymentStatus(ctx context.Context, merchantId
 	switch paymentResponse.Status {
 	case "pending", "authorized", "in_process":
 		status = gateway.TransactionPending
-		return &status, nil
+		break
 	case "rejected", "cancelled":
 		status = gateway.TransactionCancelled
-		return &status, nil
+		break
 	case "refunded":
 		status = gateway.TransactionRefunded
-		return &status, nil
+		break
 	case "approved":
 		status = gateway.TransactionPaid
-		return &status, nil
+		break
 	default:
 		return nil, nil
 	}
+	return &gateway.GetPaymentOutput{
+		Id:             strconv.Itoa(paymentResponse.ID),
+		QrCode:         paymentResponse.PointOfInteraction.TransactionData.QRCode,
+		ExpiresAt:      paymentResponse.DateOfExpiration,
+		PaymentGateway: mercadoPago,
+		QrCodeLink:     paymentResponse.PointOfInteraction.TransactionData.TicketURL,
+		Status:         status,
+	}, nil
 }
 
 func (g *MercadoPagoPixGateway) RefundPix(ctx context.Context, input gateway.RefundPixInput) error {

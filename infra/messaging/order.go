@@ -3,36 +3,20 @@ package messaging
 import (
 	"bom-pedido-api/application/event"
 	"bom-pedido-api/application/factory"
-	"bom-pedido-api/application/usecase/transaction/create_pix_transaction"
-	"bom-pedido-api/application/usecase/transaction/refund_pix_transaction"
-	"bom-pedido-api/domain/enums"
+	"bom-pedido-api/application/usecase/order/await_approval_order"
 	"context"
 )
 
 func HandleOrderEvents(factory *factory.ApplicationFactory) {
-	factory.EventHandler.Consume(event.OptionsForTopics("CREATE_PIX_TRANSACTION", "ORDER_CREATED"), handleCreatePixTransaction(factory))
-	factory.EventHandler.Consume(event.OptionsForTopics("REFUND_PIX_TRANSACTION", "ORDER_CANCELLED", "ORDER_REJECTED"), handleRefundPixTransaction(factory))
+	factory.EventHandler.Consume(event.OptionsForTopics("AWAIT_APPROVAL_ORDER", event.PixTransactionPaid), handleAwaitApprovalOrder(factory))
 }
 
-func handleCreatePixTransaction(factory *factory.ApplicationFactory) event.HandlerFunc {
-	useCase := create_pix_transaction.New(factory)
+func handleAwaitApprovalOrder(factory *factory.ApplicationFactory) event.HandlerFunc {
+	useCase := await_approval_order.New(factory)
 	return func(ctx context.Context, message *event.MessageEvent) error {
-		if message.Event.Data["paymentMethod"] != enums.Pix {
-			return message.Ack(ctx)
+		input := await_approval_order.Input{
+			OrderId: message.Event.Data["orderId"],
 		}
-		input := create_pix_transaction.Input{OrderId: message.Event.Data["orderId"]}
-		err := useCase.Execute(ctx, input)
-		return message.AckIfNoError(ctx, err)
-	}
-}
-
-func handleRefundPixTransaction(factory *factory.ApplicationFactory) event.HandlerFunc {
-	useCase := refund_pix_transaction.New(factory)
-	return func(ctx context.Context, message *event.MessageEvent) error {
-		if message.Event.Data["paymentMethod"] != enums.Pix {
-			return message.Ack(ctx)
-		}
-		input := refund_pix_transaction.Input{OrderId: message.Event.Data["orderId"]}
 		err := useCase.Execute(ctx, input)
 		return message.AckIfNoError(ctx, err)
 	}

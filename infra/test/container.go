@@ -244,6 +244,7 @@ func databaseConnection() (*sql.DB, func()) {
 		(
 			id         VARCHAR(36) PRIMARY KEY NOT NULL,
 			order_id   VARCHAR(36)             NOT NULL,
+    		payment_id VARCHAR(100)            NOT NULL,
 			amount     NUMERIC(6, 2)           NOT NULL,
 			status     VARCHAR(20)             NOT NULL,
 			created_at TIMESTAMP               NOT NULL DEFAULT CURRENT_TIMESTAMP,

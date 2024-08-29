@@ -3,7 +3,6 @@ package lock
 import (
 	"bom-pedido-api/application/lock"
 	"context"
-	"fmt"
 	"github.com/redis/go-redis/v9"
 	"strings"
 	"time"
@@ -26,7 +25,7 @@ func (l *redisLocker) Lock(ctx context.Context, ttl time.Duration, key ...string
 		return "", err
 	}
 	if !locked {
-		return "", fmt.Errorf("resource locked")
+		return "", lock.ResourceLockedError
 	}
 	go func() {
 		select {

@@ -36,15 +36,23 @@ type (
 		PaymentGateway string
 		QrCodeLink     string
 	}
+	GetPaymentOutput struct {
+		Id             string
+		QrCode         string
+		ExpiresAt      time.Time
+		PaymentGateway string
+		QrCodeLink     string
+		Status         PaymentStatus
+	}
 	RefundPixInput struct {
 		PaymentId  string
 		MerchantId string
 	}
 
 	PixGateway interface {
+		Name() string
 		CreateQrCodePix(ctx context.Context, input CreateQrCodePixInput) (*CreateQrCodePixOutput, error)
 		RefundPix(ctx context.Context, input RefundPixInput) error
-		Name() string
-		GetPaymentStatus(ctx context.Context, merchantId, id string) (*PaymentStatus, error)
+		GetPaymentById(ctx context.Context, merchantId, id string) (*GetPaymentOutput, error)
 	}
 )

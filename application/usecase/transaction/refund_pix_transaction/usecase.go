@@ -14,7 +14,6 @@ type (
 	UseCase struct {
 		orderRepository       repository.OrderRepository
 		transactionRepository repository.TransactionRepository
-		merchantRepository    repository.MerchantRepository
 		pixGateway            gateway.PixGateway
 		eventEmitter          event.Emitter
 		locker                lock.Locker
@@ -29,7 +28,6 @@ func New(factory *factory.ApplicationFactory) *UseCase {
 	return &UseCase{
 		orderRepository:       factory.OrderRepository,
 		transactionRepository: factory.TransactionRepository,
-		merchantRepository:    factory.MerchantRepository,
 		pixGateway:            factory.PixGateway,
 		eventEmitter:          factory.EventEmitter,
 		locker:                factory.Locker,
@@ -37,33 +35,26 @@ func New(factory *factory.ApplicationFactory) *UseCase {
 }
 
 func (uc *UseCase) Execute(ctx context.Context, input Input) error {
-	lockKey, err := uc.locker.Lock(ctx, time.Second*30, "PAY_PIX_TRANSACTION_", input.OrderId)
+	lockKey, err := uc.locker.Lock(ctx, time.Second*30, "REFUND_PIX_TRANSACTION_", input.OrderId)
 	if err != nil {
 		return err
 	}
 	defer uc.locker.Release(ctx, lockKey)
 	anOrder, err := uc.orderRepository.FindById(ctx, input.OrderId)
-	if err != nil || anOrder == nil || !anOrder.IsPixInApp() || !anOrder.IsAwaitingPayment() {
+	if err != nil || anOrder == nil || !anOrder.IsPixInApp() || anOrder.IsAwaitingPayment() {
 		return err
 	}
-	aTransaction, err := uc.transactionRepository.FindByOrderId(ctx, anOrder.Id)
-	if err != nil || aTransaction == nil {
+	pixTransaction, err := uc.transactionRepository.FindByOrderId(ctx, anOrder.Id)
+	if err != nil || pixTransaction == nil || !pixTransaction.IsPaid() {
 		return err
 	}
-	paymentStatus, err := uc.pixGateway.GetPaymentStatus(ctx, anOrder.MerchantId, aTransaction.Id)
-	if err != nil || paymentStatus != nil {
+	payment, err := uc.pixGateway.GetPaymentById(ctx, anOrder.MerchantId, pixTransaction.PaymentId)
+	if err != nil || payment == nil || payment.Status != gateway.TransactionRefunded {
 		return err
 	}
-	if *paymentStatus != gateway.TransactionPaid {
+	pixTransaction.Refund()
+	if err = uc.transactionRepository.UpdatePixTransaction(ctx, pixTransaction); err != nil {
 		return err
 	}
-	refundInput := gateway.RefundPixInput{
-		PaymentId:  aTransaction.Id,
-		MerchantId: anOrder.MerchantId,
-	}
-	err = uc.pixGateway.RefundPix(ctx, refundInput)
-	if err != nil {
-		return err
-	}
-	return uc.eventEmitter.Emit(ctx, event.NewPixTransactionRefunded(anOrder.Id, aTransaction.Id))
+	return uc.eventEmitter.Emit(ctx, event.NewPixTransactionRefunded(anOrder.Id, pixTransaction.Id))
 }

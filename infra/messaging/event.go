@@ -7,6 +7,8 @@ import (
 func HandleEvents(factory *factory.ApplicationFactory) {
 	HandleShoppingCart(factory)
 	HandleOrderEvents(factory)
+	HandleTransactionEvents(factory)
 	HandleEmailEvents(factory)
+	HandlePaymentEvents(factory)
 	HandleTransactionCallback(factory)
 }

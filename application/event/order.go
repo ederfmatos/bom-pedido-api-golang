@@ -6,15 +6,16 @@ import (
 )
 
 var (
-	OrderCreatedEventName          = "ORDER_CREATED"
-	OrderApprovedEventName         = "ORDER_APPROVED"
-	OrderFinishedEventName         = "ORDER_FINISHED"
-	OrderRejectedEventName         = "ORDER_REJECTED"
-	OrderInProgressEventName       = "ORDER_IN_PROGRESS"
-	OrderDeliveringEventName       = "ORDER_DELIVERING"
-	OrderAwaitingWithdrawEventName = "ORDER_AWAITING_WITHDRAW"
-	OrderAwaitingDeliveryEventName = "ORDER_AWAITING_DELIVERY"
-	OrderCancelledEventName        = "ORDER_CANCELLED"
+	OrderCreated          = "ORDER_CREATED"
+	OrderAwaitingApproval = "ORDER_AWAITING_APPROVAL"
+	OrderApproved         = "ORDER_APPROVED"
+	OrderFinished         = "ORDER_FINISHED"
+	OrderRejected         = "ORDER_REJECTED"
+	OrderInProgress       = "ORDER_IN_PROGRESS"
+	OrderDelivering       = "ORDER_DELIVERING"
+	OrderAwaitingWithdraw = "ORDER_AWAITING_WITHDRAW"
+	OrderAwaitingDelivery = "ORDER_AWAITING_DELIVERY"
+	OrderCancelled        = "ORDER_CANCELLED"
 )
 
 func newOrderEvent(order *order.Order, name string) *Event {
@@ -31,37 +32,41 @@ func newOrderEvent(order *order.Order, name string) *Event {
 }
 
 func NewOrderCreatedEvent(order *order.Order) *Event {
-	return newOrderEvent(order, OrderCreatedEventName)
+	return newOrderEvent(order, OrderCreated)
 }
 
 func NewOrderApprovedEvent(order *order.Order) *Event {
-	return newOrderEvent(order, OrderApprovedEventName)
+	return newOrderEvent(order, OrderApproved)
 }
 
 func NewOrderInProgressEvent(order *order.Order) *Event {
-	return newOrderEvent(order, OrderInProgressEventName)
+	return newOrderEvent(order, OrderInProgress)
 }
 
 func NewOrderDeliveringEvent(order *order.Order) *Event {
-	return newOrderEvent(order, OrderDeliveringEventName)
+	return newOrderEvent(order, OrderDelivering)
 }
 
 func NewOrderAwaitingWithdrawEvent(order *order.Order) *Event {
-	return newOrderEvent(order, OrderAwaitingWithdrawEventName)
+	return newOrderEvent(order, OrderAwaitingWithdraw)
 }
 
 func NewOrderAwaitingDeliveryEvent(order *order.Order) *Event {
-	return newOrderEvent(order, OrderAwaitingDeliveryEventName)
+	return newOrderEvent(order, OrderAwaitingDelivery)
 }
 
 func NewOrderRejectedEvent(order *order.Order) *Event {
-	return newOrderEvent(order, OrderRejectedEventName)
+	return newOrderEvent(order, OrderRejected)
 }
 
 func NewOrderCancelledEvent(order *order.Order) *Event {
-	return newOrderEvent(order, OrderCancelledEventName)
+	return newOrderEvent(order, OrderCancelled)
 }
 
 func NewOrderFinishedEvent(order *order.Order) *Event {
-	return newOrderEvent(order, OrderFinishedEventName)
+	return newOrderEvent(order, OrderFinished)
+}
+
+func NewOrderAwaitingApprovalEvent(order *order.Order) *Event {
+	return newOrderEvent(order, OrderAwaitingApproval)
 }

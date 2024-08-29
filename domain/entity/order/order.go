@@ -247,3 +247,20 @@ func (order *Order) IsPixInApp() bool {
 func (order *Order) IsAwaitingPayment() bool {
 	return order.state == status.AwaitingPaymentStatus
 }
+
+func (order *Order) IsAwaitingApproval() bool {
+	return order.state == status.AwaitingApprovalStatus
+}
+
+func (order *Order) AwaitApproval(at time.Time) error {
+	if order.state != status.AwaitingPaymentStatus {
+		return status.OperationNotAllowedError
+	}
+	order.state = status.AwaitingApprovalStatus
+	order.History = append(order.History, status.History{
+		Time:      at,
+		Status:    "PaymentApproved",
+		ChangedBy: order.CustomerID,
+	})
+	return nil
+}

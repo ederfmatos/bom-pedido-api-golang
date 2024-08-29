@@ -26,16 +26,16 @@ func Test_TransactionMemoryRepository(t *testing.T) {
 func runTransactionTests(t *testing.T, repository repository.TransactionRepository) {
 	ctx := context.TODO()
 
-	aTransaction := transaction.NewPixTransaction(value_object.NewID(), value_object.NewID(), faker.Word(), faker.Word(), faker.Word(), 10)
+	pixTransaction := transaction.NewPixTransaction(value_object.NewID(), value_object.NewID(), faker.Word(), faker.Word(), faker.Word(), 10)
 
-	existsByOrderId, err := repository.ExistsByOrderId(ctx, aTransaction.OrderId)
+	existsByOrderId, err := repository.ExistsByOrderId(ctx, pixTransaction.OrderId)
 	assert.NoError(t, err)
 	assert.False(t, existsByOrderId)
 
-	err = repository.CreatePixTransaction(ctx, aTransaction)
+	err = repository.CreatePixTransaction(ctx, pixTransaction)
 	assert.NoError(t, err)
 
-	existsByOrderId, err = repository.ExistsByOrderId(ctx, aTransaction.OrderId)
+	existsByOrderId, err = repository.ExistsByOrderId(ctx, pixTransaction.OrderId)
 	assert.NoError(t, err)
 	assert.True(t, existsByOrderId)
 }
