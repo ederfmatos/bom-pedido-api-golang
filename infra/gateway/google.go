@@ -2,37 +2,30 @@ package gateway
 
 import (
 	"bom-pedido-api/application/gateway"
-	"bom-pedido-api/infra/json"
+	"bom-pedido-api/infra/http_client"
 	"context"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
-	"net/http"
+	"errors"
 )
 
 type DefaultGoogleGateway struct {
-	baseUrl string
+	httpClient http_client.HttpClient
 }
 
-func NewDefaultGoogleGateway(baseUrl string) gateway.GoogleGateway {
-	return &DefaultGoogleGateway{baseUrl: baseUrl}
+func NewDefaultGoogleGateway(client http_client.HttpClient) gateway.GoogleGateway {
+	return &DefaultGoogleGateway{httpClient: client}
 }
 
 func (googleGateway *DefaultGoogleGateway) GetUserByToken(ctx context.Context, token string) (*gateway.GoogleUser, error) {
-	client := http.Client{
-		Transport: otelhttp.NewTransport(http.DefaultTransport),
-	}
-	request, err := http.NewRequestWithContext(ctx, "GET", googleGateway.baseUrl+"?access_token="+token, nil)
+	httpResponse, err := googleGateway.httpClient.Get("?access_token=", token).Execute(ctx)
 	if err != nil {
 		return nil, err
 	}
-	response, err := client.Do(request)
-	if err != nil {
-		return nil, err
+	if httpResponse.IsError() {
+		return nil, errors.New(httpResponse.GetErrorMessage())
 	}
 	var googleUser gateway.GoogleUser
-	err = json.Decode(ctx, response.Body, &googleUser)
-	if err != nil {
+	if err = httpResponse.ParseBody(&googleUser); err != nil {
 		return nil, err
 	}
-	defer response.Body.Close()
 	return &googleUser, nil
 }
