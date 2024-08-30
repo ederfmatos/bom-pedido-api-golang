@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	woovi = "WOOVI"
+	Woovi = "WOOVI"
 )
 
 type (
@@ -75,7 +75,7 @@ func NewWooviPixGateway(
 }
 
 func (g *wooviPixGateway) Name() string {
-	return woovi
+	return Woovi
 }
 
 func (g *wooviPixGateway) CreateQrCodePix(ctx context.Context, input gateway.CreateQrCodePixInput) (*gateway.CreateQrCodePixOutput, error) {
@@ -114,7 +114,7 @@ func (g *wooviPixGateway) CreateQrCodePix(ctx context.Context, input gateway.Cre
 		return nil, err
 	}
 	return &gateway.CreateQrCodePixOutput{
-		PaymentGateway: woovi,
+		PaymentGateway: Woovi,
 		Id:             output.Charge.CorrelationID,
 		QrCode:         output.Charge.BrCode,
 		ExpiresAt:      output.Charge.ExpiresDate,
@@ -157,7 +157,7 @@ func (g *wooviPixGateway) GetPaymentById(ctx context.Context, input gateway.GetP
 		return nil, nil
 	}
 	return &gateway.GetPaymentOutput{
-		PaymentGateway: woovi,
+		PaymentGateway: Woovi,
 		Id:             output.Charge.CorrelationID,
 		QrCode:         output.Charge.BrCode,
 		ExpiresAt:      output.Charge.ExpiresDate,

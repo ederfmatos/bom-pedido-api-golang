@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	mercadoPago     = "MERCADO_PAGO"
+	MercadoPago     = "MERCADO_PAGO"
 	applicationName = "bom-pedido"
 )
 
@@ -34,7 +34,7 @@ func NewMercadoPagoPixGateway(
 }
 
 func (g *MercadoPagoPixGateway) Name() string {
-	return mercadoPago
+	return MercadoPago
 }
 
 func (g *MercadoPagoPixGateway) CreateQrCodePix(ctx context.Context, input gateway.CreateQrCodePixInput) (*gateway.CreateQrCodePixOutput, error) {
@@ -49,7 +49,7 @@ func (g *MercadoPagoPixGateway) CreateQrCodePix(ctx context.Context, input gatew
 		Description:       input.Description,
 		PaymentMethodID:   "pix",
 		DateOfExpiration:  &expiresAt,
-		NotificationURL:   fmt.Sprintf("%s/%s/%s", g.notificationUrl, mercadoPago, input.InternalOrderId),
+		NotificationURL:   fmt.Sprintf("%s/%s/%s", g.notificationUrl, MercadoPago, input.InternalOrderId),
 		Payer: &payment.PayerRequest{
 			FirstName: input.Customer.Name,
 			Email:     input.Customer.Email,
@@ -66,7 +66,7 @@ func (g *MercadoPagoPixGateway) CreateQrCodePix(ctx context.Context, input gatew
 		Id:             strconv.Itoa(resource.ID),
 		QrCode:         resource.PointOfInteraction.TransactionData.QRCode,
 		ExpiresAt:      expiresAt,
-		PaymentGateway: mercadoPago,
+		PaymentGateway: MercadoPago,
 		QrCodeLink:     resource.PointOfInteraction.TransactionData.TicketURL,
 	}, nil
 }
@@ -106,7 +106,7 @@ func (g *MercadoPagoPixGateway) GetPaymentById(ctx context.Context, input gatewa
 		Id:             strconv.Itoa(paymentResponse.ID),
 		QrCode:         paymentResponse.PointOfInteraction.TransactionData.QRCode,
 		ExpiresAt:      paymentResponse.DateOfExpiration,
-		PaymentGateway: mercadoPago,
+		PaymentGateway: MercadoPago,
 		QrCodeLink:     paymentResponse.PointOfInteraction.TransactionData.TicketURL,
 		Status:         status,
 	}, nil

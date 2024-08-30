@@ -3,38 +3,30 @@ package pix
 import (
 	"bom-pedido-api/application/gateway"
 	"bom-pedido-api/application/repository"
-	"bom-pedido-api/infra/config"
-	"bom-pedido-api/infra/http_client"
 	"context"
 	"fmt"
 )
 
-type MerchantConfigGatewayDecorator struct {
+type MerchantPixGatewayMediator struct {
 	gateways                               map[string]gateway.PixGateway
 	merchantPaymentGatewayConfigRepository repository.MerchantPaymentGatewayConfigRepository
 }
 
-func NewMerchantConfigGatewayDecorator(
-	environment config.PixPaymentGatewayEnv,
+func NewMerchantPixGatewayMediator(
 	merchantPaymentGatewayConfigRepository repository.MerchantPaymentGatewayConfigRepository,
+	gateways map[string]gateway.PixGateway,
 ) gateway.PixGateway {
-	notificationUrl := environment.NotificationUrl
-	expirationTimeInMinutes := environment.ExpirationTimeInMinutes
-	wooviHttpClient := http_client.NewDefaultHttpClient(environment.WooviApiBaseUrl)
-	return &MerchantConfigGatewayDecorator{
+	return &MerchantPixGatewayMediator{
 		merchantPaymentGatewayConfigRepository: merchantPaymentGatewayConfigRepository,
-		gateways: map[string]gateway.PixGateway{
-			mercadoPago: NewLogPixGatewayDecorator(NewMercadoPagoPixGateway(notificationUrl, expirationTimeInMinutes)),
-			woovi:       NewLogPixGatewayDecorator(NewWooviPixGateway(wooviHttpClient, expirationTimeInMinutes)),
-		},
+		gateways:                               gateways,
 	}
 }
 
-func (g *MerchantConfigGatewayDecorator) Name() string {
-	return ""
+func (g *MerchantPixGatewayMediator) Name() string {
+	return "MEDIATOR"
 }
 
-func (g *MerchantConfigGatewayDecorator) CreateQrCodePix(ctx context.Context, input gateway.CreateQrCodePixInput) (*gateway.CreateQrCodePixOutput, error) {
+func (g *MerchantPixGatewayMediator) CreateQrCodePix(ctx context.Context, input gateway.CreateQrCodePixInput) (*gateway.CreateQrCodePixOutput, error) {
 	gatewayConfig, err := g.merchantPaymentGatewayConfigRepository.FindByMerchant(ctx, input.MerchantId)
 	if err != nil {
 		return nil, err
@@ -50,7 +42,7 @@ func (g *MerchantConfigGatewayDecorator) CreateQrCodePix(ctx context.Context, in
 	return paymentGateway.CreateQrCodePix(ctx, input)
 }
 
-func (g *MerchantConfigGatewayDecorator) GetPaymentById(ctx context.Context, input gateway.GetPaymentInput) (*gateway.GetPaymentOutput, error) {
+func (g *MerchantPixGatewayMediator) GetPaymentById(ctx context.Context, input gateway.GetPaymentInput) (*gateway.GetPaymentOutput, error) {
 	gatewayConfig, err := g.merchantPaymentGatewayConfigRepository.FindByMerchantAndGateway(ctx, input.MerchantId, input.PaymentGateway)
 	if err != nil {
 		return nil, err
@@ -66,7 +58,7 @@ func (g *MerchantConfigGatewayDecorator) GetPaymentById(ctx context.Context, inp
 	return paymentGateway.GetPaymentById(ctx, input)
 }
 
-func (g *MerchantConfigGatewayDecorator) RefundPix(ctx context.Context, input gateway.RefundPixInput) error {
+func (g *MerchantPixGatewayMediator) RefundPix(ctx context.Context, input gateway.RefundPixInput) error {
 	gatewayConfig, err := g.merchantPaymentGatewayConfigRepository.FindByMerchantAndGateway(ctx, input.MerchantId, input.PaymentGateway)
 	if err != nil {
 		return err
