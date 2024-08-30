@@ -48,7 +48,11 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) error {
 	if err != nil || pixTransaction == nil || pixTransaction.IsPaid() {
 		return err
 	}
-	payment, err := uc.pixGateway.GetPaymentById(ctx, anOrder.MerchantId, pixTransaction.PaymentId)
+	payment, err := uc.pixGateway.GetPaymentById(ctx, gateway.GetPaymentInput{
+		PaymentId:      pixTransaction.PaymentId,
+		MerchantId:     anOrder.MerchantId,
+		PaymentGateway: pixTransaction.PaymentGateway,
+	})
 	if err != nil || payment == nil || payment.Status != gateway.TransactionPaid {
 		return err
 	}

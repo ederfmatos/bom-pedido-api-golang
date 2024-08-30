@@ -21,8 +21,9 @@ type (
 	}
 
 	Input struct {
-		OrderId   string
-		PaymentId string
+		OrderId        string
+		PaymentId      string
+		PaymentGateway string
 	}
 )
 
@@ -50,7 +51,11 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) error {
 	if err != nil || existsTransaction {
 		return err
 	}
-	pixPayment, err := uc.pixGateway.GetPaymentById(ctx, anOrder.MerchantId, input.PaymentId)
+	pixPayment, err := uc.pixGateway.GetPaymentById(ctx, gateway.GetPaymentInput{
+		PaymentId:      input.PaymentId,
+		MerchantId:     anOrder.MerchantId,
+		PaymentGateway: input.PaymentGateway,
+	})
 	if err != nil || pixPayment == nil {
 		return err
 	}

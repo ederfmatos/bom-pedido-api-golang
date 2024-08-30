@@ -6,7 +6,7 @@ import (
 	"bom-pedido-api/domain/entity/customer"
 	"bom-pedido-api/domain/errors"
 	"bom-pedido-api/domain/value_object"
-	"bom-pedido-api/infra/gateway"
+	"bom-pedido-api/infra/gateway/google"
 	"bom-pedido-api/infra/repository"
 	"bom-pedido-api/infra/token"
 	"context"
@@ -17,7 +17,7 @@ import (
 )
 
 func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
-	googleGateway := gateway.NewFakeGoogleGateway()
+	googleGateway := google.NewFakeGoogleGateway()
 	customerRepository := repository.NewCustomerMemoryRepository()
 	tokenManager := token.NewFakeCustomerTokenManager()
 

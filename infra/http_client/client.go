@@ -17,6 +17,7 @@ type (
 	}
 
 	HttpResponse interface {
+		Close()
 		IsError() bool
 		ParseBody(value interface{}) error
 		GetErrorMessage() string

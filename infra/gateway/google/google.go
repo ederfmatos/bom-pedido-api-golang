@@ -1,4 +1,4 @@
-package gateway
+package google
 
 import (
 	"bom-pedido-api/application/gateway"
@@ -20,6 +20,7 @@ func (googleGateway *DefaultGoogleGateway) GetUserByToken(ctx context.Context, t
 	if err != nil {
 		return nil, err
 	}
+	defer httpResponse.Close()
 	if httpResponse.IsError() {
 		return nil, errors.New(httpResponse.GetErrorMessage())
 	}

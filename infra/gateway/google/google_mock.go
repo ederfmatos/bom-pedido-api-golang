@@ -1,4 +1,4 @@
-package gateway
+package google
 
 import (
 	"bom-pedido-api/application/gateway"
