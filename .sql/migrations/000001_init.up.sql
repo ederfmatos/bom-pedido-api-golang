@@ -48,7 +48,10 @@ CREATE TABLE merchant_payment_gateway_configs
     merchant_id VARCHAR(36) NOT NULL,
     gateway     VARCHAR(50) NOT NULL,
     credentials TEXT        NOT NULL,
-    CONSTRAINT fk_merchant_payment_gateway_configs_merchant FOREIGN KEY (merchant_id) REFERENCES merchants (id)
+    priority    INT         NOT NULL DEFAULT 1,
+    status      VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    CONSTRAINT fk_merchant_payment_gateway_configs_merchant FOREIGN KEY (merchant_id) REFERENCES merchants (id),
+    CONSTRAINT uk_merchant_payment_gateway_configs_priority UNIQUE (merchant_id, priority)
 );
 CREATE INDEX ids_merchant_payment_gateway_configs_merchant_id ON merchant_payment_gateway_configs (merchant_id);
 

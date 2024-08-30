@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	sqlFindMerchantPaymentGatewayConfigByMerchant           = "SELECT credentials, gateway FROM merchant_payment_gateway_configs WHERE merchant_id = $1 LIMIT 1"
+	sqlFindMerchantPaymentGatewayConfigByMerchant           = "SELECT credentials, gateway FROM merchant_payment_gateway_configs WHERE merchant_id = $1 AND status = 'ACTIVE' ORDER BY priority LIMIT 1"
 	sqlFindMerchantPaymentGatewayConfigByMerchantAndGateway = "SELECT credentials FROM merchant_payment_gateway_configs WHERE merchant_id = $1 AND gateway = $2 LIMIT 1"
 )
 
