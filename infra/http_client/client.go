@@ -20,6 +20,7 @@ type (
 		Close()
 		IsError() bool
 		ParseBody(value interface{}) error
+		ParseError(value error) error
 		GetErrorMessage() string
 	}
 )

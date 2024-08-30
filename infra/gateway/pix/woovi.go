@@ -26,7 +26,7 @@ type (
 	}
 
 	wooviErrorResponse struct {
-		Error string `json:"error"`
+		ErrorMessage string `json:"error"`
 	}
 
 	wooviCreateChargeInput struct {
@@ -81,6 +81,9 @@ func NewWooviPixGateway(
 		expirationInSeconds: expirationTimeInMinutes * 60,
 	}
 }
+func (e *wooviErrorResponse) Error() string {
+	return e.ErrorMessage
+}
 
 func (g *wooviPixGateway) Name() string {
 	return Woovi
@@ -111,11 +114,7 @@ func (g *wooviPixGateway) CreateQrCodePix(ctx context.Context, input gateway.Cre
 	}
 	defer response.Close()
 	if response.IsError() {
-		var wooviError wooviErrorResponse
-		if err = response.ParseBody(&wooviError); err != nil {
-			return nil, err
-		}
-		return nil, errors.New(wooviError.Error)
+		return nil, response.ParseError(&wooviErrorResponse{})
 	}
 	var output wooviCreateChargeOutput
 	if err = response.ParseBody(&output); err != nil {
@@ -140,11 +139,7 @@ func (g *wooviPixGateway) GetPaymentById(ctx context.Context, input gateway.GetP
 	}
 	defer response.Close()
 	if response.IsError() {
-		var wooviError wooviErrorResponse
-		if err = response.ParseBody(&wooviError); err != nil {
-			return nil, err
-		}
-		return nil, errors.New(wooviError.Error)
+		return nil, response.ParseError(&wooviErrorResponse{})
 	}
 	var output wooviGetChargeOutput
 	if err = response.ParseBody(&output); err != nil {
@@ -191,11 +186,7 @@ func (g *wooviPixGateway) getRefundValueFromCharge(ctx context.Context, paymentI
 	}
 	defer response.Close()
 	if response.IsError() {
-		var wooviError wooviErrorResponse
-		if err = response.ParseBody(&wooviError); err != nil {
-			return 0, err
-		}
-		return 0, errors.New(wooviError.Error)
+		return 0, response.ParseError(&wooviErrorResponse{})
 	}
 	var output wooviRefundOutput
 	if err = response.ParseBody(&output); err != nil {
@@ -226,11 +217,7 @@ func (g *wooviPixGateway) RefundPix(ctx context.Context, input gateway.RefundPix
 	}
 	defer response.Close()
 	if response.IsError() {
-		var wooviError wooviErrorResponse
-		if err = response.ParseBody(&wooviError); err != nil {
-			return err
-		}
-		return errors.New(wooviError.Error)
+		return response.ParseError(&wooviErrorResponse{})
 	}
 	var output wooviRefundChargeOutput
 	if err = response.ParseBody(&output); err != nil {

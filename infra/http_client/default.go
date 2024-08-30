@@ -100,6 +100,13 @@ func (r *defaultHttpResponse) ParseBody(value interface{}) error {
 	return json.Decode(r.ctx, r.Body, value)
 }
 
+func (r *defaultHttpResponse) ParseError(value error) error {
+	if err := json.Decode(r.ctx, r.Body, value); err != nil {
+		return err
+	}
+	return value
+}
+
 func (r *defaultHttpResponse) GetErrorMessage() string {
 	var mapResponse map[string]interface{}
 	_ = json.Decode(r.ctx, r.Body, &mapResponse)
