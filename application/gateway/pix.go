@@ -28,6 +28,7 @@ type (
 		Description     string
 		MerchantId      string
 		Customer        PixCustomer
+		Credential      string
 	}
 	CreateQrCodePixOutput struct {
 		Id             string
@@ -45,15 +46,23 @@ type (
 		Status         PaymentStatus
 	}
 	RefundPixInput struct {
-		PaymentId  string
-		MerchantId string
-		Amount     float64
+		PaymentId      string
+		MerchantId     string
+		Amount         float64
+		Credential     string
+		PaymentGateway string
+	}
+	GetPaymentInput struct {
+		PaymentId      string
+		MerchantId     string
+		Credential     string
+		PaymentGateway string
 	}
 
 	PixGateway interface {
 		Name() string
 		CreateQrCodePix(ctx context.Context, input CreateQrCodePixInput) (*CreateQrCodePixOutput, error)
 		RefundPix(ctx context.Context, input RefundPixInput) error
-		GetPaymentById(ctx context.Context, merchantId, id string) (*GetPaymentOutput, error)
+		GetPaymentById(ctx context.Context, input GetPaymentInput) (*GetPaymentOutput, error)
 	}
 )

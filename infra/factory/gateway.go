@@ -13,12 +13,6 @@ func gatewayFactory(environment *config.Environment, connection repository.SqlCo
 	paymentGatewayConfigRepository := repository.NewDefaultMerchantPaymentGatewayConfigRepository(connection)
 	return factory.NewGatewayFactory(
 		google.NewDefaultGoogleGateway(http_client.NewDefaultHttpClient(environment.GoogleAuthUrl)),
-		pix.NewLogPixGatewayDecorator(
-			pix.NewWooviPixGateway(
-				environment.PixPaymentGateway.ExpirationTimeInMinutes,
-				paymentGatewayConfigRepository,
-				http_client.NewDefaultHttpClient(environment.PixPaymentGateway.WooviApiBaseUrl),
-			),
-		),
+		pix.NewMerchantConfigGatewayDecorator(environment.PixPaymentGateway, paymentGatewayConfigRepository),
 	)
 }

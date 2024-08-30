@@ -121,14 +121,18 @@ func Test_RefundPixTransaction(t *testing.T) {
 		err = applicationFactory.TransactionRepository.CreatePixTransaction(ctx, pixTransaction)
 		require.NoError(t, err)
 
-		pixGateway.On("GetPaymentById", mock.Anything, mock.Anything, mock.Anything).Return(nil, nil).Once()
+		pixGateway.On("GetPaymentById", mock.Anything, mock.Anything).Return(nil, nil).Once()
 
 		input := Input{OrderId: anOrder.Id}
 		err = useCase.Execute(ctx, input)
 		require.NoError(t, err)
 
 		eventEmitter.AssertNotCalled(t, "Emit")
-		pixGateway.AssertCalled(t, "GetPaymentById", ctx, anOrder.MerchantId, pixTransaction.PaymentId)
+		pixGateway.AssertCalled(t, "GetPaymentById", ctx, gateway.GetPaymentInput{
+			PaymentId:      pixTransaction.PaymentId,
+			MerchantId:     anOrder.MerchantId,
+			PaymentGateway: pixTransaction.PaymentGateway,
+		})
 	})
 
 	for _, transactionStatus := range []string{"CREATED", "REFUNDED"} {
@@ -181,7 +185,7 @@ func Test_RefundPixTransaction(t *testing.T) {
 			err = applicationFactory.TransactionRepository.CreatePixTransaction(ctx, pixTransaction)
 			require.NoError(t, err)
 
-			pixGateway.On("GetPaymentById", mock.Anything, mock.Anything, mock.Anything).Return(&gateway.GetPaymentOutput{
+			pixGateway.On("GetPaymentById", mock.Anything, mock.Anything).Return(&gateway.GetPaymentOutput{
 				Id:             value_object.NewID(),
 				QrCode:         faker.Word(),
 				ExpiresAt:      time.Now(),
@@ -196,7 +200,11 @@ func Test_RefundPixTransaction(t *testing.T) {
 			require.NoError(t, err)
 
 			eventEmitter.AssertNotCalled(t, "Emit")
-			pixGateway.AssertCalled(t, "GetPaymentById", ctx, anOrder.MerchantId, pixTransaction.PaymentId)
+			pixGateway.AssertCalled(t, "GetPaymentById", ctx, gateway.GetPaymentInput{
+				PaymentId:      pixTransaction.PaymentId,
+				MerchantId:     anOrder.MerchantId,
+				PaymentGateway: pixTransaction.PaymentGateway,
+			})
 		})
 	}
 
@@ -229,7 +237,7 @@ func Test_RefundPixTransaction(t *testing.T) {
 			QrCodeLink:     faker.URL(),
 			Status:         gateway.TransactionRefunded,
 		}
-		pixGateway.On("GetPaymentById", mock.Anything, mock.Anything, mock.Anything).Return(gatewayPayment, nil).Once()
+		pixGateway.On("GetPaymentById", mock.Anything, mock.Anything).Return(gatewayPayment, nil).Once()
 		eventEmitter.On("Emit", mock.Anything, mock.Anything).Return(nil).Once()
 
 		input := Input{OrderId: anOrder.Id}
@@ -237,7 +245,11 @@ func Test_RefundPixTransaction(t *testing.T) {
 		require.NoError(t, err)
 
 		eventEmitter.AssertCalled(t, "Emit", mock.Anything, mock.Anything)
-		pixGateway.AssertCalled(t, "GetPaymentById", ctx, anOrder.MerchantId, pixTransaction.PaymentId)
+		pixGateway.AssertCalled(t, "GetPaymentById", ctx, gateway.GetPaymentInput{
+			PaymentId:      pixTransaction.PaymentId,
+			MerchantId:     anOrder.MerchantId,
+			PaymentGateway: pixTransaction.PaymentGateway,
+		})
 
 		savedTransaction, err := applicationFactory.TransactionRepository.FindByOrderId(ctx, anOrder.Id)
 		require.NoError(t, err)

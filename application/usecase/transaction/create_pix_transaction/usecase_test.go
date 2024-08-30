@@ -97,14 +97,14 @@ func Test_CreatePixTransaction(t *testing.T) {
 		err = applicationFactory.OrderRepository.Create(ctx, anOrder)
 		require.NoError(t, err)
 
-		pixGateway.On("GetPaymentById", mock.Anything, mock.Anything, mock.Anything).Return(nil, nil).Once()
+		pixGateway.On("GetPaymentById", mock.Anything, mock.Anything).Return(nil, nil).Once()
 
 		input := Input{OrderId: anOrder.Id, PaymentId: value_object.NewID()}
 		err = useCase.Execute(ctx, input)
 		require.NoError(t, err)
 
 		eventEmitter.AssertNotCalled(t, "Emit")
-		pixGateway.AssertCalled(t, "GetPaymentById", ctx, anOrder.MerchantId, input.PaymentId)
+		pixGateway.AssertCalled(t, "GetPaymentById", ctx, gateway.GetPaymentInput{PaymentId: input.PaymentId, MerchantId: anOrder.MerchantId})
 	})
 
 	t.Run("should create a pix transaction", func(t *testing.T) {
@@ -128,7 +128,7 @@ func Test_CreatePixTransaction(t *testing.T) {
 			QrCodeLink:     faker.URL(),
 			Status:         gateway.TransactionPending,
 		}
-		pixGateway.On("GetPaymentById", mock.Anything, mock.Anything, mock.Anything).Return(gatewayPayment, nil).Once()
+		pixGateway.On("GetPaymentById", mock.Anything, mock.Anything).Return(gatewayPayment, nil).Once()
 		eventEmitter.On("Emit", mock.Anything, mock.Anything).Return(nil).Once()
 
 		input := Input{OrderId: anOrder.Id, PaymentId: gatewayPayment.Id}
@@ -136,7 +136,7 @@ func Test_CreatePixTransaction(t *testing.T) {
 		require.NoError(t, err)
 
 		eventEmitter.AssertNumberOfCalls(t, "Emit", 1)
-		pixGateway.AssertCalled(t, "GetPaymentById", ctx, anOrder.MerchantId, gatewayPayment.Id)
+		pixGateway.AssertCalled(t, "GetPaymentById", ctx, gateway.GetPaymentInput{PaymentId: input.PaymentId, MerchantId: anOrder.MerchantId})
 
 		savedTransaction, err := applicationFactory.TransactionRepository.FindByOrderId(ctx, anOrder.Id)
 		require.NoError(t, err)

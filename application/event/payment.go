@@ -10,14 +10,15 @@ var (
 	PaymentCallbackReceived = "PAYMENT_CALLBACK_RECEIVED"
 )
 
-func NewPixPaymentCreated(orderId, paymentId string) *Event {
+func NewPixPaymentCreated(orderId, paymentId, paymentGateway string) *Event {
 	return &Event{
 		Id:            value_object.NewID(),
 		CorrelationId: orderId,
 		Name:          PixPaymentCreated,
 		Data: map[string]string{
-			"paymentId": paymentId,
-			"orderId":   orderId,
+			"paymentId":      paymentId,
+			"orderId":        orderId,
+			"paymentGateway": paymentGateway,
 		},
 	}
 }

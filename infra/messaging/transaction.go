@@ -17,8 +17,9 @@ func handleCreatePixTransaction(factory *factory.ApplicationFactory) event.Handl
 	useCase := create_pix_transaction.New(factory)
 	return func(ctx context.Context, message *event.MessageEvent) error {
 		input := create_pix_transaction.Input{
-			OrderId:   message.Event.Data["orderId"],
-			PaymentId: message.Event.Data["paymentId"],
+			OrderId:        message.Event.Data["orderId"],
+			PaymentId:      message.Event.Data["paymentId"],
+			PaymentGateway: message.Event.Data["paymentGateway"],
 		}
 		err := useCase.Execute(ctx, input)
 		return message.AckIfNoError(ctx, err)

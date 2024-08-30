@@ -85,12 +85,15 @@ func (builder *defaultHttpClientBuilder) Execute(ctx context.Context) (HttpRespo
 	if err != nil {
 		return nil, err
 	}
-	defer response.Body.Close()
 	return &defaultHttpResponse{Response: response, ctx: ctx}, nil
 }
 
 func (r *defaultHttpResponse) IsError() bool {
 	return r.StatusCode >= 400
+}
+
+func (r *defaultHttpResponse) Close() {
+	r.Body.Close()
 }
 
 func (r *defaultHttpResponse) ParseBody(value interface{}) error {

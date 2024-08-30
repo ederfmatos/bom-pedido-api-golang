@@ -133,7 +133,7 @@ func Test_RefundPixTransaction(t *testing.T) {
 			err = applicationFactory.TransactionRepository.CreatePixTransaction(ctx, pixTransaction)
 			require.NoError(t, err)
 
-			pixGateway.On("GetPaymentById", mock.Anything, mock.Anything, mock.Anything).Return(&gateway.GetPaymentOutput{
+			pixGateway.On("GetPaymentById", mock.Anything, mock.Anything).Return(&gateway.GetPaymentOutput{
 				Id:             value_object.NewID(),
 				QrCode:         faker.Word(),
 				ExpiresAt:      time.Now(),
@@ -149,7 +149,11 @@ func Test_RefundPixTransaction(t *testing.T) {
 			require.NoError(t, err)
 
 			eventEmitter.AssertNotCalled(t, "Emit")
-			pixGateway.AssertCalled(t, "GetPaymentById", ctx, anOrder.MerchantId, pixTransaction.PaymentId)
+			pixGateway.AssertCalled(t, "GetPaymentById", ctx, gateway.GetPaymentInput{
+				PaymentId:      pixTransaction.PaymentId,
+				MerchantId:     anOrder.MerchantId,
+				PaymentGateway: pixTransaction.PaymentGateway,
+			})
 		})
 	}
 
@@ -173,7 +177,7 @@ func Test_RefundPixTransaction(t *testing.T) {
 		err = applicationFactory.TransactionRepository.CreatePixTransaction(ctx, pixTransaction)
 		require.NoError(t, err)
 
-		pixGateway.On("GetPaymentById", mock.Anything, mock.Anything, mock.Anything).Return(nil, nil).Once()
+		pixGateway.On("GetPaymentById", mock.Anything, mock.Anything).Return(nil, nil).Once()
 
 		useCase := New(applicationFactory)
 		input := Input{OrderId: anOrder.Id}
@@ -182,7 +186,11 @@ func Test_RefundPixTransaction(t *testing.T) {
 		require.NoError(t, err)
 
 		eventEmitter.AssertNotCalled(t, "Emit")
-		pixGateway.AssertCalled(t, "GetPaymentById", ctx, anOrder.MerchantId, pixTransaction.PaymentId)
+		pixGateway.AssertCalled(t, "GetPaymentById", ctx, gateway.GetPaymentInput{
+			PaymentId:      pixTransaction.PaymentId,
+			MerchantId:     anOrder.MerchantId,
+			PaymentGateway: pixTransaction.PaymentGateway,
+		})
 	})
 
 	t.Run("should return error refund payment fails", func(t *testing.T) {
@@ -208,7 +216,7 @@ func Test_RefundPixTransaction(t *testing.T) {
 		returnedError := fmt.Errorf("any message")
 		pixGateway.On("RefundPix", mock.Anything, mock.Anything).Return(returnedError).Once()
 
-		pixGateway.On("GetPaymentById", mock.Anything, mock.Anything, mock.Anything).Return(&gateway.GetPaymentOutput{
+		pixGateway.On("GetPaymentById", mock.Anything, mock.Anything).Return(&gateway.GetPaymentOutput{
 			Id:             value_object.NewID(),
 			QrCode:         faker.Word(),
 			ExpiresAt:      time.Now(),
@@ -224,7 +232,11 @@ func Test_RefundPixTransaction(t *testing.T) {
 		require.Equal(t, err, returnedError)
 
 		eventEmitter.AssertNotCalled(t, "Emit")
-		pixGateway.AssertCalled(t, "GetPaymentById", ctx, anOrder.MerchantId, pixTransaction.PaymentId)
+		pixGateway.AssertCalled(t, "GetPaymentById", ctx, gateway.GetPaymentInput{
+			PaymentId:      pixTransaction.PaymentId,
+			MerchantId:     anOrder.MerchantId,
+			PaymentGateway: pixTransaction.PaymentGateway,
+		})
 		pixGateway.AssertCalled(t, "RefundPix", mock.Anything, mock.Anything)
 	})
 
@@ -248,7 +260,7 @@ func Test_RefundPixTransaction(t *testing.T) {
 		err = applicationFactory.TransactionRepository.CreatePixTransaction(ctx, pixTransaction)
 		require.NoError(t, err)
 
-		pixGateway.On("GetPaymentById", mock.Anything, mock.Anything, mock.Anything).Return(&gateway.GetPaymentOutput{
+		pixGateway.On("GetPaymentById", mock.Anything, mock.Anything).Return(&gateway.GetPaymentOutput{
 			Id:             value_object.NewID(),
 			QrCode:         faker.Word(),
 			ExpiresAt:      time.Now(),
@@ -267,7 +279,11 @@ func Test_RefundPixTransaction(t *testing.T) {
 		require.NoError(t, err)
 
 		eventEmitter.AssertNumberOfCalls(t, "Emit", 1)
-		pixGateway.AssertCalled(t, "GetPaymentById", ctx, anOrder.MerchantId, pixTransaction.PaymentId)
+		pixGateway.AssertCalled(t, "GetPaymentById", ctx, gateway.GetPaymentInput{
+			PaymentId:      pixTransaction.PaymentId,
+			MerchantId:     anOrder.MerchantId,
+			PaymentGateway: pixTransaction.PaymentGateway,
+		})
 		pixGateway.AssertCalled(t, "RefundPix", ctx, mock.Anything)
 		eventEmitter.AssertCalled(t, "Emit", ctx, mock.Anything)
 	})

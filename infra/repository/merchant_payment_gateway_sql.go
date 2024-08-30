@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	sqlFindMerchantPaymentGatewayConfig = "SELECT credentials FROM merchant_payment_gateway_configs WHERE merchant_id = $1 AND gateway = $2 LIMIT 1"
+	sqlFindMerchantPaymentGatewayConfigByMerchant           = "SELECT credentials, gateway FROM merchant_payment_gateway_configs WHERE merchant_id = $1 LIMIT 1"
+	sqlFindMerchantPaymentGatewayConfigByMerchantAndGateway = "SELECT credentials FROM merchant_payment_gateway_configs WHERE merchant_id = $1 AND gateway = $2 LIMIT 1"
 )
 
 type DefaultMerchantPaymentGatewayConfigRepository struct {
@@ -19,14 +20,27 @@ func NewDefaultMerchantPaymentGatewayConfigRepository(sqlConnection SqlConnectio
 }
 
 func (r *DefaultMerchantPaymentGatewayConfigRepository) FindByMerchantAndGateway(ctx context.Context, merchantId, gateway string) (*merchant.PaymentGatewayConfig, error) {
-	var accessToken string
-	found, err := r.Sql(sqlFindMerchantPaymentGatewayConfig).Values(merchantId, gateway).FindOne(ctx, &accessToken)
+	var credential string
+	found, err := r.Sql(sqlFindMerchantPaymentGatewayConfigByMerchantAndGateway).Values(merchantId, gateway).FindOne(ctx, &credential)
 	if err != nil || !found {
 		return nil, err
 	}
 	return &merchant.PaymentGatewayConfig{
-		MerchantID:  merchantId,
-		AccessToken: accessToken,
-		Gateway:     gateway,
+		MerchantID:     merchantId,
+		Credential:     credential,
+		PaymentGateway: gateway,
+	}, nil
+}
+
+func (r *DefaultMerchantPaymentGatewayConfigRepository) FindByMerchant(ctx context.Context, merchantId string) (*merchant.PaymentGatewayConfig, error) {
+	var credential, gateway string
+	found, err := r.Sql(sqlFindMerchantPaymentGatewayConfigByMerchant).Values(merchantId).FindOne(ctx, &credential, &gateway)
+	if err != nil || !found {
+		return nil, err
+	}
+	return &merchant.PaymentGatewayConfig{
+		MerchantID:     merchantId,
+		Credential:     credential,
+		PaymentGateway: gateway,
 	}, nil
 }

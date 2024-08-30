@@ -2,7 +2,6 @@ package pix
 
 import (
 	"bom-pedido-api/application/gateway"
-	"bom-pedido-api/application/repository"
 	"bom-pedido-api/domain/errors"
 	"bom-pedido-api/infra/http_client"
 	"context"
@@ -15,9 +14,8 @@ const (
 
 type (
 	wooviPixGateway struct {
-		expirationInSeconds                    int
-		merchantPaymentGatewayConfigRepository repository.MerchantPaymentGatewayConfigRepository
-		httpClient                             http_client.HttpClient
+		expirationInSeconds int
+		httpClient          http_client.HttpClient
 	}
 
 	wooviErrorResponse struct {
@@ -67,14 +65,12 @@ type (
 )
 
 func NewWooviPixGateway(
-	expirationTimeInMinutes int,
-	merchantPaymentGatewayConfigRepository repository.MerchantPaymentGatewayConfigRepository,
 	httpClient http_client.HttpClient,
+	expirationTimeInMinutes int,
 ) gateway.PixGateway {
 	return &wooviPixGateway{
-		httpClient:                             httpClient,
-		expirationInSeconds:                    expirationTimeInMinutes * 60,
-		merchantPaymentGatewayConfigRepository: merchantPaymentGatewayConfigRepository,
+		httpClient:          httpClient,
+		expirationInSeconds: expirationTimeInMinutes * 60,
 	}
 }
 
@@ -82,22 +78,7 @@ func (g *wooviPixGateway) Name() string {
 	return woovi
 }
 
-func (g *wooviPixGateway) getMerchantAccessToken(ctx context.Context, merchantId string) (*string, error) {
-	gatewayConfig, err := g.merchantPaymentGatewayConfigRepository.FindByMerchantAndGateway(ctx, merchantId, woovi)
-	if err != nil {
-		return nil, err
-	}
-	if gatewayConfig == nil {
-		return nil, errors.New("gateway config not found")
-	}
-	return &gatewayConfig.AccessToken, nil
-}
-
 func (g *wooviPixGateway) CreateQrCodePix(ctx context.Context, input gateway.CreateQrCodePixInput) (*gateway.CreateQrCodePixOutput, error) {
-	accessToken, err := g.getMerchantAccessToken(ctx, input.MerchantId)
-	if err != nil {
-		return nil, err
-	}
 	paymentInput := wooviCreateChargeInput{
 		CorrelationID: input.InternalOrderId,
 		Value:         input.Amount * 100,
@@ -115,11 +96,12 @@ func (g *wooviPixGateway) CreateQrCodePix(ctx context.Context, input gateway.Cre
 		Body(paymentInput).
 		Header("accept", "application/json").
 		Header("content-type", "application/json").
-		Header("Authorization", *accessToken).
+		Header("Authorization", input.Credential).
 		Execute(ctx)
 	if err != nil {
 		return nil, err
 	}
+	defer response.Close()
 	if response.IsError() {
 		var wooviError wooviErrorResponse
 		if err = response.ParseBody(&wooviError); err != nil {
@@ -140,18 +122,15 @@ func (g *wooviPixGateway) CreateQrCodePix(ctx context.Context, input gateway.Cre
 	}, nil
 }
 
-func (g *wooviPixGateway) GetPaymentById(ctx context.Context, merchantId, paymentId string) (*gateway.GetPaymentOutput, error) {
-	accessToken, err := g.getMerchantAccessToken(ctx, merchantId)
-	if err != nil {
-		return nil, err
-	}
-	response, err := g.httpClient.Get("/v1/charge/", paymentId).
+func (g *wooviPixGateway) GetPaymentById(ctx context.Context, input gateway.GetPaymentInput) (*gateway.GetPaymentOutput, error) {
+	response, err := g.httpClient.Get("/v1/charge/", input.PaymentId).
 		Header("accept", "application/json").
-		Header("Authorization", *accessToken).
+		Header("Authorization", input.Credential).
 		Execute(ctx)
 	if err != nil {
 		return nil, err
 	}
+	defer response.Close()
 	if response.IsError() {
 		var wooviError wooviErrorResponse
 		if err = response.ParseBody(&wooviError); err != nil {
@@ -188,10 +167,6 @@ func (g *wooviPixGateway) GetPaymentById(ctx context.Context, merchantId, paymen
 }
 
 func (g *wooviPixGateway) RefundPix(ctx context.Context, input gateway.RefundPixInput) error {
-	accessToken, err := g.getMerchantAccessToken(ctx, input.MerchantId)
-	if err != nil {
-		return err
-	}
 	paymentInput := wooviRefundChargeInput{
 		CorrelationID: input.PaymentId,
 		Value:         input.Amount * 100,
@@ -199,12 +174,13 @@ func (g *wooviPixGateway) RefundPix(ctx context.Context, input gateway.RefundPix
 	response, err := g.httpClient.Post("/v1/charge/", input.PaymentId, "/refund").
 		Header("accept", "application/json").
 		Header("content-type", "application/json").
-		Header("Authorization", *accessToken).
+		Header("Authorization", input.Credential).
 		Body(paymentInput).
 		Execute(ctx)
 	if err != nil {
 		return err
 	}
+	defer response.Close()
 	if response.IsError() {
 		var wooviError wooviErrorResponse
 		if err = response.ParseBody(&wooviError); err != nil {

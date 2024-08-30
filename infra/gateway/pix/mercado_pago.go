@@ -2,8 +2,6 @@ package pix
 
 import (
 	"bom-pedido-api/application/gateway"
-	"bom-pedido-api/application/repository"
-	"bom-pedido-api/domain/errors"
 	"context"
 	"fmt"
 	"github.com/mercadopago/sdk-go/pkg/config"
@@ -18,21 +16,20 @@ const (
 	applicationName = "bom-pedido"
 )
 
+var platformId = config.WithPlatformID(applicationName)
+
 type MercadoPagoPixGateway struct {
-	notificationUrl                        string
-	expirationTimeInMinutes                int
-	merchantPaymentGatewayConfigRepository repository.MerchantPaymentGatewayConfigRepository
+	notificationUrl         string
+	expirationTimeInMinutes int
 }
 
 func NewMercadoPagoPixGateway(
 	notificationUrl string,
 	expirationTimeInMinutes int,
-	merchantPaymentGatewayConfigRepository repository.MerchantPaymentGatewayConfigRepository,
 ) gateway.PixGateway {
 	return &MercadoPagoPixGateway{
-		notificationUrl:                        notificationUrl,
-		expirationTimeInMinutes:                expirationTimeInMinutes,
-		merchantPaymentGatewayConfigRepository: merchantPaymentGatewayConfigRepository,
+		notificationUrl:         notificationUrl,
+		expirationTimeInMinutes: expirationTimeInMinutes,
 	}
 }
 
@@ -40,37 +37,8 @@ func (g *MercadoPagoPixGateway) Name() string {
 	return mercadoPago
 }
 
-func (g *MercadoPagoPixGateway) getMerchantConfig(ctx context.Context, merchantId string) (*string, error) {
-	gatewayConfig, err := g.merchantPaymentGatewayConfigRepository.FindByMerchantAndGateway(ctx, merchantId, mercadoPago)
-	if err != nil {
-		return nil, err
-	}
-	if gatewayConfig == nil {
-		return nil, errors.New("gateway config not found")
-	}
-	return &gatewayConfig.AccessToken, nil
-}
-
-func (g *MercadoPagoPixGateway) getConfig(ctx context.Context, merchantId string) (*config.Config, error) {
-	gatewayConfig, err := g.merchantPaymentGatewayConfigRepository.FindByMerchantAndGateway(ctx, merchantId, mercadoPago)
-	if err != nil {
-		return nil, err
-	}
-	if gatewayConfig == nil {
-		return nil, gateway.MerchantGatewayConfigNotFoundError
-	}
-	if err != nil {
-		return nil, err
-	}
-	cfg, err := config.New(gatewayConfig.AccessToken, config.WithPlatformID(applicationName))
-	if err != nil {
-		return nil, err
-	}
-	return cfg, nil
-}
-
 func (g *MercadoPagoPixGateway) CreateQrCodePix(ctx context.Context, input gateway.CreateQrCodePixInput) (*gateway.CreateQrCodePixOutput, error) {
-	cfg, err := g.getConfig(ctx, input.MerchantId)
+	cfg, err := config.New(input.Credential, platformId)
 	if err != nil {
 		return nil, err
 	}
@@ -103,13 +71,13 @@ func (g *MercadoPagoPixGateway) CreateQrCodePix(ctx context.Context, input gatew
 	}, nil
 }
 
-func (g *MercadoPagoPixGateway) GetPaymentById(ctx context.Context, merchantId, id string) (*gateway.GetPaymentOutput, error) {
-	cfg, err := g.getConfig(ctx, merchantId)
+func (g *MercadoPagoPixGateway) GetPaymentById(ctx context.Context, input gateway.GetPaymentInput) (*gateway.GetPaymentOutput, error) {
+	cfg, err := config.New(input.Credential, platformId)
 	if err != nil {
 		return nil, err
 	}
 	client := payment.NewClient(cfg)
-	paymentId, err := strconv.Atoi(id)
+	paymentId, err := strconv.Atoi(input.PaymentId)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +117,7 @@ func (g *MercadoPagoPixGateway) RefundPix(ctx context.Context, input gateway.Ref
 	if err != nil {
 		return err
 	}
-	cfg, err := g.getConfig(ctx, input.MerchantId)
+	cfg, err := config.New(input.Credential, platformId)
 	if err != nil {
 		return err
 	}

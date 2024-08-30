@@ -48,14 +48,19 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) error {
 	if err != nil || pixTransaction == nil {
 		return err
 	}
-	payment, err := uc.pixGateway.GetPaymentById(ctx, anOrder.MerchantId, pixTransaction.PaymentId)
+	payment, err := uc.pixGateway.GetPaymentById(ctx, gateway.GetPaymentInput{
+		PaymentId:      pixTransaction.PaymentId,
+		MerchantId:     anOrder.MerchantId,
+		PaymentGateway: pixTransaction.PaymentGateway,
+	})
 	if err != nil || payment == nil || payment.Status != gateway.TransactionPaid {
 		return err
 	}
 	refundInput := gateway.RefundPixInput{
-		PaymentId:  pixTransaction.PaymentId,
-		MerchantId: anOrder.MerchantId,
-		Amount:     anOrder.Amount,
+		PaymentId:      pixTransaction.PaymentId,
+		MerchantId:     anOrder.MerchantId,
+		Amount:         anOrder.Amount,
+		PaymentGateway: pixTransaction.PaymentGateway,
 	}
 	if err = uc.pixGateway.RefundPix(ctx, refundInput); err != nil {
 		return err

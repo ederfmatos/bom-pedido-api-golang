@@ -37,11 +37,11 @@ func (g *LogPixGatewayDecorator) CreateQrCodePix(ctx context.Context, input gate
 	return output, nil
 }
 
-func (g *LogPixGatewayDecorator) GetPaymentById(ctx context.Context, merchantId, id string) (*gateway.GetPaymentOutput, error) {
+func (g *LogPixGatewayDecorator) GetPaymentById(ctx context.Context, input gateway.GetPaymentInput) (*gateway.GetPaymentOutput, error) {
 	g.logger.Info("Iniciando busca de pagamento PIX")
 	ctx, span := telemetry.StartSpan(ctx, "PixGateway.GetPaymentById")
 	defer span.End()
-	output, err := g.delegate.GetPaymentById(ctx, merchantId, id)
+	output, err := g.delegate.GetPaymentById(ctx, input)
 	if err != nil {
 		g.logger.Error("Ocorreu um erro na busca de pagamento Pix", "error", err)
 		return nil, err

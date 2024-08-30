@@ -68,5 +68,5 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) error {
 	if err != nil {
 		return err
 	}
-	return uc.eventEmitter.Emit(ctx, event.NewPixPaymentCreated(anOrder.Id, createPixOutput.Id))
+	return uc.eventEmitter.Emit(ctx, event.NewPixPaymentCreated(anOrder.Id, createPixOutput.Id, createPixOutput.PaymentGateway))
 }
