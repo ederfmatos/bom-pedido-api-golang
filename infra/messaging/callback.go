@@ -14,9 +14,6 @@ func HandleTransactionCallback(factory *factory.ApplicationFactory) {
 func handlePayPixTransaction(factory *factory.ApplicationFactory) func(context.Context, *event.MessageEvent) error {
 	useCase := pay_pix_transaction.New(factory)
 	return func(ctx context.Context, message *event.MessageEvent) error {
-		if message.Event.Data["eventName"] != "payment.updated" {
-			return message.Ack(ctx)
-		}
 		input := pay_pix_transaction.Input{
 			OrderId: message.Event.Data["orderId"],
 		}
