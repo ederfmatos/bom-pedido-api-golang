@@ -18,6 +18,13 @@ type (
 		httpClient          http_client.HttpClient
 	}
 
+	wooviRefundOutput struct {
+		Refunds []struct {
+			Value  float64 `json:"value"`
+			Status string  `json:"status"`
+		} `json:"refunds"`
+	}
+
 	wooviErrorResponse struct {
 		Error string `json:"error"`
 	}
@@ -44,6 +51,7 @@ type (
 
 	wooviGetChargeOutput struct {
 		Charge *struct {
+			Value          float64   `json:"value"`
 			CorrelationID  string    `json:"correlationID"`
 			ExpiresDate    time.Time `json:"expiresDate"`
 			BrCode         string    `json:"brCode"`
@@ -152,6 +160,13 @@ func (g *wooviPixGateway) GetPaymentById(ctx context.Context, input gateway.GetP
 		break
 	case "COMPLETED":
 		status = gateway.TransactionPaid
+		refundValue, err := g.getRefundValueFromCharge(ctx, input.PaymentId, input.Credential)
+		if err != nil {
+			return nil, err
+		}
+		if refundValue == output.Charge.Value {
+			status = gateway.TransactionRefunded
+		}
 		break
 	default:
 		return nil, nil
@@ -164,6 +179,35 @@ func (g *wooviPixGateway) GetPaymentById(ctx context.Context, input gateway.GetP
 		QrCodeLink:     output.Charge.PaymentLinkUrl,
 		Status:         status,
 	}, nil
+}
+
+func (g *wooviPixGateway) getRefundValueFromCharge(ctx context.Context, paymentId, credential string) (float64, error) {
+	response, err := g.httpClient.Get("/v1/charge/", paymentId, "/refund").
+		Header("accept", "application/json").
+		Header("Authorization", credential).
+		Execute(ctx)
+	if err != nil {
+		return 0, err
+	}
+	defer response.Close()
+	if response.IsError() {
+		var wooviError wooviErrorResponse
+		if err = response.ParseBody(&wooviError); err != nil {
+			return 0, err
+		}
+		return 0, errors.New(wooviError.Error)
+	}
+	var output wooviRefundOutput
+	if err = response.ParseBody(&output); err != nil {
+		return 0, err
+	}
+	value := 0.0
+	for _, refund := range output.Refunds {
+		if refund.Status == "CONFIRMED" {
+			value += refund.Value
+		}
+	}
+	return value, nil
 }
 
 func (g *wooviPixGateway) RefundPix(ctx context.Context, input gateway.RefundPixInput) error {
