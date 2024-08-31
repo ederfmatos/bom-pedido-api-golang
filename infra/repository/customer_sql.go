@@ -39,11 +39,8 @@ func (repository *DefaultCustomerRepository) FindById(ctx context.Context, id st
 	found, err := repository.Sql(sqlFindCustomerById).
 		Values(id).
 		FindOne(ctx, &id, &name, &email, &phoneNumber, &status, &tenantId)
-	if err != nil {
+	if err != nil || !found {
 		return nil, err
-	}
-	if !found {
-		return nil, nil
 	}
 	return customer.Restore(id, name, email, phoneNumber, status, tenantId)
 }
@@ -54,11 +51,8 @@ func (repository *DefaultCustomerRepository) FindByEmail(ctx context.Context, em
 	found, err := repository.Sql(sqlFindCustomerByEmail).
 		Values(email, tenantId).
 		FindOne(ctx, &id, &name, &email, &phoneNumber, &status)
-	if err != nil {
+	if err != nil || !found {
 		return nil, err
-	}
-	if !found {
-		return nil, nil
 	}
 	return customer.Restore(id, name, email, phoneNumber, status, tenantId)
 }

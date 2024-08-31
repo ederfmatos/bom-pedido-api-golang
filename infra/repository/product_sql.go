@@ -40,11 +40,8 @@ func (repository *DefaultProductRepository) FindById(ctx context.Context, id str
 	found, err := repository.Sql(sqlFindProductById).
 		Values(id).
 		FindOne(ctx, &id, &name, &description, &price, &status, &tenantId)
-	if err != nil {
+	if err != nil || !found {
 		return nil, err
-	}
-	if !found {
-		return nil, nil
 	}
 	return product.Restore(id, name, description, price, status, tenantId)
 }

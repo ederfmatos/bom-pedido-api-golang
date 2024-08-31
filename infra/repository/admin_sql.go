@@ -30,11 +30,8 @@ func (repository *DefaultAdminRepository) FindByEmail(ctx context.Context, email
 	found, err := repository.Sql(findAdminByEmailSql).
 		Values(email).
 		FindOne(ctx, &id, &name, &email, &merchantId)
-	if err != nil {
+	if err != nil || !found {
 		return nil, err
-	}
-	if !found {
-		return nil, nil
 	}
 	return admin.Restore(id, name, email, merchantId)
 }

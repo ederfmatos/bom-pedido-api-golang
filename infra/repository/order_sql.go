@@ -95,11 +95,8 @@ func (repository *DefaultOrderRepository) FindById(ctx context.Context, id strin
 	var entity OrderEntity
 	found, err := repository.Sql(sqlFindOrderById).Values(id).
 		FindOne(ctx, &entity.Code, &entity.CustomerId, &entity.PaymentMethod, &entity.PaymentMode, &entity.DeliveryMode, &entity.CreditCardToken, &entity.Payback, &entity.Amount, &entity.DeliveryTime, &entity.Status, &entity.CreatedAt, &entity.MerchantId)
-	if err != nil {
+	if err != nil || !found {
 		return nil, err
-	}
-	if !found {
-		return nil, nil
 	}
 	items, err := repository.getOrderItems(ctx, id)
 	if err != nil {

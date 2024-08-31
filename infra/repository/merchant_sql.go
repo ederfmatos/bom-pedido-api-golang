@@ -38,11 +38,8 @@ func (repository *DefaultMerchantRepository) FindByTenantId(ctx context.Context,
 	found, err := repository.Sql(sqlFindMerchantByTenantId).
 		Values(tenantId).
 		FindOne(ctx, &id, &name, &email, &phoneNumber, &domain, &status)
-	if err != nil {
+	if err != nil || !found {
 		return nil, err
-	}
-	if !found {
-		return nil, nil
 	}
 	return merchant.Restore(id, name, email, phoneNumber, status, domain, tenantId)
 }
