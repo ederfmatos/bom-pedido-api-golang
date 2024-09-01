@@ -2,7 +2,9 @@ package event
 
 import (
 	"bom-pedido-api/domain/entity/order"
+	"bom-pedido-api/domain/entity/order/status"
 	"bom-pedido-api/domain/value_object"
+	"time"
 )
 
 var (
@@ -18,11 +20,11 @@ var (
 	OrderCancelled        = "ORDER_CANCELLED"
 )
 
-func newOrderEvent(order *order.Order, name string) *Event {
+func NewOrderCreatedEvent(order *order.Order) *Event {
 	return &Event{
 		Id:            value_object.NewID(),
 		CorrelationId: order.Id,
-		Name:          name,
+		Name:          OrderCreated,
 		Data: map[string]string{
 			"orderId":       order.Id,
 			"customerId":    order.CustomerID,
@@ -31,42 +33,148 @@ func newOrderEvent(order *order.Order, name string) *Event {
 	}
 }
 
-func NewOrderCreatedEvent(order *order.Order) *Event {
-	return newOrderEvent(order, OrderCreated)
+func NewOrderApprovedEvent(order *order.Order, by string, at time.Time) *Event {
+	return &Event{
+		Id:            value_object.NewID(),
+		CorrelationId: order.Id,
+		Name:          OrderApproved,
+		Data: map[string]string{
+			"orderId":       order.Id,
+			"customerId":    order.CustomerID,
+			"paymentMethod": order.PaymentMethod.String(),
+			"by":            by,
+			"at":            at.Format(time.RFC3339),
+			"status":        status.ApprovedStatus.Name(),
+		},
+	}
 }
 
-func NewOrderApprovedEvent(order *order.Order) *Event {
-	return newOrderEvent(order, OrderApproved)
+func NewOrderInProgressEvent(order *order.Order, by string, at time.Time) *Event {
+	return &Event{
+		Id:            value_object.NewID(),
+		CorrelationId: order.Id,
+		Name:          OrderInProgress,
+		Data: map[string]string{
+			"orderId":       order.Id,
+			"customerId":    order.CustomerID,
+			"paymentMethod": order.PaymentMethod.String(),
+			"by":            by,
+			"at":            at.Format(time.RFC3339),
+			"status":        status.InProgressStatus.Name(),
+		},
+	}
 }
 
-func NewOrderInProgressEvent(order *order.Order) *Event {
-	return newOrderEvent(order, OrderInProgress)
+func NewOrderDeliveringEvent(order *order.Order, by string, at time.Time) *Event {
+	return &Event{
+		Id:            value_object.NewID(),
+		CorrelationId: order.Id,
+		Name:          OrderDelivering,
+		Data: map[string]string{
+			"orderId":       order.Id,
+			"customerId":    order.CustomerID,
+			"paymentMethod": order.PaymentMethod.String(),
+			"by":            by,
+			"at":            at.Format(time.RFC3339),
+			"status":        status.DeliveringStatus.Name(),
+		},
+	}
 }
 
-func NewOrderDeliveringEvent(order *order.Order) *Event {
-	return newOrderEvent(order, OrderDelivering)
+func NewOrderAwaitingWithdrawEvent(order *order.Order, by string, at time.Time) *Event {
+	return &Event{
+		Id:            value_object.NewID(),
+		CorrelationId: order.Id,
+		Name:          OrderAwaitingWithdraw,
+		Data: map[string]string{
+			"orderId":       order.Id,
+			"customerId":    order.CustomerID,
+			"paymentMethod": order.PaymentMethod.String(),
+			"by":            by,
+			"at":            at.Format(time.RFC3339),
+			"status":        status.AwaitingWithdrawStatus.Name(),
+		},
+	}
 }
 
-func NewOrderAwaitingWithdrawEvent(order *order.Order) *Event {
-	return newOrderEvent(order, OrderAwaitingWithdraw)
+func NewOrderAwaitingDeliveryEvent(order *order.Order, by string, at time.Time) *Event {
+	return &Event{
+		Id:            value_object.NewID(),
+		CorrelationId: order.Id,
+		Name:          OrderAwaitingDelivery,
+		Data: map[string]string{
+			"orderId":       order.Id,
+			"customerId":    order.CustomerID,
+			"paymentMethod": order.PaymentMethod.String(),
+			"by":            by,
+			"at":            at.Format(time.RFC3339),
+			"status":        status.AwaitingDeliveryStatus.Name(),
+		},
+	}
 }
 
-func NewOrderAwaitingDeliveryEvent(order *order.Order) *Event {
-	return newOrderEvent(order, OrderAwaitingDelivery)
+func NewOrderRejectedEvent(order *order.Order, by string, at time.Time, reason string) *Event {
+	return &Event{
+		Id:            value_object.NewID(),
+		CorrelationId: order.Id,
+		Name:          OrderRejected,
+		Data: map[string]string{
+			"orderId":       order.Id,
+			"customerId":    order.CustomerID,
+			"paymentMethod": order.PaymentMethod.String(),
+			"by":            by,
+			"reason":        reason,
+			"at":            at.Format(time.RFC3339),
+			"status":        status.RejectedStatus.Name(),
+		},
+	}
 }
 
-func NewOrderRejectedEvent(order *order.Order) *Event {
-	return newOrderEvent(order, OrderRejected)
+func NewOrderCancelledEvent(order *order.Order, by string, at time.Time, reason string) *Event {
+	return &Event{
+		Id:            value_object.NewID(),
+		CorrelationId: order.Id,
+		Name:          OrderCancelled,
+		Data: map[string]string{
+			"orderId":       order.Id,
+			"customerId":    order.CustomerID,
+			"paymentMethod": order.PaymentMethod.String(),
+			"by":            by,
+			"reason":        reason,
+			"at":            at.Format(time.RFC3339),
+			"status":        status.CancelledStatus.Name(),
+		},
+	}
 }
 
-func NewOrderCancelledEvent(order *order.Order) *Event {
-	return newOrderEvent(order, OrderCancelled)
+func NewOrderFinishedEvent(order *order.Order, by string, at time.Time) *Event {
+	return &Event{
+		Id:            value_object.NewID(),
+		CorrelationId: order.Id,
+		Name:          OrderFinished,
+		Data: map[string]string{
+			"orderId":       order.Id,
+			"customerId":    order.CustomerID,
+			"paymentMethod": order.PaymentMethod.String(),
+			"by":            by,
+			"at":            at.Format(time.RFC3339),
+			"status":        status.FinishedStatus.Name(),
+		},
+	}
 }
 
-func NewOrderFinishedEvent(order *order.Order) *Event {
-	return newOrderEvent(order, OrderFinished)
-}
-
-func NewOrderAwaitingApprovalEvent(order *order.Order) *Event {
-	return newOrderEvent(order, OrderAwaitingApproval)
+func NewOrderAwaitingApprovalEvent(order *order.Order, at time.Time) *Event {
+	return &Event{
+		Id:            value_object.NewID(),
+		CorrelationId: order.Id,
+		Name:          OrderAwaitingApproval,
+		Data: map[string]string{
+			"orderId":       order.Id,
+			"customerId":    order.CustomerID,
+			"paymentMethod": order.PaymentMethod.String(),
+			"by":            order.CustomerID,
+			"at":            at.Format(time.RFC3339),
+			"status":        status.AwaitingApprovalStatus.Name(),
+		},
+	}
 }

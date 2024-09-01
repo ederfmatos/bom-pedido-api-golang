@@ -35,13 +35,12 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) error {
 	if order == nil {
 		return errors.OrderNotFoundError
 	}
-	err = order.MarkAsAwaitingWithdraw(time.Now(), input.By)
-	if err != nil {
+	if err = order.MarkAsAwaitingWithdraw(); err != nil {
 		return err
 	}
 	err = useCase.orderRepository.Update(ctx, order)
 	if err != nil {
 		return err
 	}
-	return useCase.eventEmitter.Emit(ctx, event.NewOrderAwaitingWithdrawEvent(order))
+	return useCase.eventEmitter.Emit(ctx, event.NewOrderAwaitingWithdrawEvent(order, input.By, time.Now()))
 }

@@ -1,9 +1,5 @@
 package status
 
-import (
-	"time"
-)
-
 type Rejected struct {
 }
 
@@ -15,34 +11,34 @@ func (status *Rejected) Name() string {
 	return "Rejected"
 }
 
-func (status *Rejected) Approve(time.Time, string) (*History, error) {
-	return nil, OperationNotAllowedError
+func (status *Rejected) Approve() error {
+	return OperationNotAllowedError
 }
 
-func (status *Rejected) Reject(time.Time, string, string) (*History, error) {
-	return nil, OperationNotAllowedError
+func (status *Rejected) Reject() error {
+	return OperationNotAllowedError
 }
 
-func (status *Rejected) Cancel(time.Time, string, string) (*History, error) {
-	return nil, OperationNotAllowedError
+func (status *Rejected) Cancel() error {
+	return OperationNotAllowedError
 }
 
-func (status *Rejected) MarkAsInProgress(time.Time, string) (*History, error) {
-	return nil, OperationNotAllowedError
+func (status *Rejected) MarkAsInProgress() error {
+	return OperationNotAllowedError
 }
 
-func (status *Rejected) MarkAsInDelivering(time.Time, string) (*History, error) {
-	return nil, OperationNotAllowedError
+func (status *Rejected) MarkAsInDelivering() error {
+	return OperationNotAllowedError
 }
 
-func (status *Rejected) MarkAsInAwaitingWithdraw(time.Time, string) (*History, error) {
-	return nil, OperationNotAllowedError
+func (status *Rejected) MarkAsInAwaitingWithdraw() error {
+	return OperationNotAllowedError
 }
 
-func (status *Rejected) MarkAsInAwaitingDelivery(time.Time, string) (*History, error) {
-	return nil, OperationNotAllowedError
+func (status *Rejected) MarkAsInAwaitingDelivery() error {
+	return OperationNotAllowedError
 }
 
-func (status *Rejected) Finish(time.Time, string) (*History, error) {
-	return nil, OperationNotAllowedError
+func (status *Rejected) Finish() error {
+	return OperationNotAllowedError
 }

@@ -36,13 +36,12 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) error {
 	if order == nil {
 		return errors.OrderNotFoundError
 	}
-	err = order.Cancel(time.Now(), input.CancelledBy, input.Reason)
-	if err != nil {
+	if err = order.Cancel(); err != nil {
 		return err
 	}
 	err = useCase.orderRepository.Update(ctx, order)
 	if err != nil {
 		return err
 	}
-	return useCase.eventEmitter.Emit(ctx, event.NewOrderCancelledEvent(order))
+	return useCase.eventEmitter.Emit(ctx, event.NewOrderCancelledEvent(order, input.CancelledBy, time.Now(), input.Reason))
 }

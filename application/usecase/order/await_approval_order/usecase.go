@@ -36,11 +36,11 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) error {
 	if err != nil || aTransaction == nil || !aTransaction.IsPaid() {
 		return err
 	}
-	if err = order.AwaitApproval(time.Now()); err != nil {
+	if err = order.AwaitApproval(); err != nil {
 		return err
 	}
 	if err = useCase.orderRepository.Update(ctx, order); err != nil {
 		return err
 	}
-	return useCase.eventEmitter.Emit(ctx, event.NewOrderAwaitingApprovalEvent(order))
+	return useCase.eventEmitter.Emit(ctx, event.NewOrderAwaitingApprovalEvent(order, time.Now()))
 }

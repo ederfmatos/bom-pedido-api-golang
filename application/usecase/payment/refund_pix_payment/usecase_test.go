@@ -74,7 +74,7 @@ func Test_RefundPixTransaction(t *testing.T) {
 			continue
 		}
 		t.Run(fmt.Sprintf("should return nil order is %s", theStatus.Name()), func(t *testing.T) {
-			anOrder, err := order.Restore(value_object.NewID(), customerId, enums.Pix, enums.InApp, enums.Delivery, "", theStatus.Name(), time.Now(), 0, 0, 1, time.Now(), []order.Item{}, make([]status.History, 0), faker.WORD)
+			anOrder, err := order.Restore(value_object.NewID(), customerId, enums.Pix, enums.InApp, enums.Delivery, "", theStatus.Name(), time.Now(), 0, 0, 1, time.Now(), []order.Item{}, faker.WORD)
 			require.NoError(t, err)
 
 			useCase := New(applicationFactory)
@@ -97,7 +97,7 @@ func Test_RefundPixTransaction(t *testing.T) {
 		anOrder, err := order.New(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 10, time.Now(), aMerchant.Id)
 		require.NoError(t, err)
 
-		err = anOrder.AwaitApproval(time.Now())
+		err = anOrder.AwaitApproval()
 		require.NoError(t, err)
 
 		err = applicationFactory.OrderRepository.Create(ctx, anOrder)
@@ -123,7 +123,7 @@ func Test_RefundPixTransaction(t *testing.T) {
 			anOrder, err := order.New(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 10, time.Now(), aMerchant.Id)
 			require.NoError(t, err)
 
-			err = anOrder.AwaitApproval(time.Now())
+			err = anOrder.AwaitApproval()
 			require.NoError(t, err)
 
 			err = applicationFactory.OrderRepository.Create(ctx, anOrder)
@@ -167,7 +167,7 @@ func Test_RefundPixTransaction(t *testing.T) {
 		anOrder, err := order.New(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 10, time.Now(), aMerchant.Id)
 		require.NoError(t, err)
 
-		err = anOrder.AwaitApproval(time.Now())
+		err = anOrder.AwaitApproval()
 		require.NoError(t, err)
 
 		err = applicationFactory.OrderRepository.Create(ctx, anOrder)
@@ -203,7 +203,7 @@ func Test_RefundPixTransaction(t *testing.T) {
 		anOrder, err := order.New(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 10, time.Now(), aMerchant.Id)
 		require.NoError(t, err)
 
-		err = anOrder.AwaitApproval(time.Now())
+		err = anOrder.AwaitApproval()
 		require.NoError(t, err)
 
 		err = applicationFactory.OrderRepository.Create(ctx, anOrder)
@@ -250,7 +250,7 @@ func Test_RefundPixTransaction(t *testing.T) {
 		anOrder, err := order.New(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 10, time.Now(), aMerchant.Id)
 		require.NoError(t, err)
 
-		err = anOrder.AwaitApproval(time.Now())
+		err = anOrder.AwaitApproval()
 		require.NoError(t, err)
 
 		err = applicationFactory.OrderRepository.Create(ctx, anOrder)

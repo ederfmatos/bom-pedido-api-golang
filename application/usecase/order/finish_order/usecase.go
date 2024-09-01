@@ -35,13 +35,12 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) error {
 	if order == nil {
 		return errors.OrderNotFoundError
 	}
-	err = order.Finish(time.Now(), input.FinishedBy)
-	if err != nil {
+	if err = order.Finish(); err != nil {
 		return err
 	}
 	err = useCase.orderRepository.Update(ctx, order)
 	if err != nil {
 		return err
 	}
-	return useCase.eventEmitter.Emit(ctx, event.NewOrderFinishedEvent(order))
+	return useCase.eventEmitter.Emit(ctx, event.NewOrderFinishedEvent(order, input.FinishedBy, time.Now()))
 }

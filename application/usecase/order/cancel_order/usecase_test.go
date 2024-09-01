@@ -33,8 +33,9 @@ func Test_CancelOrder(t *testing.T) {
 		ctx := context.Background()
 		customerId := value_object.NewID()
 		order, err := order2.New(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, 0, time.Now(), faker.WORD)
-		err = order.Approve(time.Now(), "")
+		err = order.Approve()
 		require.NoError(t, err)
+
 		err = applicationFactory.OrderRepository.Create(ctx, order)
 		require.NoError(t, err)
 		input := Input{
@@ -62,7 +63,7 @@ func Test_CancelOrder(t *testing.T) {
 				ctx := context.Background()
 				orderId := value_object.NewID()
 				customerId := value_object.NewID()
-				order, err := order2.Restore(orderId, customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", currentStatus, time.Now(), 0, 0, 1, time.Now(), []order2.Item{}, make([]status.History, 0), faker.WORD)
+				order, err := order2.Restore(orderId, customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", currentStatus, time.Now(), 0, 0, 1, time.Now(), []order2.Item{}, faker.WORD)
 				err = applicationFactory.OrderRepository.Create(ctx, order)
 				require.NoError(t, err)
 				input := Input{

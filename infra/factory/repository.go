@@ -15,5 +15,6 @@ func repositoryFactory(connection repository.SqlConnection, mongoDatabase *mongo
 		repository.NewDefaultAdminRepository(connection),
 		repository.NewDefaultMerchantRepository(connection),
 		repository.NewDefaultTransactionRepository(connection),
+		repository.NewDefaultOrderStatusHistoryRepository(connection),
 	)
 }

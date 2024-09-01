@@ -3,7 +3,6 @@ package repository
 import (
 	"bom-pedido-api/application/repository"
 	"bom-pedido-api/domain/entity/order"
-	"bom-pedido-api/domain/entity/order/status"
 	"context"
 	"fmt"
 	"strings"
@@ -14,10 +13,8 @@ const (
 	sqlCreateOrder          = "INSERT INTO orders (id, customer_id, payment_method, payment_mode, delivery_mode, credit_card_token, payback, amount, delivery_time, status, created_at, merchant_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)"
 	sqlUpdateOrder          = "UPDATE orders SET status = $1 WHERE id = $2"
 	sqlInsertOrderItem      = "INSERT INTO order_items (id, order_id, product_id, quantity, observation, price, status) VALUES "
-	sqlInsertOrderHistory   = "INSERT INTO order_history (order_id, changed_by, changed_at, status, data) VALUES ($1, $2, $3, $4, $5)"
 	sqlFindOrderById        = "SELECT code, customer_id, payment_method, payment_mode, delivery_mode, credit_card_token, payback, amount, delivery_time, status, created_at, merchant_id FROM orders WHERE id = $1 LIMIT 1"
 	sqlListItemsFromOrderId = "SELECT id, product_id, quantity, observation, price, status FROM order_items WHERE order_id = $1"
-	sqlOrderHistory         = "SELECT changed_by, changed_at, status, data FROM order_history WHERE order_id = $1"
 	orderItemsFieldSize     = 7
 )
 
@@ -102,27 +99,7 @@ func (repository *DefaultOrderRepository) FindById(ctx context.Context, id strin
 	if err != nil {
 		return nil, err
 	}
-	history, err := repository.getOrderHistory(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	return order.Restore(
-		id,
-		entity.CustomerId,
-		entity.PaymentMethod,
-		entity.PaymentMode,
-		entity.DeliveryMode,
-		entity.CreditCardToken,
-		entity.Status,
-		entity.CreatedAt,
-		entity.Payback,
-		entity.Amount,
-		entity.Code,
-		entity.DeliveryTime,
-		items,
-		history,
-		entity.MerchantId,
-	)
+	return order.Restore(id, entity.CustomerId, entity.PaymentMethod, entity.PaymentMode, entity.DeliveryMode, entity.CreditCardToken, entity.Status, entity.CreatedAt, entity.Payback, entity.Amount, entity.Code, entity.DeliveryTime, items, entity.MerchantId)
 }
 
 func (repository *DefaultOrderRepository) getOrderItems(ctx context.Context, id string) ([]order.Item, error) {
@@ -139,35 +116,10 @@ func (repository *DefaultOrderRepository) getOrderItems(ctx context.Context, id 
 	return items, err
 }
 
-func (repository *DefaultOrderRepository) getOrderHistory(ctx context.Context, id string) ([]status.History, error) {
-	history := make([]status.History, 0)
-	err := repository.Sql(sqlOrderHistory).Values(id).List(ctx, func(getValues func(dest ...any) error) error {
-		var item status.History
-		err := getValues(&item.ChangedBy, &item.Time, &item.Status, &item.Data)
-		if err != nil {
-			return err
-		}
-		item.Time = parseTime(item.Time)
-		history = append(history, item)
-		return nil
-	})
-	return history, err
-}
-
 func (repository *DefaultOrderRepository) Update(ctx context.Context, order *order.Order) error {
-	return repository.InTransaction(ctx, func(transaction SqlTransaction, ctx context.Context) error {
-		err := transaction.Sql(sqlUpdateOrder).
-			Values(order.GetStatus(), order.Id).
-			Update(ctx)
-		if err != nil {
-			return err
-		}
-		history := &order.History[len(order.History)-1]
-		history.Time = parseTime(history.Time)
-		return transaction.Sql(sqlInsertOrderHistory).
-			Values(order.Id, history.ChangedBy, history.Time, history.Status, history.Data).
-			Update(ctx)
-	})
+	return repository.Sql(sqlUpdateOrder).
+		Values(order.GetStatus(), order.Id).
+		Update(ctx)
 }
 
 func parseTime(value time.Time) time.Time {

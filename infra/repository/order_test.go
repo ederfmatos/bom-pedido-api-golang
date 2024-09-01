@@ -6,7 +6,6 @@ import (
 	"bom-pedido-api/domain/entity/order"
 	"bom-pedido-api/domain/entity/product"
 	"bom-pedido-api/domain/enums"
-	"bom-pedido-api/domain/value_object"
 	"bom-pedido-api/infra/test"
 	"context"
 	"github.com/go-faker/faker/v4"
@@ -40,7 +39,6 @@ func orderTests(t *testing.T, orderRepository repository.OrderRepository, produc
 	err = customerRepository.Create(ctx, aCustomer)
 	require.NoError(t, err)
 
-	adminId := value_object.NewID()
 	anOrder, err := order.New(aCustomer.Id, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 10.0, 100, time.Now(), faker.WORD)
 	require.NoError(t, err)
 
@@ -68,7 +66,7 @@ func orderTests(t *testing.T, orderRepository repository.OrderRepository, produc
 	assertOrder(t, anOrder, savedOrder)
 
 	// Approve
-	err = anOrder.Approve(time.Now(), adminId)
+	err = anOrder.Approve()
 	require.NoError(t, err)
 
 	err = orderRepository.Update(ctx, anOrder)
@@ -79,7 +77,7 @@ func orderTests(t *testing.T, orderRepository repository.OrderRepository, produc
 	assertOrder(t, anOrder, savedOrder)
 
 	// MarkAsInProgress
-	err = anOrder.MarkAsInProgress(time.Now(), adminId)
+	err = anOrder.MarkAsInProgress()
 	require.NoError(t, err)
 
 	err = orderRepository.Update(ctx, anOrder)
@@ -90,7 +88,7 @@ func orderTests(t *testing.T, orderRepository repository.OrderRepository, produc
 	assertOrder(t, anOrder, savedOrder)
 
 	// MarkAsAwaitingDelivery
-	err = anOrder.MarkAsAwaitingDelivery(time.Now(), adminId)
+	err = anOrder.MarkAsAwaitingDelivery()
 	require.NoError(t, err)
 
 	err = orderRepository.Update(ctx, anOrder)
@@ -101,7 +99,7 @@ func orderTests(t *testing.T, orderRepository repository.OrderRepository, produc
 	assertOrder(t, anOrder, savedOrder)
 
 	// MarkAsDelivering
-	err = anOrder.MarkAsDelivering(time.Now(), adminId)
+	err = anOrder.MarkAsDelivering()
 	require.NoError(t, err)
 
 	err = orderRepository.Update(ctx, anOrder)
@@ -112,7 +110,7 @@ func orderTests(t *testing.T, orderRepository repository.OrderRepository, produc
 	assertOrder(t, anOrder, savedOrder)
 
 	// Finish
-	err = anOrder.Finish(time.Now(), adminId)
+	err = anOrder.Finish()
 	require.NoError(t, err)
 
 	err = orderRepository.Update(ctx, anOrder)
@@ -135,5 +133,4 @@ func assertOrder(t *testing.T, expectedOrder, actualOrder *order.Order) {
 	require.Equal(t, expectedOrder.DeliveryTime.Format("2006-01-02 15:04:05"), actualOrder.DeliveryTime.Format("2006-01-02 15:04:05"))
 	require.Equal(t, expectedOrder.GetStatus(), actualOrder.GetStatus())
 	require.Equal(t, expectedOrder.Items, actualOrder.Items)
-	require.Equal(t, expectedOrder.History, actualOrder.History)
 }

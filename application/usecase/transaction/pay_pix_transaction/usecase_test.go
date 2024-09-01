@@ -66,7 +66,7 @@ func Test_PayPixTransaction(t *testing.T) {
 			continue
 		}
 		t.Run("should return nil order is %s"+orderStatus.Name(), func(t *testing.T) {
-			anOrder, err := order.Restore(value_object.NewID(), customerId, enums.Pix, enums.InApp, enums.Delivery, "", orderStatus.Name(), time.Now(), 0, 1, 1, time.Now(), []order.Item{}, make([]status.History, 0), faker.WORD)
+			anOrder, err := order.Restore(value_object.NewID(), customerId, enums.Pix, enums.InApp, enums.Delivery, "", orderStatus.Name(), time.Now(), 0, 1, 1, time.Now(), []order.Item{}, faker.WORD)
 			require.NoError(t, err)
 
 			input := Input{OrderId: anOrder.Id}
@@ -87,7 +87,7 @@ func Test_PayPixTransaction(t *testing.T) {
 		anOrder, err := order.New(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 10, time.Now(), aMerchant.TenantId)
 		require.NoError(t, err)
 
-		err = anOrder.AwaitApproval(time.Now())
+		err = anOrder.AwaitApproval()
 		require.NoError(t, err)
 
 		err = applicationFactory.OrderRepository.Create(ctx, anOrder)

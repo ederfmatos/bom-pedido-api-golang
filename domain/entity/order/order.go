@@ -30,7 +30,6 @@ type (
 		DeliveryTime    time.Time
 		state           status.Status
 		Items           []Item
-		History         []status.History
 		MerchantId      string
 		Amount          float64
 	}
@@ -67,22 +66,12 @@ func New(customerID, paymentMethodString, paymentModeString, deliveryModeString,
 		DeliveryTime:    deliveryTime,
 		state:           state,
 		Items:           make([]Item, 0),
-		History:         make([]status.History, 0),
 		MerchantId:      merchantId,
 		Amount:          amount,
 	}, nil
 }
 
-func Restore(
-	Id, customerID, paymentMethodString, paymentModeString, deliveryModeString, creditCardToken, orderStatusString string,
-	createdAt time.Time,
-	payback, amount float64,
-	code int32,
-	deliveryTime time.Time,
-	items []Item,
-	history []status.History,
-	merchantId string,
-) (*Order, error) {
+func Restore(Id, customerID, paymentMethodString, paymentModeString, deliveryModeString, creditCardToken, orderStatusString string, createdAt time.Time, payback, amount float64, code int32, deliveryTime time.Time, items []Item, merchantId string) (*Order, error) {
 	paymentMethod, deliveryMode, paymentMode, err := validateOrder(paymentMethodString, deliveryModeString, paymentModeString, creditCardToken, payback)
 	if err != nil {
 		return nil, err
@@ -104,7 +93,6 @@ func Restore(
 		DeliveryTime:    deliveryTime,
 		state:           orderStatus,
 		Items:           items,
-		History:         history,
 		MerchantId:      merchantId,
 		Amount:          amount,
 	}, nil
@@ -150,89 +138,81 @@ func (order *Order) AddProduct(product *product.Product, quantity int, observati
 	return nil
 }
 
-func (order *Order) Approve(approvedAt time.Time, approvedBy string) error {
-	history, err := order.state.Approve(approvedAt, approvedBy)
+func (order *Order) Approve() error {
+	err := order.state.Approve()
 	if err != nil {
 		return err
 	}
 	order.state = status.ApprovedStatus
-	order.History = append(order.History, *history)
 	return nil
 }
 
-func (order *Order) MarkAsInProgress(at time.Time, by string) error {
-	history, err := order.state.MarkAsInProgress(at, by)
+func (order *Order) MarkAsInProgress() error {
+	err := order.state.MarkAsInProgress()
 	if err != nil {
 		return err
 	}
 	order.state = status.InProgressStatus
-	order.History = append(order.History, *history)
 	return nil
 }
 
-func (order *Order) MarkAsAwaitingDelivery(at time.Time, by string) error {
+func (order *Order) MarkAsAwaitingDelivery() error {
 	if order.DeliveryMode.IsWithdraw() {
 		return errors.OrderDeliveryModeIsWithdrawError
 	}
-	history, err := order.state.MarkAsInAwaitingDelivery(at, by)
+	err := order.state.MarkAsInAwaitingDelivery()
 	if err != nil {
 		return err
 	}
 	order.state = status.AwaitingDeliveryStatus
-	order.History = append(order.History, *history)
 	return nil
 }
 
-func (order *Order) MarkAsAwaitingWithdraw(at time.Time, by string) error {
+func (order *Order) MarkAsAwaitingWithdraw() error {
 	if order.DeliveryMode.IsDelivery() {
 		return errors.OrderDeliveryModeIsDeliveryError
 	}
-	history, err := order.state.MarkAsInAwaitingWithdraw(at, by)
+	err := order.state.MarkAsInAwaitingWithdraw()
 	if err != nil {
 		return err
 	}
 	order.state = status.AwaitingWithdrawStatus
-	order.History = append(order.History, *history)
 	return nil
 }
 
-func (order *Order) MarkAsDelivering(at time.Time, by string) error {
-	history, err := order.state.MarkAsInDelivering(at, by)
+func (order *Order) MarkAsDelivering() error {
+	err := order.state.MarkAsInDelivering()
 	if err != nil {
 		return err
 	}
 	order.state = status.DeliveringStatus
-	order.History = append(order.History, *history)
 	return nil
 }
 
-func (order *Order) Finish(at time.Time, by string) error {
-	history, err := order.state.Finish(at, by)
+func (order *Order) Finish() error {
+	err := order.state.Finish()
 	if err != nil {
 		return err
 	}
 	order.state = status.FinishedStatus
-	order.History = append(order.History, *history)
 	return nil
 }
 
-func (order *Order) Reject(rejectedAt time.Time, rejectedBy, reason string) error {
-	history, err := order.state.Reject(rejectedAt, rejectedBy, reason)
+func (order *Order) Reject() error {
+	err := order.state.Reject()
 	if err != nil {
 		return err
 	}
 	order.state = status.RejectedStatus
-	order.History = append(order.History, *history)
 	return nil
 }
 
-func (order *Order) Cancel(at time.Time, by, reason string) error {
-	history, err := order.state.Cancel(at, by, reason)
+func (order *Order) Cancel() error {
+	err := order.state.Cancel()
 	if err != nil {
 		return err
 	}
 	order.state = status.CancelledStatus
-	order.History = append(order.History, *history)
 	return nil
 }
 
@@ -252,15 +232,10 @@ func (order *Order) IsAwaitingApproval() bool {
 	return order.state == status.AwaitingApprovalStatus
 }
 
-func (order *Order) AwaitApproval(at time.Time) error {
+func (order *Order) AwaitApproval() error {
 	if order.state != status.AwaitingPaymentStatus {
 		return status.OperationNotAllowedError
 	}
 	order.state = status.AwaitingApprovalStatus
-	order.History = append(order.History, status.History{
-		Time:      at,
-		Status:    "PaymentApproved",
-		ChangedBy: order.CustomerID,
-	})
 	return nil
 }

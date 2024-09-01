@@ -32,8 +32,9 @@ func Test_MarkOrderInProgress(t *testing.T) {
 		ctx := context.Background()
 		customerId := value_object.NewID()
 		order, err := order2.New(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, 0, time.Now(), faker.WORD)
-		err = order.Approve(time.Now(), "")
+		err = order.Approve()
 		require.NoError(t, err)
+
 		err = applicationFactory.OrderRepository.Create(ctx, order)
 		require.NoError(t, err)
 		input := Input{

@@ -16,14 +16,17 @@ func Test_Order(t *testing.T) {
 		order, err := New(customerId, enums.CreditCard, enums.InReceiving, enums.Withdraw, "", 0, 0, time.Now(), faker.WORD)
 		require.NoError(t, err)
 
-		err = order.Approve(time.Now(), "")
+		err = order.Approve()
 		require.NoError(t, err)
-		err = order.MarkAsInProgress(time.Now(), "")
+
+		err = order.MarkAsInProgress()
 		require.NoError(t, err)
-		err = order.MarkAsAwaitingDelivery(time.Now(), "")
+
+		err = order.MarkAsAwaitingDelivery()
 		require.Error(t, err, errors.OrderDeliveryModeIsWithdrawError)
-		err = order.MarkAsAwaitingWithdraw(time.Now(), "")
+		err = order.MarkAsAwaitingWithdraw()
 		require.NoError(t, err)
+
 	})
 
 	t.Run("should not allow mark an order as awaiting withdraw of order delivery mode is delivery", func(t *testing.T) {
@@ -31,13 +34,15 @@ func Test_Order(t *testing.T) {
 		order, err := New(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, 0, time.Now(), faker.WORD)
 		require.NoError(t, err)
 
-		err = order.Approve(time.Now(), "")
+		err = order.Approve()
 		require.NoError(t, err)
-		err = order.MarkAsInProgress(time.Now(), "")
+
+		err = order.MarkAsInProgress()
 		require.NoError(t, err)
-		err = order.MarkAsAwaitingWithdraw(time.Now(), "")
+
+		err = order.MarkAsAwaitingWithdraw()
 		require.Error(t, err, errors.OrderDeliveryModeIsDeliveryError)
-		err = order.MarkAsAwaitingDelivery(time.Now(), "")
+		err = order.MarkAsAwaitingDelivery()
 		require.NoError(t, err)
 	})
 }

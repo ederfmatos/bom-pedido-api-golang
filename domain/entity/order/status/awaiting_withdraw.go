@@ -1,9 +1,5 @@
 package status
 
-import (
-	"time"
-)
-
 type AwaitingWithdraw struct {
 }
 
@@ -15,43 +11,34 @@ func (status *AwaitingWithdraw) Name() string {
 	return "AwaitingWithdraw"
 }
 
-func (status *AwaitingWithdraw) Approve(time.Time, string) (*History, error) {
-	return nil, OperationNotAllowedError
+func (status *AwaitingWithdraw) Approve() error {
+	return OperationNotAllowedError
 }
 
-func (status *AwaitingWithdraw) Reject(time.Time, string, string) (*History, error) {
-	return nil, OperationNotAllowedError
+func (status *AwaitingWithdraw) Reject() error {
+	return OperationNotAllowedError
 }
 
-func (status *AwaitingWithdraw) Cancel(cancelledAt time.Time, cancelledBy string, reason string) (*History, error) {
-	return &History{
-		Time:      cancelledAt,
-		Status:    "Cancelled",
-		ChangedBy: cancelledBy,
-		Data:      reason,
-	}, nil
+func (status *AwaitingWithdraw) Cancel() error {
+	return nil
 }
 
-func (status *AwaitingWithdraw) MarkAsInProgress(time.Time, string) (*History, error) {
-	return nil, OperationNotAllowedError
+func (status *AwaitingWithdraw) MarkAsInProgress() error {
+	return OperationNotAllowedError
 }
 
-func (status *AwaitingWithdraw) MarkAsInDelivering(time.Time, string) (*History, error) {
-	return nil, OperationNotAllowedError
+func (status *AwaitingWithdraw) MarkAsInDelivering() error {
+	return OperationNotAllowedError
 }
 
-func (status *AwaitingWithdraw) MarkAsInAwaitingWithdraw(time.Time, string) (*History, error) {
-	return nil, OperationNotAllowedError
+func (status *AwaitingWithdraw) MarkAsInAwaitingWithdraw() error {
+	return OperationNotAllowedError
 }
 
-func (status *AwaitingWithdraw) MarkAsInAwaitingDelivery(time.Time, string) (*History, error) {
-	return nil, OperationNotAllowedError
+func (status *AwaitingWithdraw) MarkAsInAwaitingDelivery() error {
+	return OperationNotAllowedError
 }
 
-func (status *AwaitingWithdraw) Finish(at time.Time, by string) (*History, error) {
-	return &History{
-		Time:      at,
-		Status:    "Finished",
-		ChangedBy: by,
-	}, nil
+func (status *AwaitingWithdraw) Finish() error {
+	return nil
 }

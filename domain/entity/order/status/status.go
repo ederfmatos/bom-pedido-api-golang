@@ -2,7 +2,6 @@ package status
 
 import (
 	"bom-pedido-api/domain/errors"
-	"time"
 )
 
 var (
@@ -34,25 +33,17 @@ var (
 	}
 )
 
-type (
-	Status interface {
-		Name() string
-		Approve(approvedAt time.Time, approvedBy string) (*History, error)
-		Reject(rejectedAt time.Time, rejectedBy string, reason string) (*History, error)
-		Cancel(cancelledAt time.Time, cancelledBy string, reason string) (*History, error)
-		MarkAsInProgress(at time.Time, by string) (*History, error)
-		MarkAsInDelivering(at time.Time, by string) (*History, error)
-		MarkAsInAwaitingWithdraw(at time.Time, by string) (*History, error)
-		MarkAsInAwaitingDelivery(at time.Time, by string) (*History, error)
-		Finish(at time.Time, by string) (*History, error)
-	}
-	History struct {
-		Time      time.Time
-		Status    string
-		ChangedBy string
-		Data      string
-	}
-)
+type Status interface {
+	Name() string
+	Approve() error
+	Reject() error
+	Cancel() error
+	MarkAsInProgress() error
+	MarkAsInDelivering() error
+	MarkAsInAwaitingWithdraw() error
+	MarkAsInAwaitingDelivery() error
+	Finish() error
+}
 
 func Parse(value string) (Status, error) {
 	for _, status := range AllStatus {
