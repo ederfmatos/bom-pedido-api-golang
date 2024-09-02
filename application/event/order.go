@@ -2,7 +2,6 @@ package event
 
 import (
 	"bom-pedido-api/domain/entity/order"
-	"bom-pedido-api/domain/entity/order/status"
 	"bom-pedido-api/domain/value_object"
 	"time"
 )
@@ -18,6 +17,7 @@ var (
 	OrderAwaitingWithdraw = "ORDER_AWAITING_WITHDRAW"
 	OrderAwaitingDelivery = "ORDER_AWAITING_DELIVERY"
 	OrderCancelled        = "ORDER_CANCELLED"
+	OrderPaymentFailed    = "ORDER_PAYMENT_FAILED"
 )
 
 func NewOrderCreatedEvent(order *order.Order) *Event {
@@ -44,7 +44,7 @@ func NewOrderApprovedEvent(order *order.Order, by string, at time.Time) *Event {
 			"paymentMethod": order.PaymentMethod.String(),
 			"by":            by,
 			"at":            at.Format(time.RFC3339),
-			"status":        status.ApprovedStatus.Name(),
+			"status":        order.GetStatus(),
 		},
 	}
 }
@@ -60,7 +60,7 @@ func NewOrderInProgressEvent(order *order.Order, by string, at time.Time) *Event
 			"paymentMethod": order.PaymentMethod.String(),
 			"by":            by,
 			"at":            at.Format(time.RFC3339),
-			"status":        status.InProgressStatus.Name(),
+			"status":        order.GetStatus(),
 		},
 	}
 }
@@ -76,7 +76,7 @@ func NewOrderDeliveringEvent(order *order.Order, by string, at time.Time) *Event
 			"paymentMethod": order.PaymentMethod.String(),
 			"by":            by,
 			"at":            at.Format(time.RFC3339),
-			"status":        status.DeliveringStatus.Name(),
+			"status":        order.GetStatus(),
 		},
 	}
 }
@@ -92,7 +92,7 @@ func NewOrderAwaitingWithdrawEvent(order *order.Order, by string, at time.Time) 
 			"paymentMethod": order.PaymentMethod.String(),
 			"by":            by,
 			"at":            at.Format(time.RFC3339),
-			"status":        status.AwaitingWithdrawStatus.Name(),
+			"status":        order.GetStatus(),
 		},
 	}
 }
@@ -108,7 +108,7 @@ func NewOrderAwaitingDeliveryEvent(order *order.Order, by string, at time.Time) 
 			"paymentMethod": order.PaymentMethod.String(),
 			"by":            by,
 			"at":            at.Format(time.RFC3339),
-			"status":        status.AwaitingDeliveryStatus.Name(),
+			"status":        order.GetStatus(),
 		},
 	}
 }
@@ -125,7 +125,7 @@ func NewOrderRejectedEvent(order *order.Order, by string, at time.Time, reason s
 			"by":            by,
 			"reason":        reason,
 			"at":            at.Format(time.RFC3339),
-			"status":        status.RejectedStatus.Name(),
+			"status":        order.GetStatus(),
 		},
 	}
 }
@@ -142,7 +142,7 @@ func NewOrderCancelledEvent(order *order.Order, by string, at time.Time, reason 
 			"by":            by,
 			"reason":        reason,
 			"at":            at.Format(time.RFC3339),
-			"status":        status.CancelledStatus.Name(),
+			"status":        order.GetStatus(),
 		},
 	}
 }
@@ -158,7 +158,7 @@ func NewOrderFinishedEvent(order *order.Order, by string, at time.Time) *Event {
 			"paymentMethod": order.PaymentMethod.String(),
 			"by":            by,
 			"at":            at.Format(time.RFC3339),
-			"status":        status.FinishedStatus.Name(),
+			"status":        order.GetStatus(),
 		},
 	}
 }
@@ -174,7 +174,23 @@ func NewOrderAwaitingApprovalEvent(order *order.Order, at time.Time) *Event {
 			"paymentMethod": order.PaymentMethod.String(),
 			"by":            order.CustomerID,
 			"at":            at.Format(time.RFC3339),
-			"status":        status.AwaitingApprovalStatus.Name(),
+			"status":        order.GetStatus(),
+		},
+	}
+}
+
+func NewOrderPaymentFailedEvent(order *order.Order, at time.Time) *Event {
+	return &Event{
+		Id:            value_object.NewID(),
+		CorrelationId: order.Id,
+		Name:          OrderPaymentFailed,
+		Data: map[string]string{
+			"orderId":       order.Id,
+			"customerId":    order.CustomerID,
+			"paymentMethod": order.PaymentMethod.String(),
+			"by":            order.CustomerID,
+			"at":            at.Format(time.RFC3339),
+			"status":        order.GetStatus(),
 		},
 	}
 }

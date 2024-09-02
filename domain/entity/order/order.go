@@ -239,3 +239,11 @@ func (order *Order) AwaitApproval() error {
 	order.state = status.AwaitingApprovalStatus
 	return nil
 }
+
+func (order *Order) PaymentFailed() error {
+	if order.state != status.AwaitingPaymentStatus {
+		return status.OperationNotAllowedError
+	}
+	order.state = status.PaymentFailedStatus
+	return nil
+}

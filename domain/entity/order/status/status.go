@@ -10,6 +10,7 @@ var (
 
 	AwaitingPaymentStatus  = NewAwaitingPayment()
 	AwaitingApprovalStatus = NewAwaitingApproval()
+	PaymentFailedStatus    = NewPaymentFailed()
 	ApprovedStatus         = NewApproved()
 	InProgressStatus       = NewInProgress()
 	RejectedStatus         = NewRejected()
@@ -30,6 +31,7 @@ var (
 		AwaitingWithdrawStatus,
 		AwaitingDeliveryStatus,
 		FinishedStatus,
+		PaymentFailedStatus,
 	}
 )
 

@@ -4,6 +4,7 @@ import (
 	"bom-pedido-api/application/event"
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/application/usecase/order/await_approval_order"
+	"bom-pedido-api/application/usecase/order/payment_failed_order"
 	"bom-pedido-api/application/usecase/order/save_history"
 	"context"
 	"time"
@@ -11,6 +12,7 @@ import (
 
 func HandleOrderEvents(factory *factory.ApplicationFactory) {
 	factory.EventHandler.Consume(event.OptionsForTopics("AWAIT_APPROVAL_ORDER", event.PixTransactionPaid), handleAwaitApprovalOrder(factory))
+	factory.EventHandler.Consume(event.OptionsForTopics("ORDER_PAYMENT_FAILED", event.PixPaymentCancelled), handleOrderPaymentFailed(factory))
 	factory.EventHandler.Consume(
 		event.OptionsForTopics(
 			"SAVE_ORDER_STATUS_HISTORY",
@@ -23,6 +25,7 @@ func HandleOrderEvents(factory *factory.ApplicationFactory) {
 			event.OrderDelivering,
 			event.OrderCancelled,
 			event.OrderRejected,
+			event.OrderPaymentFailed,
 		),
 		handleOrderStatusChanged(factory),
 	)
@@ -32,6 +35,17 @@ func handleAwaitApprovalOrder(factory *factory.ApplicationFactory) event.Handler
 	useCase := await_approval_order.New(factory)
 	return func(ctx context.Context, message *event.MessageEvent) error {
 		input := await_approval_order.Input{
+			OrderId: message.Event.Data["orderId"],
+		}
+		err := useCase.Execute(ctx, input)
+		return message.AckIfNoError(ctx, err)
+	}
+}
+
+func handleOrderPaymentFailed(factory *factory.ApplicationFactory) event.HandlerFunc {
+	useCase := payment_failed_order.New(factory)
+	return func(ctx context.Context, message *event.MessageEvent) error {
+		input := payment_failed_order.Input{
 			OrderId: message.Event.Data["orderId"],
 		}
 		err := useCase.Execute(ctx, input)
