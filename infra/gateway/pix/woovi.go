@@ -20,8 +20,8 @@ type (
 
 	wooviRefundOutput struct {
 		Refunds []struct {
-			Value  float64 `json:"value"`
-			Status string  `json:"status"`
+			Value  int64  `json:"value"`
+			Status string `json:"status"`
 		} `json:"refunds"`
 	}
 
@@ -30,10 +30,10 @@ type (
 	}
 
 	wooviCreateChargeInput struct {
-		CorrelationID string  `json:"correlationID"`
-		Value         float64 `json:"value"`
-		Comment       string  `json:"comment"`
-		ExpiresIn     int     `json:"expiresIn"`
+		CorrelationID string `json:"correlationID"`
+		Value         int64  `json:"value"`
+		Comment       string `json:"comment"`
+		ExpiresIn     int    `json:"expiresIn"`
 		Customer      struct {
 			Name  string `json:"name"`
 			Email string `json:"email"`
@@ -51,7 +51,7 @@ type (
 
 	wooviGetChargeOutput struct {
 		Charge *struct {
-			Value          float64   `json:"value"`
+			Value          int64     `json:"value"`
 			CorrelationID  string    `json:"correlationID"`
 			ExpiresDate    time.Time `json:"expiresDate"`
 			BrCode         string    `json:"brCode"`
@@ -92,7 +92,7 @@ func (g *wooviPixGateway) Name() string {
 func (g *wooviPixGateway) CreateQrCodePix(ctx context.Context, input gateway.CreateQrCodePixInput) (*gateway.CreateQrCodePixOutput, error) {
 	paymentInput := wooviCreateChargeInput{
 		CorrelationID: input.InternalOrderId,
-		Value:         input.Amount * 100,
+		Value:         int64(input.Amount * 100),
 		ExpiresIn:     g.expirationInSeconds,
 		Comment:       input.Description,
 		Customer: struct {
@@ -176,7 +176,7 @@ func (g *wooviPixGateway) GetPaymentById(ctx context.Context, input gateway.GetP
 	}, nil
 }
 
-func (g *wooviPixGateway) getRefundValueFromCharge(ctx context.Context, paymentId, credential string) (float64, error) {
+func (g *wooviPixGateway) getRefundValueFromCharge(ctx context.Context, paymentId, credential string) (int64, error) {
 	response, err := g.httpClient.Get("/v1/charge/", paymentId, "/refund").
 		Header("accept", "application/json").
 		Header("Authorization", credential).
@@ -192,7 +192,7 @@ func (g *wooviPixGateway) getRefundValueFromCharge(ctx context.Context, paymentI
 	if err = response.ParseBody(&output); err != nil {
 		return 0, err
 	}
-	value := 0.0
+	value := int64(0)
 	for _, refund := range output.Refunds {
 		if refund.Status == "CONFIRMED" {
 			value += refund.Value
