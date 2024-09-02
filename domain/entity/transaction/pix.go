@@ -5,9 +5,10 @@ import (
 )
 
 const (
-	created  Status = "CREATED"
-	paid     Status = "PAID"
-	refunded Status = "REFUNDED"
+	created   Status = "CREATED"
+	paid      Status = "PAID"
+	cancelled Status = "CANCELLED"
+	refunded  Status = "REFUNDED"
 )
 
 type (
@@ -52,10 +53,22 @@ func (t *PixTransaction) Refund() {
 	t.Status = refunded
 }
 
+func (t *PixTransaction) Cancel() {
+	t.Status = cancelled
+}
+
 func (t *PixTransaction) IsPaid() bool {
 	return t.Status == paid
 }
 
+func (t *PixTransaction) IsCreated() bool {
+	return t.Status == created
+}
+
 func (t *PixTransaction) IsRefunded() bool {
 	return t.Status == refunded
+}
+
+func (t *PixTransaction) IsCancelled() bool {
+	return t.Status == cancelled
 }
