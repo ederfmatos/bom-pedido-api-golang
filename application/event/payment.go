@@ -5,10 +5,25 @@ import (
 )
 
 var (
+	CheckPixPaymentFailed   = "CHECK_PIX_PAYMENT_FAILED"
 	PixPaymentCreated       = "PIX_PAYMENT_CREATED"
 	PixPaymentRefunded      = "PIX_PAYMENT_REFUNDED"
+	PixPaymentCancelled     = "PIX_PAYMENT_CANCELLED"
 	PaymentCallbackReceived = "PAYMENT_CALLBACK_RECEIVED"
 )
+
+func NewPixPaymentCancelled(orderId, paymentId, paymentGateway string) *Event {
+	return &Event{
+		Id:            value_object.NewID(),
+		CorrelationId: orderId,
+		Name:          PixPaymentCancelled,
+		Data: map[string]string{
+			"paymentId":      paymentId,
+			"orderId":        orderId,
+			"paymentGateway": paymentGateway,
+		},
+	}
+}
 
 func NewPixPaymentCreated(orderId, paymentId, paymentGateway string) *Event {
 	return &Event{

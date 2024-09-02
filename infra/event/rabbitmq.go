@@ -34,11 +34,13 @@ func NewRabbitMqAdapter(server string) event.Handler {
 	if err != nil {
 		panic(err)
 	}
-	return &RabbitMqAdapter{
+	adapter := &RabbitMqAdapter{
 		connection:      connection,
 		producerChannel: producerChannel,
 		consumerChannel: consumerChannel,
 	}
+	adapter.createQueues()
+	return adapter
 }
 
 func (adapter *RabbitMqAdapter) Close() {
@@ -137,4 +139,38 @@ func (adapter *RabbitMqAdapter) handleMessage(message amqp.Delivery, handler eve
 	err = retry.Func(ctx, 5, time.Second, time.Second*30, func(ctx context.Context) error {
 		return handler(ctx, messageEvent)
 	})
+}
+
+type Queue struct {
+	Name        string
+	BindingKeys []string
+	Arguments   amqp.Table
+}
+
+func (adapter *RabbitMqAdapter) createQueues() {
+	queues := []Queue{
+		{
+			Name:        "WAIT_CHECK_PIX_PAYMENT_FAILED",
+			BindingKeys: []string{event.PixPaymentCreated},
+			Arguments: amqp.Table{
+				"x-message-ttl":             3600000,
+				"x-dead-letter-exchange":    "bompedido-dlx",
+				"x-dead-letter-routing-key": event.CheckPixPaymentFailed,
+			},
+		},
+	}
+	for _, queue := range queues {
+		_, err := adapter.consumerChannel.QueueDeclare(queue.Name, true, false, false, false, queue.Arguments)
+		if err != nil {
+			slog.Error("Error on declare queue", "queue", queue.Name, "error", err)
+			continue
+		}
+		for _, topic := range queue.BindingKeys {
+			err = adapter.consumerChannel.QueueBind(queue.Name, topic, exchange, false, nil)
+			if err != nil {
+				slog.Error("Error on bind queue", "queue", queue.Name, "error", err, "key", topic)
+				continue
+			}
+		}
+	}
 }
