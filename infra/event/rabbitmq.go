@@ -8,7 +8,9 @@ import (
 	"context"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.opentelemetry.io/otel/codes"
+	"log"
 	"log/slog"
+	"os"
 	"time"
 )
 
@@ -73,18 +75,6 @@ func (adapter *RabbitMqAdapter) Emit(ctx context.Context, event *event.Event) er
 }
 
 func (adapter *RabbitMqAdapter) Consume(options *event.ConsumerOptions, handler event.HandlerFunc) {
-	_, err := adapter.consumerChannel.QueueDeclare(options.Queue, true, false, false, false, nil)
-	if err != nil {
-		slog.Error("Error on declare queue", "queue", options.Queue, "error", err)
-		return
-	}
-	for _, topic := range options.Topics {
-		err = adapter.consumerChannel.QueueBind(options.Queue, topic, exchange, false, nil)
-		if err != nil {
-			slog.Error("Error on bind queue", "queue", options.Queue, "error", err, "key", topic)
-			return
-		}
-	}
 	messages, err := adapter.consumerChannel.Consume(
 		options.Queue,
 		"BOM_PEDIDO_API_"+options.Queue,
@@ -141,36 +131,59 @@ func (adapter *RabbitMqAdapter) handleMessage(message amqp.Delivery, handler eve
 	})
 }
 
+type ResourceConfig struct {
+	Exchanges []Exchange `json:"exchanges"`
+	Queues    []Queue    `json:"queues"`
+}
+
+type Exchange struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
+}
+
 type Queue struct {
-	Name        string
-	BindingKeys []string
-	Arguments   amqp.Table
+	Name     string `json:"name"`
+	Bindings []struct {
+		Exchange   string `json:"exchange"`
+		RoutingKey string `json:"routingKey"`
+	} `json:"bindings"`
+	Arguments *struct {
+		DeadLetterExchange   string `json:"x-dead-letter-exchange"`
+		DeadLetterRoutingKey string `json:"x-dead-letter-routing-key"`
+		MessageTtl           int32  `json:"x-message-ttl"`
+	} `json:"arguments"`
 }
 
 func (adapter *RabbitMqAdapter) createQueues() {
-	queues := []Queue{
-		{
-			Name:        "WAIT_CHECK_PIX_PAYMENT_FAILED",
-			BindingKeys: []string{event.PixPaymentCreated},
-			Arguments: amqp.Table{
-				"x-message-ttl":             3600000,
-				"x-dead-letter-exchange":    "bompedido-dlx",
-				"x-dead-letter-routing-key": event.CheckPixPaymentFailed,
-			},
-		},
+	file, err := os.ReadFile(".resources/rabbitmq.json")
+	handleError(err)
+	var resourceConfig ResourceConfig
+	err = json.Unmarshal(context.Background(), file, &resourceConfig)
+	handleError(err)
+	for _, item := range resourceConfig.Exchanges {
+		err = adapter.consumerChannel.ExchangeDeclare(item.Name, item.Type, true, false, false, false, nil)
+		handleError(err)
 	}
-	for _, queue := range queues {
-		_, err := adapter.consumerChannel.QueueDeclare(queue.Name, true, false, false, false, queue.Arguments)
-		if err != nil {
-			slog.Error("Error on declare queue", "queue", queue.Name, "error", err)
-			continue
-		}
-		for _, topic := range queue.BindingKeys {
-			err = adapter.consumerChannel.QueueBind(queue.Name, topic, exchange, false, nil)
-			if err != nil {
-				slog.Error("Error on bind queue", "queue", queue.Name, "error", err, "key", topic)
-				continue
+	for _, queue := range resourceConfig.Queues {
+		var arguments amqp.Table
+		if queue.Arguments != nil {
+			arguments = amqp.Table{
+				"x-dead-letter-exchange":    queue.Arguments.DeadLetterExchange,
+				"x-dead-letter-routing-key": queue.Arguments.DeadLetterRoutingKey,
+				"x-message-ttl":             queue.Arguments.MessageTtl,
 			}
 		}
+		_, err = adapter.consumerChannel.QueueDeclare(queue.Name, true, false, false, false, arguments)
+		handleError(err)
+		for _, binding := range queue.Bindings {
+			err = adapter.consumerChannel.QueueBind(queue.Name, binding.RoutingKey, binding.Exchange, false, nil)
+			handleError(err)
+		}
+	}
+}
+
+func handleError(err error) {
+	if err != nil {
+		log.Fatal(err)
 	}
 }

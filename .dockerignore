@@ -1,6 +1,6 @@
 .collection
 .docker
-.resources
+*.pem
 .gitignore
 docker-compose.yml
 Dockerfile
@@ -19,3 +19,4 @@ Makefile
 .github
 .sql
 .docs/Bom Pedido API Golang
+.docs/flow

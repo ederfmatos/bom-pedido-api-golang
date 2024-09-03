@@ -10,5 +10,6 @@ FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /build/app ./app
 COPY --from=builder /build/.docs ./.docs
+COPY --from=builder /build/.resources ./.resources
 EXPOSE 8080
 ENTRYPOINT ["/app"]
