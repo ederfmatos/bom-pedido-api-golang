@@ -49,10 +49,11 @@ func Test_CloneOrder(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, savedShoppingCart)
 		require.Equal(t, len(savedShoppingCart.Items), 1)
-		shoppingCartItem := savedShoppingCart.Items[0]
-		require.Equal(t, shoppingCartItem.ProductId, aProduct.Id)
-		require.Equal(t, shoppingCartItem.Price, aProduct.Price)
-		require.Equal(t, shoppingCartItem.Quantity, 1)
-		require.Equal(t, shoppingCartItem.Observation, "observation")
+		for _, shoppingCartItem := range savedShoppingCart.Items {
+			require.Equal(t, shoppingCartItem.ProductId, aProduct.Id)
+			require.Equal(t, shoppingCartItem.Price, aProduct.Price)
+			require.Equal(t, shoppingCartItem.Quantity, 1)
+			require.Equal(t, shoppingCartItem.Observation, "observation")
+		}
 	})
 }

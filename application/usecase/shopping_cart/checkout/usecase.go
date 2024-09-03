@@ -54,7 +54,7 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) (*Output, erro
 		return nil, err
 	}
 	var productIds []string
-	for _, item := range shoppingCart.GetItems() {
+	for _, item := range shoppingCart.Items {
 		productIds = append(productIds, item.ProductId)
 	}
 	products, err := useCase.productRepository.FindAllById(ctx, productIds)

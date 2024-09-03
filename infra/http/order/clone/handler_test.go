@@ -84,9 +84,10 @@ func TestHandle(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, savedShoppingCart)
 	require.Equal(t, len(savedShoppingCart.Items), 1)
-	shoppingCartItem := savedShoppingCart.Items[0]
-	require.Equal(t, shoppingCartItem.ProductId, createProductOutput.Id)
-	require.Equal(t, shoppingCartItem.Price, 10.0)
-	require.Equal(t, shoppingCartItem.Quantity, 1)
-	require.Equal(t, shoppingCartItem.Observation, "")
+	for _, shoppingCartItem := range savedShoppingCart.Items {
+		require.Equal(t, shoppingCartItem.ProductId, createProductOutput.Id)
+		require.Equal(t, shoppingCartItem.Price, 10.0)
+		require.Equal(t, shoppingCartItem.Quantity, 1)
+		require.Equal(t, shoppingCartItem.Observation, "")
+	}
 }

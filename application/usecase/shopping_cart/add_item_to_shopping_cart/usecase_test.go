@@ -66,13 +66,13 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, shoppingCart)
 		require.Equal(t, 20.0, shoppingCart.GetPrice())
-		items := shoppingCart.GetItems()
-		require.Equal(t, 1, len(items))
-		item := items[0]
-		require.Equal(t, aProduct.Id, item.ProductId)
-		require.Equal(t, input.Quantity, item.Quantity)
-		require.Equal(t, input.Observation, item.Observation)
-		require.Equal(t, 10.0, item.Price)
-		require.Equal(t, 20.0, item.GetTotalPrice())
+		require.Equal(t, 1, len(shoppingCart.Items))
+		for _, item := range shoppingCart.Items {
+			require.Equal(t, aProduct.Id, item.ProductId)
+			require.Equal(t, input.Quantity, item.Quantity)
+			require.Equal(t, input.Observation, item.Observation)
+			require.Equal(t, 10.0, item.Price)
+			require.Equal(t, 20.0, item.GetTotalPrice())
+		}
 	})
 }

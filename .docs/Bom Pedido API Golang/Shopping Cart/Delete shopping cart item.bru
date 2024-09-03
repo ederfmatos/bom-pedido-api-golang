@@ -1,0 +1,26 @@
+meta {
+  name: Delete shopping cart item
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{API_BASE_URL}}/v1/shopping-cart/items/:id
+  body: json
+  auth: bearer
+}
+
+params:path {
+  id: 0191b7e1-ec70-7c8f-bfed-29391e669031
+}
+
+auth:bearer {
+  token: {{CUSTOMER_TOKEN}}
+}
+
+body:json {
+  {
+    "productId": "0191957c-13a5-79a0-b42e-1ec187adf88e",
+    "quantity": 2
+  }
+}

@@ -10,9 +10,9 @@ import (
 
 type (
 	ShoppingCart struct {
-		CustomerId string             `bson:"_id"`
-		TenantId   string             `bson:"tenantId"`
-		Items      []ShoppingCartItem `bson:"items"`
+		CustomerId string                      `bson:"_id"`
+		TenantId   string                      `bson:"tenantId"`
+		Items      map[string]ShoppingCartItem `bson:"items"`
 	}
 	ShoppingCartItem struct {
 		Id          string  `bson:"id"`
@@ -27,7 +27,7 @@ func New(customerId, tenantId string) *ShoppingCart {
 	return &ShoppingCart{
 		CustomerId: customerId,
 		TenantId:   tenantId,
-		Items:      []ShoppingCartItem{},
+		Items:      make(map[string]ShoppingCartItem),
 	}
 }
 
@@ -45,7 +45,7 @@ func (shoppingCart *ShoppingCart) AddItem(product *product.Product, quantity int
 		Observation: observation,
 		Price:       product.Price,
 	}
-	shoppingCart.Items = append(shoppingCart.Items, item)
+	shoppingCart.Items[item.Id] = item
 	return nil
 }
 
@@ -59,10 +59,6 @@ func (shoppingCart *ShoppingCart) GetPrice() float64 {
 
 func (item *ShoppingCartItem) GetTotalPrice() float64 {
 	return float64(item.Quantity) * item.Price
-}
-
-func (shoppingCart *ShoppingCart) GetItems() []ShoppingCartItem {
-	return shoppingCart.Items
 }
 
 func (shoppingCart *ShoppingCart) Checkout(paymentMethodString, deliveryModeString, paymentModeString, cardToken string, payback float64, products map[string]*product.Product, deliveryTime time.Duration, merchantId string) (*order.Order, error) {
@@ -90,13 +86,17 @@ func (shoppingCart *ShoppingCart) IsEmpty() bool {
 	return len(shoppingCart.Items) == 0
 }
 
+func (shoppingCart *ShoppingCart) RemoveItem(id string) {
+	delete(shoppingCart.Items, id)
+}
+
 func CloneOrder(order *order.Order) *ShoppingCart {
 	shoppingCart := &ShoppingCart{
 		CustomerId: order.CustomerID,
-		Items:      make([]ShoppingCartItem, len(order.Items)),
+		Items:      make(map[string]ShoppingCartItem, len(order.Items)),
 	}
-	for i, item := range order.Items {
-		shoppingCart.Items[i] = ShoppingCartItem{
+	for _, item := range order.Items {
+		shoppingCart.Items[item.Id] = ShoppingCartItem{
 			Id:          item.Id,
 			ProductId:   item.ProductId,
 			Quantity:    item.Quantity,
