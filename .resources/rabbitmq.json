@@ -142,6 +142,10 @@
         {
           "exchange": "bompedido",
           "routingKey": "ORDER_REJECTED"
+        },
+        {
+          "exchange": "bompedido",
+          "routingKey": "ORDER_CANCELLED"
         }
       ]
     },
