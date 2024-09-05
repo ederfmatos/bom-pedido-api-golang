@@ -66,7 +66,7 @@
         },
         "responses": {
           "204": {
-            "description": "Link de autenticação enviado com sucesso",
+            "description": "Link de autenticação enviado com sucesso"
           },
           "400": {
             "description": "Dados inválidos",
@@ -300,6 +300,35 @@
         "summary": "Listar Produtos",
         "tags": [
           "Products"
+        ],
+        "parameters": [
+          {
+            "name": "currentPage",
+            "description": "Número da página atual",
+            "in": "query",
+            "required": false,
+            "example": "2",
+            "schema": {
+              "type": "number",
+              "default": 1,
+              "minimum": 1,
+              "nullable": true
+            }
+          },
+          {
+            "name": "pageSize",
+            "description": "Tamanho da página",
+            "in": "query",
+            "required": false,
+            "example": "12",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "number",
+              "default": 10,
+              "minimum": 1,
+              "nullable": true
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -1271,38 +1300,63 @@
         "description": "Resposta retornada ao criar um novo produto. Contém o identificador único do produto."
       },
       "ProductListResponse": {
-        "type": "array",
-        "items": {
-          "properties": {
-            "id": {
-              "type": "string",
-              "example": "01916125-fb78-765d-80dc-3ab8106d569b",
-              "description": "Identificador único do produto."
-            },
-            "name": {
-              "type": "string",
-              "example": "Produto X",
-              "description": "Nome do produto."
-            },
-            "description": {
-              "type": "string",
-              "example": "Detalhes do Produto X",
-              "description": "Descrição detalhada do produto."
-            },
-            "price": {
-              "type": "number",
-              "format": "float",
-              "example": 99.99,
-              "description": "Preço do produto."
-            },
-            "imageURL": {
-              "type": "string",
-              "example": "https://images.bompedido.app/01916125-fb78-765d-80dc-3ab8106d569b",
-              "description": "URL da imagem do produto."
+        "type": "object",
+        "properties": {
+          "currentPage": {
+            "type": "number",
+            "description": "Número da página atual"
+          },
+          "pageSize": {
+            "type": "number",
+            "description": "Tamanho da  página"
+          },
+          "totalPages": {
+            "type": "number",
+            "description": "Número total de páginas"
+          },
+          "totalItems": {
+            "type": "number",
+            "description": "Número total de itens"
+          },
+          "lastPage": {
+            "type": "boolean",
+            "description": "Indica se a página atual é a ultima"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "description": "Lista de produtos retornada pela API. Cada item contém o identificador, nome, descrição, preço e URL da imagem do produto.",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "example": "01916125-fb78-765d-80dc-3ab8106d569b",
+                  "description": "Identificador único do produto."
+                },
+                "name": {
+                  "type": "string",
+                  "example": "Produto X",
+                  "description": "Nome do produto."
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Detalhes do Produto X",
+                  "description": "Descrição detalhada do produto."
+                },
+                "price": {
+                  "type": "number",
+                  "format": "float",
+                  "example": 99.99,
+                  "description": "Preço do produto."
+                },
+                "imageURL": {
+                  "type": "string",
+                  "example": "https://images.bompedido.app/01916125-fb78-765d-80dc-3ab8106d569b",
+                  "description": "URL da imagem do produto."
+                }
+              }
             }
           }
-        },
-        "description": "Lista de produtos retornada pela API. Cada item contém o identificador, nome, descrição, preço e URL da imagem do produto."
+        }
       },
       "GoogleAuthRequest": {
         "type": "object",

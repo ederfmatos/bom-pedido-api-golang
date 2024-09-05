@@ -1,15 +1,10 @@
 package query
 
-import "context"
-
-type Product struct {
-	Id          string  `json:"id,omitempty"`
-	Name        string  `json:"name,omitempty"`
-	Description string  `json:"description,omitempty"`
-	Price       float64 `json:"price,omitempty"`
-	ImageURL    string  `json:"imageURL,omitempty"`
-}
+import (
+	"bom-pedido-api/application/projection"
+	"context"
+)
 
 type ProductQuery interface {
-	List(ctx context.Context, tenantId string) ([]Product, error)
+	List(ctx context.Context, filter projection.ProductListFilter) (*projection.Page[projection.ProductListItem], error)
 }

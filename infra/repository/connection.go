@@ -27,6 +27,7 @@ type ConnectionBuilder interface {
 	Values(value ...interface{}) ConnectionBuilder
 	Update(ctx context.Context) error
 	FindOne(ctx context.Context, values ...interface{}) (bool, error)
+	Count(ctx context.Context, values ...interface{}) error
 	List(ctx context.Context, mapper RowMapper) error
 	Exists(ctx context.Context) (bool, error)
 }
@@ -108,6 +109,11 @@ func (builder *DefaultConnectionBuilder) Update(ctx context.Context) error {
 	}
 	defer statement.Close()
 	_, err = statement.ExecContext(ctx, builder.values...)
+	return err
+}
+
+func (builder *DefaultConnectionBuilder) Count(ctx context.Context, values ...interface{}) error {
+	_, err := builder.FindOne(ctx, values...)
 	return err
 }
 
