@@ -20,6 +20,7 @@ type (
 		Quantity    int     `bson:"quantity"`
 		Observation string  `bson:"observation"`
 		Price       float64 `bson:"price"`
+		ProductName string  `bson:"productName"`
 	}
 )
 
@@ -41,6 +42,7 @@ func (shoppingCart *ShoppingCart) AddItem(product *product.Product, quantity int
 	item := ShoppingCartItem{
 		Id:          value_object.NewID(),
 		ProductId:   product.Id,
+		ProductName: product.Name,
 		Quantity:    quantity,
 		Observation: observation,
 		Price:       product.Price,

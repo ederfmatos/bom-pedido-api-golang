@@ -494,7 +494,7 @@
       }
     },
     "/v1/shopping-cart/items/{id}": {
-      "patch": {
+      "delete": {
         "summary": "Remover Item do Carrinho de Compras",
         "tags": [
           "Shopping Cart"
@@ -550,6 +550,63 @@
             "lang": "cUrl",
             "label": "Curl",
             "source": "curl --request DELETE \\\n  --url https://api.bompedido.app/api/v1/shopping-cart/items/{id} \\\n  --header 'X-Tenant-Id: {TENANT_ID}'"
+          }
+        ]
+      }
+    },
+    "/v1/shopping-cart/me": {
+      "get": {
+        "summary": "Buscar Carrinho de Compras",
+        "tags": [
+          "Shopping Cart"
+        ],
+        "responses": {
+          "200": {
+            "description": "Dados buscados com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetShoppingCartResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnAuthorizedErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cUrl",
+            "label": "Curl",
+            "source": "curl --request GET \\\n  --url https://api.bompedido.app/api/v1/shopping-cart/me \\\n  --header 'X-Tenant-Id: {TENANT_ID}'"
           }
         ]
       }
@@ -1414,6 +1471,55 @@
             "type": "string",
             "example": "16999999999",
             "description": "Número de Telefone do Cliente"
+          }
+        },
+        "description": "Dados do cliente autenticado retornados pela API. Inclui nome, email e número de telefone."
+      },
+      "GetShoppingCartResponse": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "example": "10.0",
+            "description": "Valor total do carrinho de compras"
+          },
+          "items": {
+            "type": "array",
+            "description": "Itens do carrinho",
+            "items": {
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Id do Item",
+                  "example": "0191c3f5-71f4-7002-acd9-5c405bd8808e"
+                },
+                "productId": {
+                  "type": "string",
+                  "description": "Id do Product",
+                  "example": "0191c3f5-71f4-7002-acd9-5c405bd8808e"
+                },
+                "productName": {
+                  "type": "string",
+                  "description": "Nome do Produto",
+                  "example": "Guarana 350ml"
+                },
+                "price": {
+                  "type": "number",
+                  "description": "Valor unitário do produto",
+                  "example": "5.0"
+                },
+                "quantity": {
+                  "type": "integer",
+                  "description": "Quantidade de itens",
+                  "example": "2"
+                },
+                "totalPrice": {
+                  "type": "number",
+                  "description": "Valor total do item",
+                  "example": "10.0"
+                }
+              }
+            }
           }
         },
         "description": "Dados do cliente autenticado retornados pela API. Inclui nome, email e número de telefone."

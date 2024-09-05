@@ -1,0 +1,15 @@
+meta {
+  name: Get Shopping Cart
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{API_BASE_URL}}/v1/shopping-cart/me
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{CUSTOMER_TOKEN}}
+}
