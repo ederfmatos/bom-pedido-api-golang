@@ -1,6 +1,7 @@
 .collection
 .docker
 *.pem
+.resources/secrets/
 .gitignore
 docker-compose.yml
 Dockerfile

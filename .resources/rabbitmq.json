@@ -150,6 +150,47 @@
       ]
     },
     {
+      "name": "NOTIFY_CUSTOMER_ORDER_STATUS_CHANGED",
+      "bindings": [
+        {
+          "exchange": "bompedido",
+          "routingKey": "ORDER_AWAITING_APPROVAL"
+        },
+        {
+          "exchange": "bompedido",
+          "routingKey": "ORDER_APPROVED"
+        },
+        {
+          "exchange": "bompedido",
+          "routingKey": "ORDER_IN_PROGRESS"
+        },
+        {
+          "exchange": "bompedido",
+          "routingKey": "ORDER_REJECTED"
+        },
+        {
+          "exchange": "bompedido",
+          "routingKey": "ORDER_CANCELLED"
+        },
+        {
+          "exchange": "bompedido",
+          "routingKey": "ORDER_DELIVERING"
+        },
+        {
+          "exchange": "bompedido",
+          "routingKey": "ORDER_AWAITING_DELIVERY"
+        },
+        {
+          "exchange": "bompedido",
+          "routingKey": "ORDER_AWAITING_WITHDRAW"
+        },
+        {
+          "exchange": "bompedido",
+          "routingKey": "ORDER_FINISHED"
+        }
+      ]
+    },
+    {
       "name": "WAIT_CHECK_PIX_PAYMENT_FAILED",
       "bindings": [
         {

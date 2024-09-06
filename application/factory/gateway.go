@@ -5,10 +5,19 @@ import (
 )
 
 type GatewayFactory struct {
-	GoogleGateway gateway.GoogleGateway
-	PixGateway    gateway.PixGateway
+	GoogleGateway       gateway.GoogleGateway
+	PixGateway          gateway.PixGateway
+	NotificationGateway gateway.NotificationGateway
 }
 
-func NewGatewayFactory(googleGateway gateway.GoogleGateway, pixGateway gateway.PixGateway) *GatewayFactory {
-	return &GatewayFactory{GoogleGateway: googleGateway, PixGateway: pixGateway}
+func NewGatewayFactory(
+	googleGateway gateway.GoogleGateway,
+	pixGateway gateway.PixGateway,
+	notificationGateway gateway.NotificationGateway,
+) *GatewayFactory {
+	return &GatewayFactory{
+		GoogleGateway:       googleGateway,
+		PixGateway:          pixGateway,
+		NotificationGateway: notificationGateway,
+	}
 }

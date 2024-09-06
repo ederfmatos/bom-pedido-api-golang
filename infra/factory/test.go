@@ -5,6 +5,7 @@ import (
 	"bom-pedido-api/infra/event"
 	"bom-pedido-api/infra/gateway/email"
 	"bom-pedido-api/infra/gateway/google"
+	"bom-pedido-api/infra/gateway/notification"
 	"bom-pedido-api/infra/gateway/pix"
 	"bom-pedido-api/infra/lock"
 	"bom-pedido-api/infra/repository"
@@ -14,7 +15,7 @@ import (
 
 func NewTestApplicationFactory() *factory.ApplicationFactory {
 	return factory.NewApplicationFactory(
-		factory.NewGatewayFactory(google.NewFakeGoogleGateway(), pix.NewFakePixGateway()),
+		factory.NewGatewayFactory(google.NewFakeGoogleGateway(), pix.NewFakePixGateway(), notification.NewMockNotificationGateway()),
 		factory.NewRepositoryFactory(
 			repository.NewCustomerMemoryRepository(),
 			repository.NewProductMemoryRepository(),
@@ -24,6 +25,8 @@ func NewTestApplicationFactory() *factory.ApplicationFactory {
 			repository.NewMerchantMemoryRepository(),
 			repository.NewTransactionMemoryRepository(),
 			repository.NewOrderStatusHistoryMemoryRepository(),
+			repository.NewCustomerNotificationMemoryRepository(),
+			repository.NewNotificationMemoryRepository(),
 		),
 		factory.NewTokenFactory(token.NewFakeCustomerTokenManager()),
 		factory.NewEventFactory(event.NewMemoryEventHandler()),
@@ -36,7 +39,7 @@ func NewTestApplicationFactory() *factory.ApplicationFactory {
 func NewContainerApplicationFactory(container *test.Container) *factory.ApplicationFactory {
 	sqlConnection := repository.NewDefaultSqlConnection(container.Database)
 	return factory.NewApplicationFactory(
-		factory.NewGatewayFactory(google.NewFakeGoogleGateway(), pix.NewFakePixGateway()),
+		factory.NewGatewayFactory(google.NewFakeGoogleGateway(), pix.NewFakePixGateway(), notification.NewMockNotificationGateway()),
 		factory.NewRepositoryFactory(
 			repository.NewDefaultCustomerRepository(sqlConnection),
 			repository.NewDefaultProductRepository(sqlConnection),
@@ -46,6 +49,8 @@ func NewContainerApplicationFactory(container *test.Container) *factory.Applicat
 			repository.NewDefaultMerchantRepository(sqlConnection),
 			repository.NewDefaultTransactionRepository(sqlConnection),
 			repository.NewDefaultOrderStatusHistoryRepository(sqlConnection),
+			repository.NewCustomerNotificationMongoRepository(container.MongoDatabase),
+			repository.NewNotificationMongoRepository(container.MongoDatabase),
 		),
 		factory.NewTokenFactory(token.NewFakeCustomerTokenManager()),
 		factory.NewEventFactory(event.NewMemoryEventHandler()),

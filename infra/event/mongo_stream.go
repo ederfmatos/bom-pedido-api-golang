@@ -1,7 +1,6 @@
 package event
 
 import (
-	"bom-pedido-api/infra/repository/outbox"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -26,6 +25,10 @@ func (stream *MongoStream) FetchStream() (chan string, error) {
 	return ch, nil
 }
 
+type Entry struct {
+	Id string `bson:"_id"`
+}
+
 func (stream *MongoStream) consumeExistingEvents(ch chan string) {
 	cursor, err := stream.collection.Find(nil, bson.M{"status": bson.M{"$ne": "PROCESSED"}})
 	if err != nil {
@@ -34,7 +37,7 @@ func (stream *MongoStream) consumeExistingEvents(ch chan string) {
 	defer cursor.Close(nil)
 
 	for cursor.Next(nil) {
-		var entry outbox.Entry
+		var entry Entry
 		if err := cursor.Decode(&entry); err != nil {
 			log.Printf("Failed to decode existing entry: %v", err)
 			continue
