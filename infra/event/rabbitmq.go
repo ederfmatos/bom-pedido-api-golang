@@ -88,18 +88,19 @@ func (adapter *RabbitMqAdapter) Consume(options *event.ConsumerOptions, handler 
 		slog.Error("Error on consume messages", "error", err)
 		return
 	}
+	adapter.bindQueue(options.Queue, exchange, options.Topics)
 
 	for range options.WorkerPoolSize {
 		go func(messages <-chan amqp.Delivery) {
 			for message := range messages {
-				adapter.handleMessage(message, handler)
+				adapter.handleMessage(message, handler, options.Id)
 			}
 		}(messages)
 	}
 }
 
-func (adapter *RabbitMqAdapter) handleMessage(message amqp.Delivery, handler event.HandlerFunc) {
-	ctx, span := telemetry.StartSpan(context.Background(), "RabbitMq.Process")
+func (adapter *RabbitMqAdapter) handleMessage(message amqp.Delivery, handler event.HandlerFunc, name string) {
+	ctx, span := telemetry.StartSpan(context.Background(), "RabbitMq.Process::"+name)
 	defer span.End()
 	slog.Info("Mensagem recebida", "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
 	var applicationEvent event.Event
@@ -179,6 +180,13 @@ func (adapter *RabbitMqAdapter) createQueues() {
 			err = adapter.consumerChannel.QueueBind(queue.Name, binding.RoutingKey, binding.Exchange, false, nil)
 			handleError(err)
 		}
+	}
+}
+
+func (adapter *RabbitMqAdapter) bindQueue(queue, exchange string, routingKeys []string) {
+	for _, routingKey := range routingKeys {
+		err := adapter.consumerChannel.QueueBind(queue, routingKey, exchange, false, nil)
+		handleError(err)
 	}
 }
 

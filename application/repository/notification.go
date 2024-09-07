@@ -7,7 +7,7 @@ import (
 
 type NotificationRepository interface {
 	Create(ctx context.Context, notification *notification.Notification) error
-	Stream() <-chan *notification.Notification
+	Stream(ctx context.Context) <-chan *notification.Notification
 	Delete(ctx context.Context, notification *notification.Notification)
 	Update(ctx context.Context, notification *notification.Notification)
 }

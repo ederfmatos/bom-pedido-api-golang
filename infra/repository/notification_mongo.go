@@ -28,12 +28,12 @@ func (repository *NotificationMongoRepository) Create(ctx context.Context, notif
 	return err
 }
 
-func (repository *NotificationMongoRepository) Stream() <-chan *notification.Notification {
+func (repository *NotificationMongoRepository) Stream(ctx context.Context) <-chan *notification.Notification {
 	channel := make(chan *notification.Notification)
 	stream, _ := repository.stream.FetchStream()
 	go func() {
 		for id := range stream {
-			aNotification, err := repository.FindById(context.Background(), id)
+			aNotification, err := repository.FindById(ctx, id)
 			if err != nil || aNotification == nil {
 				continue
 			}

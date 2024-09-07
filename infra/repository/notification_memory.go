@@ -24,7 +24,7 @@ func (repository *NotificationMemoryRepository) Create(_ context.Context, notifi
 	return nil
 }
 
-func (repository *NotificationMemoryRepository) Stream() <-chan *notification.Notification {
+func (repository *NotificationMemoryRepository) Stream(context.Context) <-chan *notification.Notification {
 	return repository.channel
 }
 
