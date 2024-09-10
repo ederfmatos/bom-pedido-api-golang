@@ -1,20 +1,36 @@
 package email
 
-import "github.com/cbroglie/mustache"
+import (
+	"bytes"
+	"html/template"
+	"os"
+)
 
 type (
 	TemplateLoader interface {
 		Load(name string, data map[string]string) (string, error)
 	}
 
-	mustacheLoader struct {
+	htmlTemplateLoader struct {
 	}
 )
 
 func NewTemplateLoader() TemplateLoader {
-	return &mustacheLoader{}
+	return &htmlTemplateLoader{}
 }
 
-func (m *mustacheLoader) Load(name string, data map[string]string) (string, error) {
-	return mustache.RenderFile(".resources/templates/"+name+".html", data)
+func (m *htmlTemplateLoader) Load(name string, data map[string]string) (string, error) {
+	templateData, err := os.ReadFile(".resources/templates/" + name + ".html")
+	if err != nil {
+		return "", err
+	}
+	tmpl, err := template.New(name).Parse(string(templateData))
+	if err != nil {
+		return "", err
+	}
+	var buffer bytes.Buffer
+	if err = tmpl.Execute(&buffer, data); err != nil {
+		return "", err
+	}
+	return buffer.String(), nil
 }
