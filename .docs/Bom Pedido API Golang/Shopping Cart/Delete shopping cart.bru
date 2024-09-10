@@ -1,0 +1,19 @@
+meta {
+  name: Delete shopping cart
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{API_BASE_URL}}/v1/shopping-cart/me
+  body: json
+  auth: bearer
+}
+
+params:path {
+  id: 0191b7e1-ec70-7c8f-bfed-29391e669031
+}
+
+auth:bearer {
+  token: {{CUSTOMER_TOKEN}}
+}

@@ -609,6 +609,54 @@
             "source": "curl --request GET \\\n  --url https://api.bompedido.app/api/v1/shopping-cart/me \\\n  --header 'X-Tenant-Id: {TENANT_ID}'"
           }
         ]
+      },
+      "delete": {
+        "summary": "Esvaziar Carrinho de Compras",
+        "tags": [
+          "Shopping Cart"
+        ],
+        "responses": {
+          "204": {
+            "description": "Carrinho de compras deletado com sucesso"
+          },
+          "400": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnAuthorizedErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cUrl",
+            "label": "Curl",
+            "source": "curl --request DELETE \\\n  --url https://api.bompedido.app/api/v1/shopping-cart/me \\\n  --header 'X-Tenant-Id: {TENANT_ID}'"
+          }
+        ]
       }
     },
     "/v1/orders/{id}/approve": {
