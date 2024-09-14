@@ -6,15 +6,15 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type GoogleGatewayMock struct {
+type GatewayMock struct {
 	mock.Mock
 }
 
-func NewFakeGoogleGateway() *GoogleGatewayMock {
-	return &GoogleGatewayMock{}
+func NewFakeGoogleGateway() *GatewayMock {
+	return &GatewayMock{}
 }
 
-func (googleGateway *GoogleGatewayMock) GetUserByToken(ctx context.Context, token string) (*gateway.GoogleUser, error) {
+func (googleGateway *GatewayMock) GetUserByToken(_ context.Context, token string) (*gateway.GoogleUser, error) {
 	args := googleGateway.Called(token)
 	var user = args.Get(0)
 	if user == nil {

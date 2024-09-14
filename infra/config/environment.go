@@ -39,7 +39,7 @@ func requiredEnv(name string) string {
 	if value := os.Getenv(name); value != "" {
 		return value
 	}
-	log.Fatalf(`Environment variable ` + name + ` is required`)
+	log.Fatalf(`Environment variable %s is required`, name)
 	return ""
 }
 

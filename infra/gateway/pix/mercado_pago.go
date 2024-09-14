@@ -89,16 +89,12 @@ func (g *MercadoPagoPixGateway) GetPaymentById(ctx context.Context, input gatewa
 	switch paymentResponse.Status {
 	case "pending", "authorized", "in_process":
 		status = gateway.TransactionPending
-		break
 	case "rejected", "cancelled":
 		status = gateway.TransactionCancelled
-		break
 	case "refunded":
 		status = gateway.TransactionRefunded
-		break
 	case "approved":
 		status = gateway.TransactionPaid
-		break
 	default:
 		return nil, nil
 	}

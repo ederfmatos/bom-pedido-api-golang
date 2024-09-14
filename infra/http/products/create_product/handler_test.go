@@ -43,7 +43,7 @@ func Test_CreateProduct(t *testing.T) {
 	_ = json.Decode(request.Context(), response.Body, &output)
 	require.NotEmpty(t, output.Id)
 
-	savedProduct, err := applicationFactory.ProductRepository.FindById(context.TODO(), output.Id)
+	savedProduct, err := applicationFactory.ProductRepository.FindById(context.Background(), output.Id)
 	require.NoError(t, err)
 	require.NotNil(t, savedProduct)
 	require.Equal(t, body.Name, savedProduct.Name)

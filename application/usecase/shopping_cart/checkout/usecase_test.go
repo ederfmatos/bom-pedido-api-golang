@@ -21,7 +21,7 @@ func Test_CheckoutShoppingCart(t *testing.T) {
 	productRepository := applicationFactory.ProductRepository
 	useCase := New(applicationFactory)
 
-	ctx := context.TODO()
+	ctx := context.Background()
 	t.Run("should return ShoppingCartEmptyError is shopping cart is empty", func(t *testing.T) {
 		input := Input{CustomerId: value_object.NewID()}
 		output, err := useCase.Execute(ctx, input)

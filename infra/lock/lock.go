@@ -28,10 +28,8 @@ func (l *redisLocker) Lock(ctx context.Context, ttl time.Duration, key ...string
 		return "", lock.ResourceLockedError
 	}
 	go func() {
-		select {
-		case <-ctx.Done():
-			_ = l.Release(context.Background(), lockKey)
-		}
+		<-ctx.Done()
+		l.Release(context.Background(), lockKey)
 	}()
 	return lockKey, nil
 }
@@ -45,7 +43,7 @@ func (l *redisLocker) LockFunc(ctx context.Context, key string, ttl time.Duratio
 	return nil
 }
 
-func (l *redisLocker) Release(ctx context.Context, key string) error {
+func (l *redisLocker) Release(ctx context.Context, key string) {
 	releaseScript := `
 	if redis.call("get", KEYS[1]) == ARGV[1] then
 		return redis.call("del", KEYS[1])
@@ -53,6 +51,5 @@ func (l *redisLocker) Release(ctx context.Context, key string) error {
 		return 0
 	end
 	`
-	_, err := l.client.Eval(ctx, releaseScript, []string{key}, "").Bool()
-	return err
+	_, _ = l.client.Eval(ctx, releaseScript, []string{key}, "").Bool()
 }

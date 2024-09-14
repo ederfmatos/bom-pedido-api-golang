@@ -23,7 +23,7 @@ func Test_GetCustomer(t *testing.T) {
 	t.Run("should success get customer", func(t *testing.T) {
 		aCustomer, _ := customer.New(faker.Name(), faker.Email(), faker.WORD)
 		_ = aCustomer.SetPhoneNumber(faker.Phonenumber())
-		_ = applicationFactory.CustomerRepository.Create(context.TODO(), aCustomer)
+		_ = applicationFactory.CustomerRepository.Create(context.Background(), aCustomer)
 
 		e := echo.New()
 		request := httptest.NewRequest(http.MethodGet, "/v1/customers/me", nil)

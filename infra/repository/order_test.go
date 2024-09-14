@@ -31,7 +31,7 @@ func Test_OrderMemoryRepository(t *testing.T) {
 }
 
 func orderTests(t *testing.T, orderRepository repository.OrderRepository, productRepository repository.ProductRepository, customerRepository repository.CustomerRepository) {
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	aCustomer, err := customer.New(faker.Name(), faker.Email(), faker.Word())
 	require.NoError(t, err)

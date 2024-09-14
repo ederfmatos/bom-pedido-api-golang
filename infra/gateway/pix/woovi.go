@@ -15,7 +15,7 @@ const (
 type (
 	wooviPixGateway struct {
 		expirationInSeconds int
-		httpClient          http_client.HttpClient
+		httpClient          http_client.HTTPClient
 	}
 
 	wooviRefundOutput struct {
@@ -73,7 +73,7 @@ type (
 )
 
 func NewWooviPixGateway(
-	httpClient http_client.HttpClient,
+	httpClient http_client.HTTPClient,
 	expirationTimeInMinutes int,
 ) gateway.PixGateway {
 	return &wooviPixGateway{
@@ -149,10 +149,8 @@ func (g *wooviPixGateway) GetPaymentById(ctx context.Context, input gateway.GetP
 	switch output.Charge.Status {
 	case "ACTIVE":
 		status = gateway.TransactionPending
-		break
 	case "EXPIRED":
 		status = gateway.TransactionCancelled
-		break
 	case "COMPLETED":
 		status = gateway.TransactionPaid
 		refundValue, err := g.getRefundValueFromCharge(ctx, input.PaymentId, input.Credential)
@@ -162,7 +160,6 @@ func (g *wooviPixGateway) GetPaymentById(ctx context.Context, input gateway.GetP
 		if refundValue == output.Charge.Value {
 			status = gateway.TransactionRefunded
 		}
-		break
 	default:
 		return nil, nil
 	}

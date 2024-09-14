@@ -186,6 +186,6 @@ func (builder *DefaultConnectionBuilder) createSpan(ctx context.Context) trace.S
 	if tenantValue := ctx.Value(tenant.Id); tenantValue != nil {
 		tenantId = tenantValue.(string)
 	}
-	ctx, span := telemetry.StartSpan(ctx, functionName, "sql", *builder.sql, "tenant.id", tenantId)
+	_, span := telemetry.StartSpan(ctx, functionName, "sql", *builder.sql, "tenant.id", tenantId)
 	return span
 }

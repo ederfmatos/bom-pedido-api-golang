@@ -121,7 +121,3 @@ func (repository *DefaultOrderRepository) Update(ctx context.Context, order *ord
 		Values(order.GetStatus(), order.Id).
 		Update(ctx)
 }
-
-func parseTime(value time.Time) time.Time {
-	return time.Date(value.Year(), value.Month(), value.Day(), value.Hour(), value.Minute(), value.Second(), (value.Nanosecond()/1000)*1000, time.Local)
-}

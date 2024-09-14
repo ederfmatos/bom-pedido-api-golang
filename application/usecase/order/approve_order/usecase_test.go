@@ -47,6 +47,7 @@ func Test_ApproveOrder(t *testing.T) {
 				orderId := value_object.NewID()
 				customerId := value_object.NewID()
 				anOrder, err := order.Restore(orderId, customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", currentStatus, time.Now(), 0, 1, 1, time.Now(), []order.Item{}, faker.WORD)
+				require.NoError(t, err)
 				err = applicationFactory.OrderRepository.Create(ctx, anOrder)
 				require.NoError(t, err)
 				input := Input{
@@ -66,6 +67,7 @@ func Test_ApproveOrder(t *testing.T) {
 		ctx := context.Background()
 		customerId := value_object.NewID()
 		anOrder, err := order.New(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, 10.0, time.Now(), faker.WORD)
+		require.NoError(t, err)
 		err = applicationFactory.OrderRepository.Create(ctx, anOrder)
 		require.NoError(t, err)
 		input := Input{

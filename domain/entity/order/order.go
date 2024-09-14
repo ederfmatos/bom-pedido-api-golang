@@ -12,8 +12,7 @@ import (
 type ItemStatus string
 
 const (
-	OrderItemStatusOk        ItemStatus = "OK"
-	OrderItemStatusCancelled ItemStatus = "CANCELLED"
+	ItemStatusOk ItemStatus = "OK"
 )
 
 type (
@@ -133,7 +132,7 @@ func (order *Order) AddProduct(product *product.Product, quantity int, observati
 		Quantity:    quantity,
 		Observation: observation,
 		Price:       product.Price,
-		Status:      OrderItemStatusOk,
+		Status:      ItemStatusOk,
 	})
 	return nil
 }

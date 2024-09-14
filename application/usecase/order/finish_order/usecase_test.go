@@ -32,6 +32,7 @@ func Test_FinishOrder(t *testing.T) {
 		ctx := context.Background()
 		customerId := value_object.NewID()
 		order, err := order2.New(customerId, enums.CreditCard, enums.InReceiving, enums.Withdraw, "", 0, 0, time.Now(), faker.WORD)
+		require.NoError(t, err)
 		err = order.Approve()
 		require.NoError(t, err)
 
@@ -72,6 +73,7 @@ func Test_FinishOrder(t *testing.T) {
 				orderId := value_object.NewID()
 				customerId := value_object.NewID()
 				order, err := order2.Restore(orderId, customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", currentStatus, time.Now(), 0, 0, 1, time.Now(), []order2.Item{}, faker.WORD)
+				require.NoError(t, err)
 				err = applicationFactory.OrderRepository.Create(ctx, order)
 				require.NoError(t, err)
 				input := Input{

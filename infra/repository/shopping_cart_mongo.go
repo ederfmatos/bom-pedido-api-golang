@@ -19,7 +19,7 @@ func NewShoppingCartMongoRepository(database *mongo.Database) *ShoppingCartMongo
 func (repository *ShoppingCartMongoRepository) Upsert(ctx context.Context, shoppingCart *shopping_cart.ShoppingCart) error {
 	update := bson.M{"$set": shoppingCart}
 	updateOptions := options.Update().SetUpsert(true)
-	filter := bson.D{{"_id", shoppingCart.CustomerId}}
+	filter := bson.D{{Key: "_id", Value: shoppingCart.CustomerId}}
 	_, err := repository.collection.UpdateOne(ctx, filter, update, updateOptions)
 	return err
 }

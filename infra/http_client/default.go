@@ -28,14 +28,14 @@ type (
 	}
 )
 
-func NewDefaultHttpClient(baseUrl string) HttpClient {
+func NewDefaultHttpClient(baseUrl string) HTTPClient {
 	return &defaultHttpClient{
 		baseUrl: baseUrl,
 		client:  http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)},
 	}
 }
 
-func newDefaultHttpClientBuilder(client http.Client, method, url string, values ...string) HttpClientBuilder {
+func newDefaultHttpClientBuilder(client http.Client, method, url string, values ...string) HTTPClientBuilder {
 	return &defaultHttpClientBuilder{
 		method:  method,
 		url:     url + strings.Join(values, ""),
@@ -45,25 +45,25 @@ func newDefaultHttpClientBuilder(client http.Client, method, url string, values 
 	}
 }
 
-func (client *defaultHttpClient) Post(path string, values ...string) HttpClientBuilder {
+func (client *defaultHttpClient) Post(path string, values ...string) HTTPClientBuilder {
 	return newDefaultHttpClientBuilder(client.client, "POST", client.baseUrl+path, values...)
 }
 
-func (client *defaultHttpClient) Get(path string, values ...string) HttpClientBuilder {
+func (client *defaultHttpClient) Get(path string, values ...string) HTTPClientBuilder {
 	return newDefaultHttpClientBuilder(client.client, "GET", client.baseUrl+path, values...)
 }
 
-func (builder *defaultHttpClientBuilder) Body(body interface{}) HttpClientBuilder {
+func (builder *defaultHttpClientBuilder) Body(body interface{}) HTTPClientBuilder {
 	builder.body = &body
 	return builder
 }
 
-func (builder *defaultHttpClientBuilder) Header(key string, value string) HttpClientBuilder {
+func (builder *defaultHttpClientBuilder) Header(key string, value string) HTTPClientBuilder {
 	builder.headers[key] = value
 	return builder
 }
 
-func (builder *defaultHttpClientBuilder) Execute(ctx context.Context) (HttpResponse, error) {
+func (builder *defaultHttpClientBuilder) Execute(ctx context.Context) (HTTPResponse, error) {
 	var body io.Reader
 	if builder.body != nil {
 		paymentBytes, err := json.Marshal(ctx, builder.body)
@@ -93,7 +93,7 @@ func (r *defaultHttpResponse) IsError() bool {
 }
 
 func (r *defaultHttpResponse) Close() {
-	r.Body.Close()
+	_ = r.Body.Close()
 }
 
 func (r *defaultHttpResponse) ParseBody(value interface{}) error {

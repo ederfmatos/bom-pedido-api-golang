@@ -15,7 +15,7 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
 	useCase := New(applicationFactory)
 
-	ctx := context.TODO()
+	ctx := context.Background()
 	t.Run("should return ProductNotFoundError", func(t *testing.T) {
 		input := Input{
 			ProductId: value_object.NewID(),

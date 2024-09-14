@@ -46,9 +46,9 @@ func (repository *ProductMemoryRepository) ExistsByNameAndTenantId(_ context.Con
 func (repository *ProductMemoryRepository) FindAllById(_ context.Context, ids []string) (map[string]*product.Product, error) {
 	products := make(map[string]*product.Product)
 	for _, id := range ids {
-		product := repository.products[id]
-		if product != nil {
-			products[id] = product
+		aProduct := repository.products[id]
+		if aProduct != nil {
+			products[id] = aProduct
 		}
 	}
 	return products, nil

@@ -8,12 +8,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type addItemToShoppingCartRequest struct {
-	ProductId   string `body:"productId" json:"productId,omitempty"`
-	Quantity    int    `body:"quantity" json:"quantity,omitempty"`
-	Observation string `body:"observation" json:"observation,omitempty"`
-}
-
 func Handle(factory *factory.ApplicationFactory) func(context echo.Context) error {
 	useCase := get_shopping_cart.New(factory)
 	return func(context echo.Context) error {

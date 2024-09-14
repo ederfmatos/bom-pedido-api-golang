@@ -5,18 +5,18 @@ import (
 )
 
 type (
-	HttpClient interface {
-		Post(path string, values ...string) HttpClientBuilder
-		Get(path string, values ...string) HttpClientBuilder
+	HTTPClient interface {
+		Post(path string, values ...string) HTTPClientBuilder
+		Get(path string, values ...string) HTTPClientBuilder
 	}
 
-	HttpClientBuilder interface {
-		Body(body interface{}) HttpClientBuilder
-		Header(key string, value string) HttpClientBuilder
-		Execute(ctx context.Context) (HttpResponse, error)
+	HTTPClientBuilder interface {
+		Body(body interface{}) HTTPClientBuilder
+		Header(key string, value string) HTTPClientBuilder
+		Execute(ctx context.Context) (HTTPResponse, error)
 	}
 
-	HttpResponse interface {
+	HTTPResponse interface {
 		Close()
 		IsError() bool
 		ParseBody(value interface{}) error

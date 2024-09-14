@@ -36,7 +36,7 @@ func (repository *CustomerNotificationMongoRepository) FindByCustomer(ctx contex
 func (repository *CustomerNotificationMongoRepository) Upsert(ctx context.Context, notification *customer.Notification) error {
 	update := bson.M{"$set": notification}
 	updateOptions := options.Update().SetUpsert(true)
-	filter := bson.D{{"_id", notification.CustomerId}}
+	filter := bson.D{{Key: "_id", Value: notification.CustomerId}}
 	_, err := repository.collection.UpdateOne(ctx, filter, update, updateOptions)
 	return err
 }

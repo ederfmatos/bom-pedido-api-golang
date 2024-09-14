@@ -9,8 +9,10 @@ type PhoneNumber struct {
 	value string
 }
 
+var regex = regexp.MustCompile(`\D`)
+
 func NewPhoneNumber(value string) (*PhoneNumber, error) {
-	cleanedNumber := regexp.MustCompile("\\D").ReplaceAllString(value, "")
+	cleanedNumber := regex.ReplaceAllString(value, "")
 	if cleanedNumber == "" {
 		return nil, errors.New("value is empty")
 	}

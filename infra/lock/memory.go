@@ -2,7 +2,6 @@ package lock
 
 import (
 	"bom-pedido-api/application/lock"
-	"bom-pedido-api/domain/errors"
 	"context"
 	"strings"
 	"sync"
@@ -42,18 +41,18 @@ func (l *memoryLocker) LockFunc(ctx context.Context, key string, ttl time.Durati
 		return err
 	}
 	lockedFunc()
-	return l.Release(context.Background(), lockKey)
+	l.Release(context.Background(), lockKey)
+	return nil
 }
 
-func (l *memoryLocker) Release(_ context.Context, key string) error {
+func (l *memoryLocker) Release(_ context.Context, key string) {
 	l.mutex.Lock()
 	defer l.mutex.Unlock()
 
 	_, exists := l.locks[key]
 	if !exists {
-		return errors.New("lock not found")
+		return
 	}
 
 	delete(l.locks, key)
-	return nil
 }

@@ -32,6 +32,7 @@ func Test_MarkOrderAwaitingWithdraw(t *testing.T) {
 		ctx := context.Background()
 		customerId := value_object.NewID()
 		order, err := order2.New(customerId, enums.CreditCard, enums.InReceiving, enums.Withdraw, "", 0, 0, time.Now(), faker.WORD)
+		require.NoError(t, err)
 		err = order.Approve()
 		require.NoError(t, err)
 

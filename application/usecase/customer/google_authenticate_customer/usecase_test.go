@@ -37,7 +37,7 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 		input := Input{Token: "error", TenantId: faker.Word()}
 		googleGateway.On("GetUserByToken", "error").Return(nil, errors.New("any token"))
 
-		output, err := googleAuthenticateCustomerUseCase.Execute(nil, input)
+		output, err := googleAuthenticateCustomerUseCase.Execute(context.Background(), input)
 
 		require.Error(t, err, "expected error when using UseCase")
 		require.Nil(t, output)
@@ -53,7 +53,7 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 		input := Input{Token: "token", TenantId: faker.Word()}
 		googleGateway.On("GetUserByToken", "token").Return(googleUser, nil).Once()
 
-		output, err := googleAuthenticateCustomerUseCase.Execute(nil, input)
+		output, err := googleAuthenticateCustomerUseCase.Execute(context.Background(), input)
 
 		require.Error(t, err, "expected error when using UseCase")
 		require.ErrorIs(t, err, value_object.InvalidEmailError)
@@ -67,7 +67,7 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 		googleAuthenticateCustomerUseCase := New(applicationFactory)
 		input := Input{Token: "google Token", TenantId: faker.Word()}
 
-		output, err := googleAuthenticateCustomerUseCase.Execute(nil, input)
+		output, err := googleAuthenticateCustomerUseCase.Execute(context.Background(), input)
 
 		require.NoError(t, err)
 		require.NotNil(t, output)
@@ -79,11 +79,11 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 		tokenManager.On("Encrypt", mock.Anything).Return("token", nil).Once()
 
 		googleAuthenticateCustomerUseCase := New(applicationFactory)
-		customer, _ := customer.New(faker.Name(), faker.Email(), faker.Word())
-		_ = applicationFactory.CustomerRepository.Create(context.TODO(), customer)
+		aCustomer, _ := customer.New(faker.Name(), faker.Email(), faker.Word())
+		_ = applicationFactory.CustomerRepository.Create(context.Background(), aCustomer)
 		input := Input{Token: "google Token", TenantId: faker.Word()}
 
-		output, err := googleAuthenticateCustomerUseCase.Execute(nil, input)
+		output, err := googleAuthenticateCustomerUseCase.Execute(context.Background(), input)
 
 		require.NoError(t, err)
 		require.NotNil(t, output)

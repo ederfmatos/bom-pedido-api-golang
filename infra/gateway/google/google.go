@@ -8,10 +8,10 @@ import (
 )
 
 type DefaultGoogleGateway struct {
-	httpClient http_client.HttpClient
+	httpClient http_client.HTTPClient
 }
 
-func NewDefaultGoogleGateway(client http_client.HttpClient) gateway.GoogleGateway {
+func NewDefaultGoogleGateway(client http_client.HTTPClient) gateway.GoogleGateway {
 	return &DefaultGoogleGateway{httpClient: client}
 }
 

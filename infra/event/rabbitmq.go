@@ -46,9 +46,9 @@ func NewRabbitMqAdapter(server string) event.Handler {
 }
 
 func (adapter *RabbitMqAdapter) Close() {
-	adapter.producerChannel.Close()
-	adapter.consumerChannel.Close()
-	adapter.connection.Close()
+	_ = adapter.producerChannel.Close()
+	_ = adapter.consumerChannel.Close()
+	_ = adapter.connection.Close()
 }
 
 func (adapter *RabbitMqAdapter) Emit(ctx context.Context, event *event.Event) error {

@@ -54,14 +54,6 @@ func Restore(id, name, email string, phoneNumber *string, status, tenantId strin
 	}, nil
 }
 
-func (customer *Customer) isActive() bool {
-	return customer.Status == ACTIVE
-}
-
-func (customer *Customer) isInactive() bool {
-	return customer.Status == INACTIVE
-}
-
 func (customer *Customer) GetPhoneNumber() *string {
 	if customer.phoneNumber == nil {
 		return nil

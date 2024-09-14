@@ -69,6 +69,6 @@ func (repository *NotificationMongoRepository) Delete(ctx context.Context, notif
 func (repository *NotificationMongoRepository) Update(ctx context.Context, notification *notification.Notification) {
 	update := bson.M{"$set": notification}
 	updateOptions := options.Update()
-	filter := bson.D{{"_id", notification.Id}}
+	filter := bson.D{{Key: "_id", Value: notification.Id}}
 	_, _ = repository.collection.UpdateOne(ctx, filter, update, updateOptions)
 }

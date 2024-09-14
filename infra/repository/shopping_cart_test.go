@@ -32,10 +32,10 @@ func runTests(t *testing.T, shoppingCartRepository repository.ShoppingCartReposi
 	require.Nil(t, shoppingCart)
 
 	shoppingCart = shopping_cart.New(customerId, faker.WORD)
-	product, err := product.New(faker.Name(), faker.Word(), 10.0, faker.WORD)
+	aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.WORD)
 	require.NoError(t, err)
 
-	require.NoError(t, shoppingCart.AddItem(product, 2, ""))
+	require.NoError(t, shoppingCart.AddItem(aProduct, 2, ""))
 	require.NoError(t, shoppingCartRepository.Upsert(ctx, shoppingCart))
 
 	savedShoppingCart, err := shoppingCartRepository.FindByCustomerId(ctx, customerId)

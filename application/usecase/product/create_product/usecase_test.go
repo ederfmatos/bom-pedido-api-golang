@@ -15,7 +15,7 @@ import (
 func TestCreateProductUseCase_Execute(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
 	useCase := New(applicationFactory)
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	t.Run("should return ProductWithSameNameError error", func(t *testing.T) {
 		input := Input{

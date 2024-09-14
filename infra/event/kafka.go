@@ -128,7 +128,7 @@ func (handler *KafkaEventHandler) processMessage(message *kafka.Message, consume
 	}
 	err = handler.sendMessageToDeadLetterTopic(message, err)
 	if err == nil {
-		messageEvent.Ack(ctx)
+		_ = messageEvent.Ack(ctx)
 	} else {
 		messageEvent.Nack(ctx)
 	}
@@ -177,7 +177,7 @@ func (handler *KafkaEventHandler) sendMessageToDeadLetterTopic(originalMessage *
 func (handler *KafkaEventHandler) Close() {
 	handler.producer.Close()
 	for _, consumer := range handler.consumers {
-		consumer.Close()
+		_ = consumer.Close()
 	}
 	handler.consumers = make([]*kafka.Consumer, 0)
 }

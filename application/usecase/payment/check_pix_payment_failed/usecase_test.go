@@ -30,7 +30,7 @@ func Test_CheckPixPaymentFailed(t *testing.T) {
 
 	aCustomer, err := customer.New(faker.Name(), faker.Email(), value_object.NewTenantId())
 	require.NoError(t, err)
-	err = applicationFactory.CustomerRepository.Create(context.TODO(), aCustomer)
+	err = applicationFactory.CustomerRepository.Create(context.Background(), aCustomer)
 	require.NoError(t, err)
 	ctx := context.Background()
 

@@ -23,7 +23,7 @@ func Test_MerchantMemoryRepository(t *testing.T) {
 }
 
 func runMerchantTests(t *testing.T, repository repository.MerchantRepository) {
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
 	require.NoError(t, err)

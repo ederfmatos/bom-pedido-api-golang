@@ -37,11 +37,9 @@ func AuthenticateMiddleware(factory *factory.ApplicationFactory) echo.Middleware
 			case "ADMIN":
 				c.Set(AdminIdParam, tokenData.Id)
 				span.SetAttributes(attribute.String(AdminIdParam, tokenData.Id))
-				break
 			case "CUSTOMER":
 				c.Set(CustomerIdParam, tokenData.Id)
 				span.SetAttributes(attribute.String(CustomerIdParam, tokenData.Id))
-				break
 			default:
 				span.SetStatus(codes.Error, err.Error())
 				span.RecordError(err)

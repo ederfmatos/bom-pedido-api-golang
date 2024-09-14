@@ -6,6 +6,9 @@ pre-commit:
     test:
       run: go test ./...
 
+    lint:
+      run: golangci-lint run
+
     check_style:
       run: |
         error_files=""

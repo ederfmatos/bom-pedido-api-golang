@@ -22,7 +22,7 @@ func Mongo(url string) *mongo.Client {
 	clientOptions.Monitor = monitor
 	mongoClient, err := mongo.Connect(context.Background(), clientOptions)
 	failOnError(err, "Failed to connect to mongo")
-	err = mongoClient.Ping(context.TODO(), nil)
+	err = mongoClient.Ping(context.Background(), nil)
 	failOnError(err, "Failed to ping mongo")
 	slog.Info("Connected to mongo successfully")
 	return mongoClient

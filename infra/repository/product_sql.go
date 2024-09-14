@@ -73,11 +73,11 @@ func (repository *DefaultProductRepository) FindAllById(ctx context.Context, ids
 			if err != nil {
 				return err
 			}
-			product, err := product.Restore(id, name, description, price, status, tenantId)
+			aProduct, err := product.Restore(id, name, description, price, status, tenantId)
 			if err != nil {
 				return err
 			}
-			products[id] = product
+			products[id] = aProduct
 			return nil
 		})
 	return products, err

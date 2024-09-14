@@ -14,9 +14,9 @@ import (
 func Test_AdminSqlRepository(t *testing.T) {
 	container := test.NewContainer()
 	sqlConnection := NewDefaultSqlConnection(container.Database)
-	adminSqlRepository := NewDefaultAdminRepository(sqlConnection)
+	adminSQLRepository := NewDefaultAdminRepository(sqlConnection)
 	merchantRepository := NewDefaultMerchantRepository(sqlConnection)
-	runAdminTests(t, adminSqlRepository, merchantRepository)
+	runAdminTests(t, adminSQLRepository, merchantRepository)
 }
 
 func Test_AdminMemoryRepository(t *testing.T) {
@@ -26,7 +26,7 @@ func Test_AdminMemoryRepository(t *testing.T) {
 }
 
 func runAdminTests(t *testing.T, repository repository.AdminRepository, merchantRepository repository.MerchantRepository) {
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
 	require.NoError(t, err)

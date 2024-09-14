@@ -25,10 +25,7 @@ func TestRedisLocker(t *testing.T) {
 		_, err := locker.Lock(ctx, ttl, key)
 		require.NoError(t, err, "failed to lock:", err)
 
-		err = locker.Release(ctx, key)
-		if err != nil {
-			t.Fatalf("failed to release lock: %s", err)
-		}
+		locker.Release(ctx, key)
 	})
 
 	t.Run("LockFunc", func(t *testing.T) {
@@ -60,10 +57,7 @@ func TestRedisLocker(t *testing.T) {
 			t.Fatal("expected lock to fail but it succeeded")
 		}
 
-		err = locker.Release(ctx, key)
-		if err != nil {
-			t.Fatalf("failed to release lock: %s", err)
-		}
+		locker.Release(ctx, key)
 	})
 
 	t.Run("Lock with expired TTL", func(t *testing.T) {
@@ -81,10 +75,7 @@ func TestRedisLocker(t *testing.T) {
 			t.Fatalf("failed to re-lock after TTL expired: %s", err)
 		}
 
-		err = locker.Release(ctx, key)
-		if err != nil {
-			t.Fatalf("failed to release lock: %s", err)
-		}
+		locker.Release(ctx, key)
 	})
 
 	t.Run("Lock with canceled context", func(t *testing.T) {

@@ -2,7 +2,7 @@ package repository
 
 import (
 	"bom-pedido-api/application/repository"
-	customer "bom-pedido-api/domain/entity/customer"
+	"bom-pedido-api/domain/entity/customer"
 	"bom-pedido-api/infra/test"
 	"context"
 	"github.com/go-faker/faker/v4"
@@ -23,7 +23,7 @@ func Test_CustomerMemoryRepository(t *testing.T) {
 }
 
 func runCustomerTests(t *testing.T, repository repository.CustomerRepository) {
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	aCustomer, err := customer.New(faker.Name(), faker.Email(), faker.Word())
 	require.NoError(t, err)

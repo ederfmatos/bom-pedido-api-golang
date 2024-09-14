@@ -50,8 +50,6 @@ func LockByCustomerId(factory *factory.ApplicationFactory) echo.MiddlewareFunc {
 }
 
 func releaseOnContextDone(ctx context.Context, factory *factory.ApplicationFactory, id string) {
-	select {
-	case <-ctx.Done():
-		factory.Locker.Release(context.Background(), id)
-	}
+	<-ctx.Done()
+	factory.Locker.Release(context.Background(), id)
 }

@@ -24,7 +24,7 @@ func Test_TransactionMemoryRepository(t *testing.T) {
 }
 
 func runTransactionTests(t *testing.T, repository repository.TransactionRepository) {
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	pixTransaction := transaction.NewPixTransaction(value_object.NewID(), value_object.NewID(), faker.Word(), faker.Word(), faker.Word(), 10)
 

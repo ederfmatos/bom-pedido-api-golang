@@ -11,8 +11,8 @@ type requestBody struct {
 	Email string `body:"email"`
 }
 
-func Handle(baseUrl string, factory *factory.ApplicationFactory) func(context echo.Context) error {
-	useCase := send_authentication_magic_link.New(baseUrl, factory)
+func Handle(baseURL string, factory *factory.ApplicationFactory) func(context echo.Context) error {
+	useCase := send_authentication_magic_link.New(baseURL, factory)
 	return func(context echo.Context) error {
 		var request requestBody
 		err := context.Bind(&request)

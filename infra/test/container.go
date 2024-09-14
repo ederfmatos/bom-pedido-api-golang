@@ -29,7 +29,7 @@ type Container struct {
 }
 
 var instance *Container
-var ctx = context.TODO()
+var ctx = context.Background()
 var once sync.Once
 
 func NewContainer() *Container {
@@ -62,14 +62,15 @@ func (c *Container) Down() {
 
 func mongoConnection() (*mongo.Client, func()) {
 	mongodbContainer, err := mongodb.Run(ctx, "mongo:6")
+	failOnError(err)
 	endpoint, err := mongodbContainer.Endpoint(context.Background(), "")
 	failOnError(err)
 	clientOptions := options.Client().ApplyURI("mongodb://" + endpoint)
 	mongoClient, err := mongo.Connect(ctx, clientOptions)
 	failOnError(err)
 	return mongoClient, func() {
-		mongodbContainer.Terminate(ctx)
-		mongoClient.Disconnect(ctx)
+		_ = mongodbContainer.Terminate(ctx)
+		_ = mongoClient.Disconnect(ctx)
 	}
 }
 
@@ -82,8 +83,8 @@ func redisClient() (*redis2.Client, func()) {
 	failOnError(err)
 	redisClient := redis2.NewClient(redisUrl)
 	return redisClient, func() {
-		redisClient.Close()
-		redisContainer.Terminate(ctx)
+		_ = redisClient.Close()
+		_ = redisContainer.Terminate(ctx)
 	}
 }
 
@@ -265,8 +266,8 @@ func databaseConnection() (*sql.DB, func()) {
     `)
 	failOnError(err)
 	return database, func() {
-		database.Close()
-		postgresContainer.Terminate(ctx)
+		_ = database.Close()
+		_ = postgresContainer.Terminate(ctx)
 	}
 }
 

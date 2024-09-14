@@ -14,3 +14,6 @@ docker-build:
 
 docker-up:
 	docker run --name bom-pedido-api --network host --env-file .env  ederfmatos/bom-pedido-api:latest
+
+lint:
+	golangci-lint run
