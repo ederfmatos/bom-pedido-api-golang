@@ -3,7 +3,6 @@ package factory
 import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/infra/config"
-	"bom-pedido-api/infra/gateway/email"
 	"bom-pedido-api/infra/lock"
 	"bom-pedido-api/infra/repository"
 	"database/sql"
@@ -15,7 +14,6 @@ func NewApplicationFactory(database *sql.DB, environment *config.Environment, re
 	connection := repository.NewDefaultSqlConnection(database)
 	locker := lock.NewRedisLocker(redisClient)
 	mongoDatabase := mongoClient.Database(environment.MongoDatabaseName)
-	emailGateway := email.NewResendEmailGateway(email.NewTemplateLoader(), environment.EmailFrom, environment.ResendMailKey)
 	return factory.NewApplicationFactory(
 		gatewayFactory(environment, connection),
 		repositoryFactory(connection, mongoDatabase),
@@ -23,6 +21,5 @@ func NewApplicationFactory(database *sql.DB, environment *config.Environment, re
 		eventFactory(environment, locker, mongoDatabase),
 		queryFactory(connection),
 		locker,
-		emailGateway,
 	)
 }

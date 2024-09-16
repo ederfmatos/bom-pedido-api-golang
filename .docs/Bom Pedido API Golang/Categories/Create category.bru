@@ -1,0 +1,22 @@
+meta {
+  name: Create category
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{API_BASE_URL}}/v1/categories
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{ADMIN_TOKEN}}
+}
+
+body:json {
+  {
+    "name": "Lanches",
+    "description": "Os melhores lanches"
+  }
+}

@@ -18,5 +18,6 @@ func repositoryFactory(connection repository.SqlConnection, mongoDatabase *mongo
 		repository.NewDefaultOrderStatusHistoryRepository(connection),
 		repository.NewCustomerNotificationMongoRepository(mongoDatabase),
 		repository.NewNotificationMongoRepository(mongoDatabase),
+		repository.NewDefaultProductCategoryRepository(connection),
 	)
 }

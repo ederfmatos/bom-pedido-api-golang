@@ -15,6 +15,7 @@ type RepositoryFactory struct {
 	OrderHistoryRepository         repository.OrderStatusHistoryRepository
 	CustomerNotificationRepository repository.CustomerNotificationRepository
 	NotificationRepository         repository.NotificationRepository
+	ProductCategoryRepository      repository.ProductCategoryRepository
 }
 
 func NewRepositoryFactory(
@@ -28,6 +29,7 @@ func NewRepositoryFactory(
 	orderHistoryRepository repository.OrderStatusHistoryRepository,
 	customerNotificationRepository repository.CustomerNotificationRepository,
 	notificationRepository repository.NotificationRepository,
+	productCategoryRepository repository.ProductCategoryRepository,
 ) *RepositoryFactory {
 	return &RepositoryFactory{
 		CustomerRepository:             customerRepository,
@@ -40,5 +42,6 @@ func NewRepositoryFactory(
 		OrderHistoryRepository:         orderHistoryRepository,
 		CustomerNotificationRepository: customerNotificationRepository,
 		NotificationRepository:         notificationRepository,
+		ProductCategoryRepository:      productCategoryRepository,
 	}
 }

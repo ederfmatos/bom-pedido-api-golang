@@ -229,6 +229,67 @@
         ]
       }
     },
+    "/v1/categories": {
+      "post": {
+        "summary": "Criar Categoria",
+        "tags": [
+          "Products"
+        ],
+        "requestBody": {
+          "description": "Dados da categoria a ser criada",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Categoria criada com sucesso"
+          },
+          "400": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnAuthorizedErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cUrl",
+            "label": "Curl",
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/categories \\\n  --header 'X-Tenant-Id: {TENANT_ID}' \\\n  --header 'content-type: application/json' \\\n  --data '{\n  \"name\": \"Lanches\", \n  \"description\": \"Os melhores lanches\"\n}'"
+          }
+        ]
+      }
+    },
     "/v1/products": {
       "post": {
         "summary": "Criar Produto",
@@ -1364,6 +1425,27 @@
           "quantity"
         ],
         "description": "Requisição para adicionar um item ao carrinho de compras. Inclui o identificador do produto, a quantidade desejada e quaisquer observações adicionais."
+      },
+      "CreateCategoryRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Lanche",
+            "description": "Nome da categoria",
+            "minLength": 3
+          },
+          "description": {
+            "type": "string",
+            "example": "Os melhores Lanches",
+            "description": "Descrição da categoria."
+          }
+        },
+        "required": [
+          "name",
+          "description"
+        ],
+        "description": "Requisição para criar uma nova categoria. Inclui o nome e descrição."
       },
       "CreateProductRequest": {
         "type": "object",

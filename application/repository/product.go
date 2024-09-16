@@ -12,3 +12,8 @@ type ProductRepository interface {
 	ExistsByNameAndTenantId(ctx context.Context, name, tenantId string) (bool, error)
 	FindAllById(ctx context.Context, ids []string) (map[string]*product.Product, error)
 }
+
+type ProductCategoryRepository interface {
+	Create(context.Context, *product.Category) error
+	ExistsByNameAndTenantId(ctx context.Context, name, tenantId string) (bool, error)
+}

@@ -4,6 +4,7 @@ import (
 	"bom-pedido-api/application/factory"
 	"bom-pedido-api/application/gateway"
 	"bom-pedido-api/infra/config"
+	"bom-pedido-api/infra/gateway/email"
 	"bom-pedido-api/infra/gateway/google"
 	"bom-pedido-api/infra/gateway/notification"
 	"bom-pedido-api/infra/gateway/pix"
@@ -37,5 +38,6 @@ func gatewayFactory(environment *config.Environment, connection repository.SqlCo
 		google.NewDefaultGoogleGateway(http_client.NewDefaultHttpClient(environment.GoogleAuthUrl)),
 		pix.NewMerchantPixGatewayMediator(paymentGatewayConfigRepository, pixGateways),
 		notification.NewFirebaseNotificationGateway(fcmClient),
+		email.NewResendEmailGateway(email.NewTemplateLoader(), environment.EmailFrom, environment.ResendMailKey),
 	)
 }
