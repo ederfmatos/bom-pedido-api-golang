@@ -26,7 +26,7 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 	})
 
 	t.Run("should return error is product is unavailable", func(t *testing.T) {
-		aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.WORD)
+		aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.WORD, faker.Word())
 		aProduct.MarkUnAvailable()
 		if err != nil {
 			t.Fatalf("failed to restore aProduct: %v", err)
@@ -47,7 +47,7 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 	})
 
 	t.Run("should create a shopping cart with one item", func(t *testing.T) {
-		aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.WORD)
+		aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.WORD, faker.Word())
 		if err != nil {
 			t.Fatalf("failed to restore aProduct: %v", err)
 		}

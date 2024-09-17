@@ -11,6 +11,7 @@ import (
 type createProductRequest struct {
 	Name        string  `body:"name" json:"name,omitempty"`
 	Description string  `body:"description" json:"description,omitempty"`
+	CategoryId  string  `body:"categoryId" json:"categoryId,omitempty"`
 	Price       float64 `body:"price" json:"price,omitempty"`
 }
 
@@ -26,6 +27,7 @@ func Handle(factory *factory.ApplicationFactory) func(context echo.Context) erro
 			Name:        request.Name,
 			Description: request.Description,
 			Price:       request.Price,
+			CategoryId:  request.CategoryId,
 			TenantId:    context.Get(tenant.Id).(string),
 		}
 		output, err := createProductUseCase.Execute(context.Request().Context(), input)

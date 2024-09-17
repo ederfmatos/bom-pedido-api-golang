@@ -24,7 +24,7 @@ func TestCreateProductUseCase_Execute(t *testing.T) {
 			Price:       10.0,
 			TenantId:    faker.Word(),
 		}
-		aProduct, err := product.Restore(value_object.NewID(), input.Name, faker.Word(), 10.0, "ACTIVE", input.TenantId)
+		aProduct, err := product.Restore(value_object.NewID(), input.Name, faker.Word(), 10.0, "ACTIVE", faker.Word(), input.TenantId)
 		if err != nil {
 			t.Fatalf("failed to restore aProduct: %v", err)
 		}
@@ -33,6 +33,19 @@ func TestCreateProductUseCase_Execute(t *testing.T) {
 		output, err := useCase.Execute(ctx, input)
 
 		require.ErrorIs(t, err, errors.ProductWithSameNameError)
+		require.Nil(t, output)
+	})
+
+	t.Run("should return ProductCategoryNotFoundError error", func(t *testing.T) {
+		input := Input{
+			Name:        faker.Name(),
+			Description: faker.Word(),
+			Price:       10.0,
+			TenantId:    faker.Word(),
+			CategoryId:  faker.Word(),
+		}
+		output, err := useCase.Execute(ctx, input)
+		require.ErrorIs(t, err, errors.ProductCategoryNotFoundError)
 		require.Nil(t, output)
 	})
 
@@ -49,11 +62,16 @@ func TestCreateProductUseCase_Execute(t *testing.T) {
 		}
 		for _, tt := range tests {
 			t.Run(fmt.Sprintf("should return %s error", tt.wantErr.Error()), func(t *testing.T) {
+				category := product.NewCategory(faker.Name(), faker.Word(), faker.Word())
+				err := applicationFactory.ProductCategoryRepository.Create(ctx, category)
+				require.NoError(t, err)
+
 				input := Input{
 					Name:        tt.name,
 					Description: tt.description,
 					Price:       tt.price,
 					TenantId:    faker.Word(),
+					CategoryId:  category.Id,
 				}
 
 				output, err := useCase.Execute(ctx, input)
@@ -65,13 +83,17 @@ func TestCreateProductUseCase_Execute(t *testing.T) {
 	})
 
 	t.Run("should create a product", func(t *testing.T) {
+		category := product.NewCategory(faker.Name(), faker.Word(), faker.Word())
+		err := applicationFactory.ProductCategoryRepository.Create(ctx, category)
+		require.NoError(t, err)
+
 		input := Input{
 			Name:        faker.Name(),
 			Description: faker.Word(),
 			Price:       10.0,
 			TenantId:    faker.Word(),
+			CategoryId:  category.Id,
 		}
-
 		output, err := useCase.Execute(ctx, input)
 
 		require.NoError(t, err)

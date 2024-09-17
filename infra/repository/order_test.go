@@ -20,17 +20,25 @@ func Test_OrderSqlRepository(t *testing.T) {
 	orderRepository := NewDefaultOrderRepository(sqlConnection)
 	productRepository := NewDefaultProductRepository(sqlConnection)
 	customerRepository := NewDefaultCustomerRepository(sqlConnection)
-	orderTests(t, orderRepository, productRepository, customerRepository)
+	categoryRepository := NewDefaultProductCategoryRepository(sqlConnection)
+	orderTests(t, orderRepository, categoryRepository, productRepository, customerRepository)
 }
 
 func Test_OrderMemoryRepository(t *testing.T) {
 	orderRepository := NewOrderMemoryRepository()
 	productRepository := NewProductMemoryRepository()
+	categoryRepository := NewProductCategoryMemoryRepository()
 	customerRepository := NewCustomerMemoryRepository()
-	orderTests(t, orderRepository, productRepository, customerRepository)
+	orderTests(t, orderRepository, categoryRepository, productRepository, customerRepository)
 }
 
-func orderTests(t *testing.T, orderRepository repository.OrderRepository, productRepository repository.ProductRepository, customerRepository repository.CustomerRepository) {
+func orderTests(
+	t *testing.T,
+	orderRepository repository.OrderRepository,
+	categoryRepository repository.ProductCategoryRepository,
+	productRepository repository.ProductRepository,
+	customerRepository repository.CustomerRepository,
+) {
 	ctx := context.Background()
 
 	aCustomer, err := customer.New(faker.Name(), faker.Email(), faker.Word())
@@ -42,7 +50,11 @@ func orderTests(t *testing.T, orderRepository repository.OrderRepository, produc
 	anOrder, err := order.New(aCustomer.Id, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 10.0, 100, time.Now(), faker.WORD)
 	require.NoError(t, err)
 
-	aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.WORD)
+	category := product.NewCategory(faker.Name(), faker.Word(), faker.Word())
+	err = categoryRepository.Create(ctx, category)
+	require.NoError(t, err)
+
+	aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, category.Id, faker.WORD)
 	require.NoError(t, err)
 
 	err = anOrder.AddProduct(aProduct, 1, "")

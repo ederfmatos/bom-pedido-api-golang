@@ -6,6 +6,7 @@ import (
 	"bom-pedido-api/application/usecase/shopping_cart/checkout"
 	"bom-pedido-api/domain/entity/customer"
 	"bom-pedido-api/domain/entity/merchant"
+	"bom-pedido-api/domain/entity/product"
 	"bom-pedido-api/domain/enums"
 	"bom-pedido-api/infra/factory"
 	"bom-pedido-api/infra/test"
@@ -36,12 +37,17 @@ func TestHandle(t *testing.T) {
 	err = applicationFactory.CustomerRepository.Create(ctx, aCustomer)
 	require.NoError(t, err)
 
+	category := product.NewCategory(faker.Name(), faker.Word(), faker.Word())
+	err = applicationFactory.ProductCategoryRepository.Create(ctx, category)
+	require.NoError(t, err)
+
 	createProduct := create_product.New(applicationFactory)
 	createProductOutput, err := createProduct.Execute(ctx, create_product.Input{
 		Name:        faker.Name(),
 		Description: faker.Word(),
 		Price:       10.0,
 		TenantId:    aMerchant.TenantId,
+		CategoryId:  category.Id,
 	})
 	require.NoError(t, err)
 

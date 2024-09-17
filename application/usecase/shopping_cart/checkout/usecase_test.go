@@ -53,7 +53,7 @@ func Test_CheckoutShoppingCart(t *testing.T) {
 		err = applicationFactory.MerchantRepository.Create(ctx, aMerchant)
 		require.NoError(t, err)
 
-		aProduct, _ := product.New(faker.Name(), faker.Word(), 11.0, aMerchant.TenantId)
+		aProduct, _ := product.New(faker.Name(), faker.Word(), 11.0, faker.Word(), aMerchant.TenantId)
 		err = productRepository.Create(ctx, aProduct)
 		require.NoError(t, err)
 

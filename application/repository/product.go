@@ -16,4 +16,5 @@ type ProductRepository interface {
 type ProductCategoryRepository interface {
 	Create(context.Context, *product.Category) error
 	ExistsByNameAndTenantId(ctx context.Context, name, tenantId string) (bool, error)
+	ExistsById(ctx context.Context, id string) (bool, error)
 }

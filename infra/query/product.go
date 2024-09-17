@@ -8,6 +8,17 @@ import (
 	"math"
 )
 
+const (
+	sqlListProducts = `
+		SELECT p.id, p.name, p.description, p.price, p.status, c.id, c.name
+		FROM products AS p 
+		JOIN product_categories AS c ON c.id = p.category_id
+		WHERE p.tenant_id = $1
+		LIMIT $2
+		OFFSET $3
+	`
+)
+
 type ProductSqlQuery struct {
 	repository.SqlConnection
 }
@@ -32,11 +43,11 @@ func (q *ProductSqlQuery) List(ctx context.Context, filter projection.ProductLis
 	page.TotalPages = int32(math.Ceil(float64(page.TotalItems) / float64(filter.PageSize)))
 	page.LastPage = filter.CurrentPage == page.TotalPages
 	skip := calculateSkip(filter)
-	err = q.Sql("select id, name, description, price, status from products where tenant_id = $1 LIMIT $2 OFFSET $3").
+	err = q.Sql(sqlListProducts).
 		Values(filter.TenantId, filter.PageSize, skip).
 		List(ctx, func(getValues func(dest ...any) error) error {
 			var product projection.ProductListItem
-			err = getValues(&product.Id, &product.Name, &product.Description, &product.Price, &product.Status)
+			err = getValues(&product.Id, &product.Name, &product.Description, &product.Price, &product.Status, &product.Category.Id, &product.Category.Name)
 			if err == nil {
 				page.Items = append(page.Items, product)
 			}

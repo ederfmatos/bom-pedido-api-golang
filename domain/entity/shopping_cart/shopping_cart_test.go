@@ -41,7 +41,7 @@ func TestShoppingCart_Checkout(t *testing.T) {
 		t.Run(fmt.Sprintf("should return errors %v", test.Errors), func(t *testing.T) {
 			shoppingCart := New(value_object.NewID(), faker.WORD)
 
-			newProduct, _ := product.New(faker.Name(), faker.Word(), 11.0, faker.WORD)
+			newProduct, _ := product.New(faker.Name(), faker.Word(), 11.0, faker.WORD, faker.Word())
 			err := shoppingCart.AddItem(newProduct, 1, faker.Word())
 			require.NoError(t, err)
 
@@ -53,9 +53,9 @@ func TestShoppingCart_Checkout(t *testing.T) {
 	}
 
 	t.Run("should return product errors", func(t *testing.T) {
-		product1, _ := product.New(faker.Name(), faker.Word(), 11.0, faker.WORD)
-		product2, _ := product.New(faker.Name(), faker.Word(), 12.0, faker.WORD)
-		product3, _ := product.New(faker.Name(), faker.Word(), 13.0, faker.WORD)
+		product1, _ := product.New(faker.Name(), faker.Word(), 11.0, faker.WORD, faker.Word())
+		product2, _ := product.New(faker.Name(), faker.Word(), 12.0, faker.WORD, faker.Word())
+		product3, _ := product.New(faker.Name(), faker.Word(), 13.0, faker.WORD, faker.Word())
 
 		products := map[string]*product.Product{product1.Id: product1, product2.Id: product2}
 
@@ -75,9 +75,9 @@ func TestShoppingCart_Checkout(t *testing.T) {
 	})
 
 	t.Run("should checkout a shopping cart", func(t *testing.T) {
-		product1, _ := product.New(faker.Name(), faker.Word(), 11.0, faker.WORD)
-		product2, _ := product.New(faker.Name(), faker.Word(), 12.0, faker.WORD)
-		product3, _ := product.New(faker.Name(), faker.Word(), 13.0, faker.WORD)
+		product1, _ := product.New(faker.Name(), faker.Word(), 11.0, faker.WORD, faker.Word())
+		product2, _ := product.New(faker.Name(), faker.Word(), 12.0, faker.WORD, faker.Word())
+		product3, _ := product.New(faker.Name(), faker.Word(), 13.0, faker.WORD, faker.Word())
 
 		products := map[string]*product.Product{product1.Id: product1, product2.Id: product2, product3.Id: product3}
 

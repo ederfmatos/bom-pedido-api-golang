@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	sqlCreateProduct       = "INSERT INTO products (id, name, description, price, status, tenant_id) VALUES ($1, $2, $3, $4, $5, $6)"
+	sqlCreateProduct       = "INSERT INTO products (id, name, description, price, status, category_id, tenant_id) VALUES ($1, $2, $3, $4, $5, $6, $7)"
 	sqlUpdateProduct       = "UPDATE products SET name = $1, description = $2, price = $3, status = $4 WHERE id = $5"
-	sqlFindProductById     = "SELECT id, name, description, price, status, tenant_id FROM products WHERE id = $1"
+	sqlFindProductById     = "SELECT id, name, description, price, status, category_id, tenant_id FROM products WHERE id = $1"
 	sqlExistsProductByName = "SELECT 1 FROM products WHERE name = $1 AND tenant_id = $2 LIMIT 1"
 )
 
@@ -24,7 +24,7 @@ func NewDefaultProductRepository(sqlConnection SqlConnection) repository.Product
 
 func (repository *DefaultProductRepository) Create(ctx context.Context, product *product.Product) error {
 	return repository.Sql(sqlCreateProduct).
-		Values(product.Id, product.Name, product.Description, product.Price, product.Status, product.TenantId).
+		Values(product.Id, product.Name, product.Description, product.Price, product.Status, product.CategoryId, product.TenantId).
 		Update(ctx)
 }
 
@@ -35,15 +35,15 @@ func (repository *DefaultProductRepository) Update(ctx context.Context, product 
 }
 
 func (repository *DefaultProductRepository) FindById(ctx context.Context, id string) (*product.Product, error) {
-	var name, description, status, tenantId string
+	var name, description, status, tenantId, categoryId string
 	var price float64
 	found, err := repository.Sql(sqlFindProductById).
 		Values(id).
-		FindOne(ctx, &id, &name, &description, &price, &status, &tenantId)
+		FindOne(ctx, &id, &name, &description, &price, &status, &categoryId, &tenantId)
 	if err != nil || !found {
 		return nil, err
 	}
-	return product.Restore(id, name, description, price, status, tenantId)
+	return product.Restore(id, name, description, price, status, categoryId, tenantId)
 }
 
 func (repository *DefaultProductRepository) ExistsByNameAndTenantId(ctx context.Context, name, tenantId string) (bool, error) {
@@ -63,17 +63,17 @@ func (repository *DefaultProductRepository) FindAllById(ctx context.Context, ids
 		}
 		in += "$" + strconv.Itoa(i+1)
 	}
-	var sqlListProducts = `select id, name, description, price, status, tenant_id from products WHERE id IN (` + in + `)`
+	var sqlListProducts = `select id, name, description, price, status, tenant_id, category_id from products WHERE id IN (` + in + `)`
 	err := repository.Sql(sqlListProducts).
 		Values(args...).
 		List(ctx, func(getValues func(dest ...any) error) error {
-			var id, name, description, status, tenantId string
+			var id, name, description, status, categoryId, tenantId string
 			var price float64
-			err := getValues(&id, &name, &description, &price, &status, &tenantId)
+			err := getValues(&id, &name, &description, &price, &status, &categoryId, &tenantId)
 			if err != nil {
 				return err
 			}
-			aProduct, err := product.Restore(id, name, description, price, status, tenantId)
+			aProduct, err := product.Restore(id, name, description, price, status, categoryId, tenantId)
 			if err != nil {
 				return err
 			}

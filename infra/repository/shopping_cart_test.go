@@ -32,7 +32,7 @@ func runTests(t *testing.T, shoppingCartRepository repository.ShoppingCartReposi
 	require.Nil(t, shoppingCart)
 
 	shoppingCart = shopping_cart.New(customerId, faker.WORD)
-	aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.WORD)
+	aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.WORD, faker.Word())
 	require.NoError(t, err)
 
 	require.NoError(t, shoppingCart.AddItem(aProduct, 2, ""))

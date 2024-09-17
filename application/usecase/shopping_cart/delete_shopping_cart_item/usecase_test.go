@@ -17,7 +17,7 @@ func Test_DeleteShoppingCartItem(t *testing.T) {
 	customerId := value_object.NewID()
 	aShoppingCart := shopping_cart.New(customerId, faker.WORD)
 
-	aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.Word())
+	aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.Word(), faker.Word())
 	require.NoError(t, err)
 
 	err = aShoppingCart.AddItem(aProduct, 1, "")

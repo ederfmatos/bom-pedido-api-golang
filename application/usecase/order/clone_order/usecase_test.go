@@ -32,7 +32,7 @@ func Test_CloneOrder(t *testing.T) {
 		customerId := value_object.NewID()
 		anOrder, err := order.New(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, 0, time.Now(), faker.Word())
 		require.NoError(t, err)
-		aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.Word())
+		aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.Word(), faker.Word())
 		require.NoError(t, err)
 		err = anOrder.AddProduct(aProduct, 1, "observation")
 		require.NoError(t, err)

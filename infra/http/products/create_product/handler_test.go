@@ -2,6 +2,7 @@ package create_product
 
 import (
 	"bom-pedido-api/application/usecase/product/create_product"
+	"bom-pedido-api/domain/entity/product"
 	"bom-pedido-api/infra/factory"
 	"bom-pedido-api/infra/json"
 	"bom-pedido-api/infra/tenant"
@@ -17,18 +18,22 @@ import (
 
 func Test_CreateProduct(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
+	ctx := context.Background()
+
+	category := product.NewCategory(faker.Name(), faker.Word(), faker.Word())
+	err := applicationFactory.ProductCategoryRepository.Create(ctx, category)
+	require.NoError(t, err)
 
 	e := echo.New()
 	body := createProductRequest{
 		Name:        faker.Name(),
 		Description: faker.Word(),
 		Price:       10.0,
+		CategoryId:  category.Id,
 	}
 	var buffer bytes.Buffer
-	err := json.Encode(context.Background(), &buffer, body)
-	if err != nil {
-		panic(err)
-	}
+	err = json.Encode(ctx, &buffer, body)
+	require.NoError(t, err)
 	request := httptest.NewRequest(http.MethodPost, "/v1/products", &buffer)
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response := httptest.NewRecorder()
@@ -43,7 +48,7 @@ func Test_CreateProduct(t *testing.T) {
 	_ = json.Decode(request.Context(), response.Body, &output)
 	require.NotEmpty(t, output.Id)
 
-	savedProduct, err := applicationFactory.ProductRepository.FindById(context.Background(), output.Id)
+	savedProduct, err := applicationFactory.ProductRepository.FindById(ctx, output.Id)
 	require.NoError(t, err)
 	require.NotNil(t, savedProduct)
 	require.Equal(t, body.Name, savedProduct.Name)

@@ -9,4 +9,5 @@ var (
 	ProductPriceShouldPositiveError  = New("product price should positive")
 	ProductInvalidProductStatusError = New("invalid product status")
 	ProductWithSameNameError         = New("product with this name already exists")
+	ProductCategoryNotFoundError     = New("product category not found")
 )

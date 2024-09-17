@@ -353,7 +353,7 @@
           {
             "lang": "cUrl",
             "label": "Curl",
-            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/products \\\n  --header 'X-Tenant-Id: {TENANT_ID}' \\\n  --header 'content-type: application/json' \\\n  --data '{\n  \"name\": \"Produto 1\", \"description\": \"Descrição do Produto\", \"price\": 59.90\n}'"
+            "source": "curl --request POST \\\n  --url https://api.bompedido.app/api/v1/products \\\n  --header 'X-Tenant-Id: {TENANT_ID}' \\\n  --header 'content-type: application/json' \\\n  --data '{\n  \"name\": \"Produto 1\", \"description\": \"Descrição do Produto\", \"price\": 59.90, \"categoryId\": \"0191ffb9-4e50-753d-8a00-2fc00541152c\"\n}'"
           }
         ]
       },
@@ -1467,10 +1467,16 @@
             "example": 99.99,
             "description": "Preço do produto. Deve ser um valor numérico positivo.",
             "minimum": 0.01
+          },
+          "categoryId": {
+            "type": "string",
+            "example": "0191ffb9-4e50-753d-8a00-2fc00541152c",
+            "description": "Id da categoria"
           }
         },
         "required": [
           "name",
+          "categoryId",
           "price"
         ],
         "description": "Requisição para criar um novo produto. Inclui o nome, descrição e preço do produto."
@@ -1539,6 +1545,21 @@
                   "type": "string",
                   "example": "https://images.bompedido.app/01916125-fb78-765d-80dc-3ab8106d569b",
                   "description": "URL da imagem do produto."
+                },
+                "category": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "01916125-fb78-765d-80dc-3ab8106d569b",
+                      "description": "Identificador único da categoria."
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "Lanches",
+                      "description": "Nome da categoria."
+                    }
+                  }
                 }
               }
             }
