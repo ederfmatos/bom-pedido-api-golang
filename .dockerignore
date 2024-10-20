@@ -19,5 +19,5 @@ bom-pedido-api.iml
 .dockerignore
 Makefile
 .github
-.docs/Bom Pedido API Golang
+.docs/collection
 .docs/flow
