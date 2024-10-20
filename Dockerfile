@@ -4,7 +4,7 @@ WORKDIR /build
 COPY . .
 RUN PATH="/go/bin:${PATH}" GO111MODULE=on CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go mod tidy && \
     go mod download && \
-    go build -tags musl -ldflags '-s -w -extldflags "-static"' -o app
+    go build -tags musl -ldflags '-s -w -extldflags "-static"' -o app ./cmd/api
 
 FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/

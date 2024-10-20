@@ -12,7 +12,7 @@ pre-commit:
     check_style:
       run: |
         error_files=""
-         for dir in application infra domain; do
+         for dir in cmd internal; do
            bad_files=$(find $dir -name '*[A-Z]*' -o -name '* *')
            if [ -n "$bad_files" ]; then
              error_files="$error_files\n$bad_files"
