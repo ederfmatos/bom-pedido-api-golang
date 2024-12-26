@@ -1,86 +1,85 @@
 package config
 
 import (
-	"log"
+	"fmt"
 	"os"
+	"reflect"
 	"strconv"
 )
 
 type (
 	PixPaymentGatewayEnv struct {
-		NotificationUrl         string
-		ExpirationTimeInMinutes int
-		WooviApiBaseUrl         string
+		NotificationUrl         string `name:"PIX_PAYMENT_GATEWAY_NOTIFICATION_URL"`
+		ExpirationTimeInMinutes int    `name:"PIX_PAYMENT_GATEWAY_EXPIRATION_TIME_IN_MINUTES"`
+		WooviApiBaseUrl         string `name:"WOOVI_API_BASE_URL"`
 	}
 
 	Environment struct {
-		DatabaseUrl                   string
-		DatabaseDriver                string
-		RedisUrl                      string
-		JwePrivateKeyPath             string
-		RabbitMqServer                string
-		GoogleAuthUrl                 string
-		MongoUrl                      string
-		MongoDatabaseName             string
-		MongoOutboxCollectionName     string
-		Port                          string
-		KafkaBootstrapServer          string
-		KafkaClientId                 string
-		OpenTelemetryEndpointExporter string
-		MessagingStrategy             string
-		AdminMagicLinkBaseUrl         string
-		EmailFrom                     string
-		ResendMailKey                 string
-		PixPaymentGateway             PixPaymentGatewayEnv
+		DatabaseUrl                   string               `name:"DATABASE_URL"`
+		DatabaseDriver                string               `name:"DATABASE_DRIVER"`
+		RedisUrl                      string               `name:"REDIS_URL"`
+		JwePrivateKeyPath             string               `name:"JWE_PRIVATE_KEY_PATH"`
+		RabbitMqServer                string               `name:"RABBITMQ_SERVER"`
+		GoogleAuthUrl                 string               `name:"GOOGLE_AUTH_URL"`
+		MongoUrl                      string               `name:"MONGO_URL"`
+		MongoDatabaseName             string               `name:"MONGO_DATABASE_NAME"`
+		MongoOutboxCollectionName     string               `name:"MONGO_OUTBOX_COLLECTION"`
+		Port                          string               `name:"PORT"`
+		KafkaBootstrapServer          string               `name:"KAFKA_BOOTSTRAP_SERVER"`
+		KafkaClientId                 string               `name:"KAFKA_CLIENT_ID"`
+		OpenTelemetryEndpointExporter string               `name:"OTEL_ENDPOINT_EXPORTER"`
+		MessagingStrategy             string               `name:"MESSAGING_STRATEGY"`
+		AdminMagicLinkBaseUrl         string               `name:"ADMIN_MAGIC_LINK_BASE_URL"`
+		EmailFrom                     string               `name:"EMAIL_FROM"`
+		ResendMailKey                 string               `name:"RESEND_MAIL_KEY"`
+		PixPaymentGateway             PixPaymentGatewayEnv `name:"PIX_PAYMENT_GATEWAY"`
 	}
 )
 
-func requiredEnv(name string) string {
-	if value := os.Getenv(name); value != "" {
-		return value
+func LoadEnvironment() (*Environment, error) {
+	var environment Environment
+	envStruct := reflect.ValueOf(&environment).Elem()
+
+	if err := loadStruct(envStruct); err != nil {
+		return nil, fmt.Errorf("load environment struct: %v", err)
 	}
-	log.Fatalf(`Environment variable %s is required`, name)
-	return ""
+
+	return &environment, nil
 }
 
-func requiredIntEnv(name string) int {
-	value, err := strconv.Atoi(requiredEnv(name))
-	if err != nil {
-		log.Fatal(err)
-	}
-	return value
-}
+func loadStruct(s reflect.Value) error {
+	for i := 0; i < s.NumField(); i++ {
+		field := s.Type().Field(i)
+		name := field.Tag.Get("name")
 
-func optionalEnv(name, defaultValue string) string {
-	if value := os.Getenv(name); value != "" {
-		return value
-	}
-	return defaultValue
-}
+		if name == "" {
+			continue
+		}
 
-func LoadEnvironment() *Environment {
-	return &Environment{
-		DatabaseUrl:                   requiredEnv("DATABASE_URL"),
-		DatabaseDriver:                requiredEnv("DATABASE_DRIVER"),
-		RedisUrl:                      requiredEnv("REDIS_URL"),
-		JwePrivateKeyPath:             requiredEnv("JWE_PRIVATE_KEY_PATH"),
-		RabbitMqServer:                requiredEnv("RABBITMQ_SERVER"),
-		GoogleAuthUrl:                 requiredEnv("GOOGLE_AUTH_URL"),
-		MongoUrl:                      requiredEnv("MONGO_URL"),
-		MongoDatabaseName:             requiredEnv("MONGO_DATABASE_NAME"),
-		MongoOutboxCollectionName:     requiredEnv("MONGO_OUTBOX_COLLECTION"),
-		Port:                          optionalEnv("PORT", "8080"),
-		KafkaBootstrapServer:          requiredEnv("KAFKA_BOOTSTRAP_SERVER"),
-		KafkaClientId:                 requiredEnv("KAFKA_CLIENT_ID"),
-		OpenTelemetryEndpointExporter: requiredEnv("OTEL_ENDPOINT_EXPORTER"),
-		MessagingStrategy:             requiredEnv("MESSAGING_STRATEGY"),
-		AdminMagicLinkBaseUrl:         requiredEnv("ADMIN_MAGIC_LINK_BASE_URL"),
-		EmailFrom:                     requiredEnv("EMAIL_FROM"),
-		ResendMailKey:                 requiredEnv("RESEND_MAIL_KEY"),
-		PixPaymentGateway: PixPaymentGatewayEnv{
-			NotificationUrl:         requiredEnv("PIX_PAYMENT_GATEWAY_NOTIFICATION_URL"),
-			ExpirationTimeInMinutes: requiredIntEnv("PIX_PAYMENT_GATEWAY_EXPIRATION_TIME_IN_MINUTES"),
-			WooviApiBaseUrl:         requiredEnv("WOOVI_API_BASE_URL"),
-		},
+		if field.Type.Kind() == reflect.Struct {
+			if err := loadStruct(s.Field(i)); err != nil {
+				return fmt.Errorf("load environment struct %s: %v", name, err)
+			}
+			continue
+		}
+
+		value := os.Getenv(name)
+		if value == "" {
+			return fmt.Errorf("the environment variable %s was not found", name)
+		}
+
+		switch s.Field(i).Kind() {
+		case reflect.String:
+			s.Field(i).SetString(value)
+		case reflect.Int:
+			intValue, err := strconv.Atoi(value)
+			if err != nil {
+				return fmt.Errorf("failed to convert %s to int: %v", name, err)
+			}
+			s.Field(i).SetInt(int64(intValue))
+		default:
+			return fmt.Errorf("unsupported field type: %s", s.Field(i).Kind())
+		}
 	}
+	return nil
 }

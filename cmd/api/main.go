@@ -6,11 +6,16 @@ import (
 	"bom-pedido-api/internal/infra/http"
 	"bom-pedido-api/internal/infra/messaging"
 	"fmt"
+	"log"
 )
 
 func main() {
 	config.ConfigureLogger()
-	environment := config.LoadEnvironment()
+	environment, err := config.LoadEnvironment()
+	if err != nil {
+		log.Fatalf("load environment: %v", err)
+	}
+
 	database := config.Database(environment.DatabaseDriver, environment.DatabaseUrl)
 	redisClient := config.Redis(environment.RedisUrl)
 	mongoClient := config.Mongo(environment.MongoUrl)
