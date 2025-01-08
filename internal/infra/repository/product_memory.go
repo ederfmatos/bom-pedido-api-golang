@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"bom-pedido-api/internal/application/repository"
 	"bom-pedido-api/internal/domain/entity/product"
 	"context"
 	"fmt"
@@ -11,31 +10,31 @@ type ProductMemoryRepository struct {
 	products map[string]*product.Product
 }
 
-func NewProductMemoryRepository() repository.ProductRepository {
+func NewProductMemoryRepository() *ProductMemoryRepository {
 	return &ProductMemoryRepository{products: make(map[string]*product.Product)}
 }
 
-func (repository *ProductMemoryRepository) Create(_ context.Context, product *product.Product) error {
-	for _, p := range repository.products {
+func (r *ProductMemoryRepository) Create(_ context.Context, product *product.Product) error {
+	for _, p := range r.products {
 		if p.Name == product.Name {
 			return fmt.Errorf("duplicated product name")
 		}
 	}
-	repository.products[product.Id] = product
+	r.products[product.Id] = product
 	return nil
 }
 
-func (repository *ProductMemoryRepository) Update(_ context.Context, product *product.Product) error {
-	repository.products[product.Id] = product
+func (r *ProductMemoryRepository) Update(_ context.Context, product *product.Product) error {
+	r.products[product.Id] = product
 	return nil
 }
 
-func (repository *ProductMemoryRepository) FindById(_ context.Context, id string) (*product.Product, error) {
-	return repository.products[id], nil
+func (r *ProductMemoryRepository) FindById(_ context.Context, id string) (*product.Product, error) {
+	return r.products[id], nil
 }
 
-func (repository *ProductMemoryRepository) ExistsByNameAndTenantId(_ context.Context, name, tenantId string) (bool, error) {
-	for _, aProduct := range repository.products {
+func (r *ProductMemoryRepository) ExistsByNameAndTenantId(_ context.Context, name, tenantId string) (bool, error) {
+	for _, aProduct := range r.products {
 		if aProduct.Name == name && aProduct.TenantId == tenantId {
 			return true, nil
 		}
@@ -43,10 +42,10 @@ func (repository *ProductMemoryRepository) ExistsByNameAndTenantId(_ context.Con
 	return false, nil
 }
 
-func (repository *ProductMemoryRepository) FindAllById(_ context.Context, ids []string) (map[string]*product.Product, error) {
+func (r *ProductMemoryRepository) FindAllById(_ context.Context, ids []string) (map[string]*product.Product, error) {
 	products := make(map[string]*product.Product)
 	for _, id := range ids {
-		aProduct := repository.products[id]
+		aProduct := r.products[id]
 		if aProduct != nil {
 			products[id] = aProduct
 		}

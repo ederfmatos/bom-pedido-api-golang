@@ -1,39 +1,29 @@
 package repository
 
 import (
-	"bom-pedido-api/internal/application/repository"
 	"bom-pedido-api/internal/domain/entity/notification"
-	"bom-pedido-api/internal/infra/event"
+	"bom-pedido-api/pkg/mongo"
 	"context"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type NotificationMongoRepository struct {
 	collection *mongo.Collection
-	stream     event.Stream
 }
 
-func NewNotificationMongoRepository(database *mongo.Database) repository.NotificationRepository {
-	collection := database.Collection("notifications")
-	return &NotificationMongoRepository{
-		collection: collection,
-		stream:     event.NewMongoStream(collection),
-	}
+func NewNotificationMongoRepository(database *mongo.Database) *NotificationMongoRepository {
+	return &NotificationMongoRepository{collection: database.ForCollection("notifications")}
 }
 
-func (repository *NotificationMongoRepository) Create(ctx context.Context, notification *notification.Notification) error {
-	_, err := repository.collection.InsertOne(ctx, notification)
-	return err
+func (r *NotificationMongoRepository) Create(ctx context.Context, notification *notification.Notification) error {
+	return r.collection.InsertOne(ctx, notification)
 }
 
-func (repository *NotificationMongoRepository) Stream(ctx context.Context) <-chan *notification.Notification {
+func (r *NotificationMongoRepository) Stream(ctx context.Context) <-chan *notification.Notification {
 	channel := make(chan *notification.Notification)
-	stream, _ := repository.stream.FetchStream()
 	go func() {
+		stream, _ := r.collection.FetchStream(ctx)
 		for id := range stream {
-			aNotification, err := repository.FindById(ctx, id)
+			aNotification, err := r.FindById(ctx, id)
 			if err != nil || aNotification == nil {
 				continue
 			}
@@ -43,32 +33,19 @@ func (repository *NotificationMongoRepository) Stream(ctx context.Context) <-cha
 	return channel
 }
 
-func (repository *NotificationMongoRepository) FindById(ctx context.Context, id string) (*notification.Notification, error) {
-	result := repository.collection.FindOne(ctx, bson.M{"_id": id})
-	if err := result.Err(); err != nil {
-		if err.Error() == "mongo: no documents in result" {
-			return nil, nil
-		}
+func (r *NotificationMongoRepository) FindById(ctx context.Context, id string) (*notification.Notification, error) {
+	var aNotification notification.Notification
+	err := r.collection.FindByID(ctx, id, &aNotification)
+	if err != nil || aNotification.Id == "" {
 		return nil, err
 	}
-	aNotification := &notification.Notification{}
-	err := result.Decode(aNotification)
-	if err != nil {
-		return nil, err
-	}
-	if aNotification.Id == "" {
-		return nil, nil
-	}
-	return aNotification, nil
+	return &aNotification, nil
 }
 
-func (repository *NotificationMongoRepository) Delete(ctx context.Context, notification *notification.Notification) {
-	_, _ = repository.collection.DeleteOne(ctx, bson.M{"_id": notification.Id})
+func (r *NotificationMongoRepository) Delete(ctx context.Context, notification *notification.Notification) {
+	_ = r.collection.DeleteByID(ctx, notification.Id)
 }
 
-func (repository *NotificationMongoRepository) Update(ctx context.Context, notification *notification.Notification) {
-	update := bson.M{"$set": notification}
-	updateOptions := options.Update()
-	filter := bson.D{{Key: "_id", Value: notification.Id}}
-	_, _ = repository.collection.UpdateOne(ctx, filter, update, updateOptions)
+func (r *NotificationMongoRepository) Update(ctx context.Context, notification *notification.Notification) {
+	_ = r.collection.UpdateByID(ctx, notification.Id, notification)
 }

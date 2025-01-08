@@ -2,7 +2,6 @@
 .docker
 *.pem
 .resources/secrets/
-.resources/sql
 .gitignore
 docker-compose.yml
 Dockerfile

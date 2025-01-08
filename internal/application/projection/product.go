@@ -2,8 +2,8 @@ package projection
 
 type (
 	ProductListFilter struct {
-		CurrentPage int32
-		PageSize    int32
+		CurrentPage int64
+		PageSize    int64
 		TenantId    string
 	}
 

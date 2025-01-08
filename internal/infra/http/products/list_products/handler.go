@@ -16,8 +16,8 @@ func Handle(factory *factory.ApplicationFactory) func(context echo.Context) erro
 			TenantId:    context.Get(tenant.Id).(string),
 		}
 		err := echo.QueryParamsBinder(context).
-			Int32("pageSize", &filter.PageSize).
-			Int32("currentPage", &filter.CurrentPage).
+			Int64("pageSize", &filter.PageSize).
+			Int64("currentPage", &filter.CurrentPage).
 			BindError()
 		if err != nil {
 			return err

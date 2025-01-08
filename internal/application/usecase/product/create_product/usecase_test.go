@@ -3,7 +3,6 @@ package create_product
 import (
 	"bom-pedido-api/internal/domain/entity/product"
 	"bom-pedido-api/internal/domain/errors"
-	"bom-pedido-api/internal/domain/value_object"
 	"bom-pedido-api/internal/infra/factory"
 	"context"
 	"fmt"
@@ -24,7 +23,7 @@ func TestCreateProductUseCase_Execute(t *testing.T) {
 			Price:       10.0,
 			TenantId:    faker.Word(),
 		}
-		aProduct, err := product.Restore(value_object.NewID(), input.Name, faker.Word(), 10.0, "ACTIVE", faker.Word(), input.TenantId)
+		aProduct, err := product.New(input.Name, faker.Word(), 10.0, faker.Word(), input.TenantId)
 		if err != nil {
 			t.Fatalf("failed to restore aProduct: %v", err)
 		}

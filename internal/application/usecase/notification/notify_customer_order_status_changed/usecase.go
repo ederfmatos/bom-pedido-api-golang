@@ -38,7 +38,7 @@ func (u *UseCase) Execute(ctx context.Context, input Input) error {
 	if title == "" || body == "" {
 		return nil
 	}
-	customerNotification, err := u.customerNotificationRepository.FindByCustomer(ctx, anOrder.CustomerID)
+	customerNotification, err := u.customerNotificationRepository.FindByCustomerId(ctx, anOrder.CustomerID)
 	if err != nil || customerNotification == nil {
 		return err
 	}

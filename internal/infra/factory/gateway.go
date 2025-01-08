@@ -10,12 +10,13 @@ import (
 	"bom-pedido-api/internal/infra/gateway/pix"
 	"bom-pedido-api/internal/infra/http_client"
 	"bom-pedido-api/internal/infra/repository"
+	"bom-pedido-api/pkg/mongo"
 	"context"
-	firebase "firebase.google.com/go"
+	firebase "firebase.google.com/go/v4"
 )
 
-func gatewayFactory(environment *config.Environment, connection repository.SqlConnection) *factory.GatewayFactory {
-	paymentGatewayConfigRepository := repository.NewDefaultMerchantPaymentGatewayConfigRepository(connection)
+func gatewayFactory(environment *config.Environment, mongoDatabase *mongo.Database) *factory.GatewayFactory {
+	paymentGatewayConfigRepository := repository.NewMerchantPaymentGatewayConfigMongoRepository(mongoDatabase)
 	pixEnvironment := environment.PixPaymentGateway
 	expirationTimeInMinutes := pixEnvironment.ExpirationTimeInMinutes
 	pixGateways := map[string]gateway.PixGateway{

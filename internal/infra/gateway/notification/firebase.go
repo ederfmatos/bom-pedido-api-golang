@@ -5,7 +5,7 @@ import (
 	"bom-pedido-api/internal/domain/entity/notification"
 	"bom-pedido-api/internal/infra/telemetry"
 	"context"
-	"firebase.google.com/go/messaging"
+	"firebase.google.com/go/v4/messaging"
 )
 
 type FirebaseNotificationGateway struct {

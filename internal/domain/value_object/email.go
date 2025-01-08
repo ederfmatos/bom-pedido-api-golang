@@ -2,6 +2,9 @@ package value_object
 
 import (
 	"bom-pedido-api/internal/domain/errors"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/bsonrw"
+	"go.mongodb.org/mongo-driver/bson/bsontype"
 	"regexp"
 )
 
@@ -31,4 +34,22 @@ func NewEmail(email string) (*Email, error) {
 
 func (e *Email) Value() string {
 	return e.value
+}
+
+func (e *Email) MarshalBSONValue() (bsontype.Type, []byte, error) {
+	return bson.MarshalValue(e.value)
+}
+
+func (e *Email) UnmarshalBSONValue(t bsontype.Type, data []byte) error {
+	valueReader := bsonrw.NewBSONValueReader(t, data)
+	value, err := valueReader.ReadString()
+	if err != nil {
+		return err
+	}
+	email, err := NewEmail(value)
+	if err != nil {
+		return err
+	}
+	*e = *email
+	return nil
 }

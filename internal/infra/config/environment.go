@@ -15,8 +15,6 @@ type (
 	}
 
 	Environment struct {
-		DatabaseUrl                   string               `name:"DATABASE_URL"`
-		DatabaseDriver                string               `name:"DATABASE_DRIVER"`
 		RedisUrl                      string               `name:"REDIS_URL"`
 		JwePrivateKeyPath             string               `name:"JWE_PRIVATE_KEY_PATH"`
 		RabbitMqServer                string               `name:"RABBITMQ_SERVER"`
@@ -25,8 +23,6 @@ type (
 		MongoDatabaseName             string               `name:"MONGO_DATABASE_NAME"`
 		MongoOutboxCollectionName     string               `name:"MONGO_OUTBOX_COLLECTION"`
 		Port                          string               `name:"PORT"`
-		KafkaBootstrapServer          string               `name:"KAFKA_BOOTSTRAP_SERVER"`
-		KafkaClientId                 string               `name:"KAFKA_CLIENT_ID"`
 		OpenTelemetryEndpointExporter string               `name:"OTEL_ENDPOINT_EXPORTER"`
 		MessagingStrategy             string               `name:"MESSAGING_STRATEGY"`
 		AdminMagicLinkBaseUrl         string               `name:"ADMIN_MAGIC_LINK_BASE_URL"`

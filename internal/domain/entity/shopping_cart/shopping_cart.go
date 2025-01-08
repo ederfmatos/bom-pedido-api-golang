@@ -10,7 +10,7 @@ import (
 
 type (
 	ShoppingCart struct {
-		CustomerId string                      `bson:"_id"`
+		CustomerId string                      `bson:"id"`
 		TenantId   string                      `bson:"tenantId"`
 		Items      map[string]ShoppingCartItem `bson:"items"`
 	}
@@ -46,6 +46,9 @@ func (shoppingCart *ShoppingCart) AddItem(product *product.Product, quantity int
 		Quantity:    quantity,
 		Observation: observation,
 		Price:       product.Price,
+	}
+	if shoppingCart.Items == nil {
+		shoppingCart.Items = make(map[string]ShoppingCartItem)
 	}
 	shoppingCart.Items[item.Id] = item
 	return nil

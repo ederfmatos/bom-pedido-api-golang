@@ -6,6 +6,6 @@ import (
 )
 
 type CustomerNotificationRepository interface {
-	FindByCustomer(ctx context.Context, id string) (*customer.Notification, error)
+	FindByCustomerId(ctx context.Context, id string) (*customer.Notification, error)
 	Upsert(ctx context.Context, notification *customer.Notification) error
 }

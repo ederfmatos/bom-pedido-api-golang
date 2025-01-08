@@ -7,7 +7,6 @@ import (
 	"bom-pedido-api/internal/infra/telemetry"
 	"context"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"go.opentelemetry.io/otel/codes"
 	"log"
 	"log/slog"
 	"os"
@@ -120,7 +119,6 @@ func (adapter *RabbitMqAdapter) handleMessage(message amqp.Delivery, handler eve
 			return
 		}
 		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
 		messageEvent.Nack(ctx)
 		slog.Error("Ocorreu um erro no consumo da mensagem", "error", err, "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
 	}()

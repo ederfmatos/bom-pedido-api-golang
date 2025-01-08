@@ -3,9 +3,9 @@ package factory
 import (
 	"bom-pedido-api/internal/application/factory"
 	"bom-pedido-api/internal/infra/query"
-	"bom-pedido-api/internal/infra/repository"
+	"bom-pedido-api/pkg/mongo"
 )
 
-func queryFactory(connection repository.SqlConnection) *factory.QueryFactory {
-	return factory.NewQueryFactory(query.NewProductSqlQuery(connection))
+func queryFactory(mongoDatabase *mongo.Database) *factory.QueryFactory {
+	return factory.NewQueryFactory(query.NewProductQuery(mongoDatabase))
 }

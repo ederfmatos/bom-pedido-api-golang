@@ -5,10 +5,10 @@ import (
 )
 
 type Category struct {
-	Id          string
-	Name        string
-	Description string
-	TenantId    string
+	Id          string `bson:"id"`
+	Name        string `bson:"name"`
+	Description string `bson:"description"`
+	TenantId    string `bson:"tenantId"`
 }
 
 func NewCategory(name, description, tenantId string) *Category {

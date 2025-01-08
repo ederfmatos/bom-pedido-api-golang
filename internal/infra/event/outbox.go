@@ -4,25 +4,32 @@ import (
 	"bom-pedido-api/internal/application/event"
 	"bom-pedido-api/internal/application/lock"
 	"bom-pedido-api/internal/infra/json"
-	"bom-pedido-api/internal/infra/repository/outbox"
+	"bom-pedido-api/internal/infra/repository"
 	"bom-pedido-api/internal/infra/retry"
 	"bom-pedido-api/internal/infra/telemetry"
+	"bom-pedido-api/pkg/mongo"
 	"context"
 	"time"
 )
 
+type outboxRepository interface {
+	Save(ctx context.Context, entry *repository.Entry) error
+	Get(ctx context.Context, id string) (*repository.Entry, error)
+	Update(ctx context.Context, entry *repository.Entry) error
+}
+
 type OutboxEventHandler struct {
 	handler          event.Handler
-	outboxRepository outbox.Repository
-	stream           Stream
+	outboxRepository outboxRepository
+	collection       *mongo.Collection
 	locker           lock.Locker
 }
 
-func NewOutboxEventHandler(handler event.Handler, outboxRepository outbox.Repository, stream Stream, locker lock.Locker) event.Handler {
+func NewOutboxEventHandler(handler event.Handler, outboxRepository outboxRepository, collection *mongo.Collection, locker lock.Locker) event.Handler {
 	eventHandler := &OutboxEventHandler{
 		handler:          handler,
 		outboxRepository: outboxRepository,
-		stream:           stream,
+		collection:       collection,
 		locker:           locker,
 	}
 	eventHandler.handleStream()
@@ -40,7 +47,7 @@ func (handler *OutboxEventHandler) Emit(ctx context.Context, event *event.Event)
 	if err != nil {
 		return err
 	}
-	entry := &outbox.Entry{
+	entry := &repository.Entry{
 		Id:        event.Id,
 		Name:      event.Name,
 		Data:      string(eventData),
@@ -51,7 +58,7 @@ func (handler *OutboxEventHandler) Emit(ctx context.Context, event *event.Event)
 }
 
 func (handler *OutboxEventHandler) handleStream() {
-	fetchEvents, err := handler.stream.FetchStream()
+	fetchEvents, err := handler.collection.FetchStream(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -79,7 +86,7 @@ func (handler *OutboxEventHandler) processEvent(id string) {
 	})
 }
 
-func (handler *OutboxEventHandler) processEntry(ctx context.Context, entry *outbox.Entry) error {
+func (handler *OutboxEventHandler) processEntry(ctx context.Context, entry *repository.Entry) error {
 	if entry == nil || entry.Status == "PROCESSED" {
 		return nil
 	}

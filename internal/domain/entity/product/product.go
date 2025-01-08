@@ -14,13 +14,13 @@ const (
 )
 
 type Product struct {
-	Id          string
-	Name        string
-	Description string
-	Price       float64
-	Status      Status
-	TenantId    string
-	CategoryId  string
+	Id          string  `bson:"id"`
+	Name        string  `bson:"name"`
+	Description string  `bson:"description"`
+	Price       float64 `bson:"price"`
+	Status      Status  `bson:"status"`
+	TenantId    string  `bson:"tenantId"`
+	CategoryId  string  `bson:"categoryId"`
 }
 
 func New(name, description string, price float64, categoryId, tenantId string) (*Product, error) {
@@ -30,19 +30,6 @@ func New(name, description string, price float64, categoryId, tenantId string) (
 		Price:       price,
 		Description: description,
 		Status:      Active,
-		TenantId:    tenantId,
-		CategoryId:  categoryId,
-	}
-	return product, product.Validate()
-}
-
-func Restore(id, name, description string, price float64, status, categoryId, tenantId string) (*Product, error) {
-	product := &Product{
-		Id:          id,
-		Name:        name,
-		Price:       price,
-		Description: description,
-		Status:      Status(status),
 		TenantId:    tenantId,
 		CategoryId:  categoryId,
 	}

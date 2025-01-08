@@ -14,19 +14,15 @@ const (
 type (
 	Status string
 
-	Transaction struct {
-		Id        string
-		PaymentId string
-		OrderId   string
-		Status    Status
-		Amount    float64
-	}
-
 	PixTransaction struct {
-		Transaction
-		PaymentGateway string
-		QrCode         string
-		QrCodeLink     string
+		Id             string  `bson:"id"`
+		PaymentId      string  `bson:"paymentId"`
+		OrderId        string  `bson:"orderId"`
+		Status         Status  `bson:"status"`
+		Amount         float64 `bson:"amount"`
+		PaymentGateway string  `bson:"paymentGateway"`
+		QrCode         string  `bson:"qrCode"`
+		QrCodeLink     string  `bson:"qrCodeLink"`
 	}
 )
 
@@ -35,13 +31,11 @@ func NewPixTransaction(paymentId, orderId, qrCode, paymentGateway, qrCodeLink st
 		QrCode:         qrCode,
 		QrCodeLink:     qrCodeLink,
 		PaymentGateway: paymentGateway,
-		Transaction: Transaction{
-			Id:        value_object.NewID(),
-			PaymentId: paymentId,
-			OrderId:   orderId,
-			Status:    created,
-			Amount:    amount,
-		},
+		Id:             value_object.NewID(),
+		PaymentId:      paymentId,
+		OrderId:        orderId,
+		Status:         created,
+		Amount:         amount,
 	}
 }
 

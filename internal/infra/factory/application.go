@@ -4,22 +4,20 @@ import (
 	"bom-pedido-api/internal/application/factory"
 	"bom-pedido-api/internal/infra/config"
 	"bom-pedido-api/internal/infra/lock"
-	"bom-pedido-api/internal/infra/repository"
-	"database/sql"
+	mongo2 "bom-pedido-api/pkg/mongo"
 	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func NewApplicationFactory(database *sql.DB, environment *config.Environment, redisClient *redis.Client, mongoClient *mongo.Client) *factory.ApplicationFactory {
-	connection := repository.NewDefaultSqlConnection(database)
+func NewApplicationFactory(environment *config.Environment, redisClient *redis.Client, mongoClient *mongo.Client) *factory.ApplicationFactory {
 	locker := lock.NewRedisLocker(redisClient)
-	mongoDatabase := mongoClient.Database(environment.MongoDatabaseName)
+	mongoDatabase := mongo2.NewDatabase(mongoClient.Database(environment.MongoDatabaseName))
 	return factory.NewApplicationFactory(
-		gatewayFactory(environment, connection),
-		repositoryFactory(connection, mongoDatabase),
+		gatewayFactory(environment, mongoDatabase),
+		repositoryFactory(mongoDatabase),
 		tokenFactory(environment),
 		eventFactory(environment, locker, mongoDatabase),
-		queryFactory(connection),
+		queryFactory(mongoDatabase),
 		locker,
 	)
 }

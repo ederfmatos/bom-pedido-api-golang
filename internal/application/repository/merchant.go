@@ -15,4 +15,5 @@ type MerchantRepository interface {
 type MerchantPaymentGatewayConfigRepository interface {
 	FindByMerchantAndGateway(ctx context.Context, merchantId, gateway string) (*merchant.PaymentGatewayConfig, error)
 	FindByMerchant(ctx context.Context, merchantId string) (*merchant.PaymentGatewayConfig, error)
+	Create(ctx context.Context, config *merchant.PaymentGatewayConfig) error
 }

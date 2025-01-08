@@ -13,7 +13,6 @@ import (
 	"bom-pedido-api/internal/infra/http/products"
 	"bom-pedido-api/internal/infra/http/shopping_cart"
 	"context"
-	"database/sql"
 	echoPrometheus "github.com/labstack/echo-contrib/echoprometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -22,11 +21,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -37,14 +36,13 @@ import (
 type Server struct {
 	server         *echo.Echo
 	mongoClient    *mongo.Client
-	database       *sql.DB
 	redisClient    *redis.Client
 	tracerProvider *trace.TracerProvider
 	environment    *config.Environment
 }
 
-func NewServer(database *sql.DB, redisClient *redis.Client, mongoClient *mongo.Client, environment *config.Environment) *Server {
-	return &Server{database: database, redisClient: redisClient, mongoClient: mongoClient, environment: environment}
+func NewServer(redisClient *redis.Client, mongoClient *mongo.Client, environment *config.Environment) *Server {
+	return &Server{redisClient: redisClient, mongoClient: mongoClient, environment: environment}
 }
 
 func (s *Server) ConfigureRoutes(applicationFactory *factory.ApplicationFactory) {
@@ -75,7 +73,7 @@ func (s *Server) ConfigureRoutes(applicationFactory *factory.ApplicationFactory)
 	callback.ConfigureCallbackRoutes(api, applicationFactory)
 	category.ConfigureRoutes(api, applicationFactory)
 
-	server.GET("/api/health", health.Handle(s.database, s.redisClient, s.mongoClient))
+	server.GET("/api/health", health.Handle(s.redisClient, s.mongoClient))
 	s.server = server
 }
 
@@ -101,7 +99,10 @@ func (s *Server) StartTracer() {
 			trace.WithBatchTimeout(trace.DefaultScheduleDelay*time.Millisecond),
 			trace.WithMaxExportBatchSize(trace.DefaultMaxExportBatchSize),
 		),
-		trace.WithResource(resource.NewWithAttributes(semconv.SchemaURL, semconv.ServiceNameKey.String("bom-pedido-api"))),
+		trace.WithResource(resource.NewWithAttributes(
+			"https://opentelemetry.io/schemas/1.27.0",
+			attribute.String("service.name", "bom-pedido-api"),
+		)),
 	)
 	otel.SetTracerProvider(tracerProvider)
 	s.tracerProvider = tracerProvider
@@ -122,9 +123,6 @@ func (s *Server) Shutdown() {
 	ctx, cancelCtx := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancelCtx()
 
-	if err := s.database.Close(); err != nil {
-		slog.Error("Error on close database connection", "error", err)
-	}
 	if err := s.redisClient.Close(); err != nil {
 		slog.Error("Error on close redis connection", "error", err)
 	}

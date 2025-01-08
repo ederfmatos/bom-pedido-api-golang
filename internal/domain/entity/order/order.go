@@ -9,37 +9,37 @@ import (
 	"time"
 )
 
-type ItemStatus string
-
 const (
 	ItemStatusOk ItemStatus = "OK"
 )
 
 type (
+	ItemStatus string
+
 	Order struct {
-		Id              string
-		CustomerID      string
-		PaymentMethod   enums.PaymentMethod
-		PaymentMode     enums.PaymentMode
-		DeliveryMode    enums.DeliveryMode
-		CreatedAt       time.Time
-		CreditCardToken string
-		Payback         float64
-		Code            int32
-		DeliveryTime    time.Time
-		state           status.Status
-		Items           []Item
-		MerchantId      string
-		Amount          float64
+		Id              string              `bson:"id"`
+		CustomerID      string              `bson:"customerID"`
+		PaymentMethod   enums.PaymentMethod `bson:"paymentMethod"`
+		PaymentMode     enums.PaymentMode   `bson:"paymentMode"`
+		DeliveryMode    enums.DeliveryMode  `bson:"deliveryMode"`
+		CreatedAt       time.Time           `bson:"createdAt"`
+		CreditCardToken string              `bson:"creditCardToken"`
+		Payback         float64             `bson:"payback"`
+		Code            int32               `bson:"code"`
+		DeliveryTime    time.Time           `bson:"deliveryTime"`
+		Status          string              `bson:"status"`
+		Items           []Item              `bson:"items"`
+		MerchantId      string              `bson:"merchantId"`
+		Amount          float64             `bson:"amount"`
 	}
 
 	Item struct {
-		Id          string
-		ProductId   string
-		Quantity    int
-		Observation string
-		Status      ItemStatus
-		Price       float64
+		Id          string     `bson:"id"`
+		ProductId   string     `bson:"productId"`
+		Quantity    int        `bson:"quantity"`
+		Observation string     `bson:"observation"`
+		Status      ItemStatus `bson:"status"`
+		Price       float64    `bson:"price"`
 	}
 )
 
@@ -58,18 +58,19 @@ func New(customerID, paymentMethodString, paymentModeString, deliveryModeString,
 		PaymentMethod:   paymentMethod,
 		PaymentMode:     paymentMode,
 		DeliveryMode:    deliveryMode,
-		CreatedAt:       time.Now(),
+		CreatedAt:       time.Now().UTC(),
 		CreditCardToken: creditCardToken,
 		Payback:         payback,
 		Code:            0,
-		DeliveryTime:    deliveryTime,
-		state:           state,
+		DeliveryTime:    deliveryTime.UTC(),
 		Items:           make([]Item, 0),
 		MerchantId:      merchantId,
 		Amount:          amount,
+		Status:          state.Name(),
 	}, nil
 }
 
+// TODO: Remover. Nos testes trocar por fixture
 func Restore(Id, customerID, paymentMethodString, paymentModeString, deliveryModeString, creditCardToken, orderStatusString string, createdAt time.Time, payback, amount float64, code int32, deliveryTime time.Time, items []Item, merchantId string) (*Order, error) {
 	paymentMethod, deliveryMode, paymentMode, err := validateOrder(paymentMethodString, deliveryModeString, paymentModeString, creditCardToken, payback)
 	if err != nil {
@@ -90,7 +91,7 @@ func Restore(Id, customerID, paymentMethodString, paymentModeString, deliveryMod
 		Payback:         payback,
 		Code:            code,
 		DeliveryTime:    deliveryTime,
-		state:           orderStatus,
+		Status:          orderStatus.Name(),
 		Items:           items,
 		MerchantId:      merchantId,
 		Amount:          amount,
@@ -138,20 +139,20 @@ func (order *Order) AddProduct(product *product.Product, quantity int, observati
 }
 
 func (order *Order) Approve() error {
-	err := order.state.Approve()
+	err := order.state().Approve()
 	if err != nil {
 		return err
 	}
-	order.state = status.ApprovedStatus
+	order.Status = status.ApprovedStatus.Name()
 	return nil
 }
 
 func (order *Order) MarkAsInProgress() error {
-	err := order.state.MarkAsInProgress()
+	err := order.state().MarkAsInProgress()
 	if err != nil {
 		return err
 	}
-	order.state = status.InProgressStatus
+	order.Status = status.InProgressStatus.Name()
 	return nil
 }
 
@@ -159,11 +160,11 @@ func (order *Order) MarkAsAwaitingDelivery() error {
 	if order.DeliveryMode.IsWithdraw() {
 		return errors.OrderDeliveryModeIsWithdrawError
 	}
-	err := order.state.MarkAsInAwaitingDelivery()
+	err := order.state().MarkAsInAwaitingDelivery()
 	if err != nil {
 		return err
 	}
-	order.state = status.AwaitingDeliveryStatus
+	order.Status = status.AwaitingDeliveryStatus.Name()
 	return nil
 }
 
@@ -171,52 +172,52 @@ func (order *Order) MarkAsAwaitingWithdraw() error {
 	if order.DeliveryMode.IsDelivery() {
 		return errors.OrderDeliveryModeIsDeliveryError
 	}
-	err := order.state.MarkAsInAwaitingWithdraw()
+	err := order.state().MarkAsInAwaitingWithdraw()
 	if err != nil {
 		return err
 	}
-	order.state = status.AwaitingWithdrawStatus
+	order.Status = status.AwaitingWithdrawStatus.Name()
 	return nil
 }
 
 func (order *Order) MarkAsDelivering() error {
-	err := order.state.MarkAsInDelivering()
+	err := order.state().MarkAsInDelivering()
 	if err != nil {
 		return err
 	}
-	order.state = status.DeliveringStatus
+	order.Status = status.DeliveringStatus.Name()
 	return nil
 }
 
 func (order *Order) Finish() error {
-	err := order.state.Finish()
+	err := order.state().Finish()
 	if err != nil {
 		return err
 	}
-	order.state = status.FinishedStatus
+	order.Status = status.FinishedStatus.Name()
 	return nil
 }
 
 func (order *Order) Reject() error {
-	err := order.state.Reject()
+	err := order.state().Reject()
 	if err != nil {
 		return err
 	}
-	order.state = status.RejectedStatus
+	order.Status = status.RejectedStatus.Name()
 	return nil
 }
 
 func (order *Order) Cancel() error {
-	err := order.state.Cancel()
+	err := order.state().Cancel()
 	if err != nil {
 		return err
 	}
-	order.state = status.CancelledStatus
+	order.Status = status.CancelledStatus.Name()
 	return nil
 }
 
 func (order *Order) GetStatus() string {
-	return order.state.Name()
+	return order.Status
 }
 
 func (order *Order) IsPixInApp() bool {
@@ -224,25 +225,34 @@ func (order *Order) IsPixInApp() bool {
 }
 
 func (order *Order) IsAwaitingPayment() bool {
-	return order.state == status.AwaitingPaymentStatus
+	return order.state() == status.AwaitingPaymentStatus
 }
 
 func (order *Order) IsAwaitingApproval() bool {
-	return order.state == status.AwaitingApprovalStatus
+	return order.state() == status.AwaitingApprovalStatus
 }
 
 func (order *Order) AwaitApproval() error {
-	if order.state != status.AwaitingPaymentStatus {
+	if order.state() != status.AwaitingPaymentStatus {
 		return status.OperationNotAllowedError
 	}
-	order.state = status.AwaitingApprovalStatus
+	order.Status = status.AwaitingApprovalStatus.Name()
 	return nil
 }
 
 func (order *Order) PaymentFailed() error {
-	if order.state != status.AwaitingPaymentStatus {
+	if order.state() != status.AwaitingPaymentStatus {
 		return status.OperationNotAllowedError
 	}
-	order.state = status.PaymentFailedStatus
+	order.Status = status.PaymentFailedStatus.Name()
+	return nil
+}
+
+func (order *Order) state() status.Status {
+	for _, state := range status.AllStatus {
+		if state.Name() == order.Status {
+			return state
+		}
+	}
 	return nil
 }

@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"bom-pedido-api/internal/application/repository"
 	"bom-pedido-api/internal/domain/entity/admin"
 	"context"
 )
@@ -10,7 +9,7 @@ type AdminMemoryRepository struct {
 	admins map[string]*admin.Admin
 }
 
-func NewAdminMemoryRepository() repository.AdminRepository {
+func NewAdminMemoryRepository() *AdminMemoryRepository {
 	return &AdminMemoryRepository{admins: make(map[string]*admin.Admin)}
 }
 
