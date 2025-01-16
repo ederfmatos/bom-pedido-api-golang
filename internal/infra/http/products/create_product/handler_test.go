@@ -6,9 +6,9 @@ import (
 	"bom-pedido-api/internal/infra/factory"
 	"bom-pedido-api/internal/infra/json"
 	"bom-pedido-api/internal/infra/tenant"
+	"bom-pedido-api/pkg/faker"
 	"bytes"
 	"context"
-	"github.com/go-faker/faker/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/require"
 	"net/http"
@@ -38,7 +38,7 @@ func Test_CreateProduct(t *testing.T) {
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response := httptest.NewRecorder()
 	echoContext := e.NewContext(request, response)
-	echoContext.Set(tenant.Id, faker.WORD)
+	echoContext.Set(tenant.Id, faker.Word())
 
 	err = Handle(applicationFactory)(echoContext)
 	require.NoError(t, err)

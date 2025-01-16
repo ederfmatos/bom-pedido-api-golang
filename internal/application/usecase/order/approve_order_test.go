@@ -7,8 +7,8 @@ import (
 	"bom-pedido-api/internal/domain/errors"
 	"bom-pedido-api/internal/domain/value_object"
 	"bom-pedido-api/internal/infra/factory"
+	"bom-pedido-api/pkg/faker"
 	"context"
-	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -46,7 +46,7 @@ func Test_ApproveOrder(t *testing.T) {
 				ctx := context.Background()
 				orderId := value_object.NewID()
 				customerId := value_object.NewID()
-				order, err := entity.RestoreOrder(orderId, customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", currentStatus, time.Now(), 0, 1, 1, time.Now(), []entity.OrderItem{}, faker.WORD)
+				order, err := entity.RestoreOrder(orderId, customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", currentStatus, time.Now(), 0, 1, 1, time.Now(), []entity.OrderItem{}, faker.Word())
 				require.NoError(t, err)
 				err = applicationFactory.OrderRepository.Create(ctx, order)
 				require.NoError(t, err)
@@ -66,7 +66,7 @@ func Test_ApproveOrder(t *testing.T) {
 	t.Run("should approve order", func(t *testing.T) {
 		ctx := context.Background()
 		customerId := value_object.NewID()
-		order, err := entity.NewOrder(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, 10.0, time.Now(), faker.WORD)
+		order, err := entity.NewOrder(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, 10.0, time.Now(), faker.Word())
 		require.NoError(t, err)
 		err = applicationFactory.OrderRepository.Create(ctx, order)
 		require.NoError(t, err)

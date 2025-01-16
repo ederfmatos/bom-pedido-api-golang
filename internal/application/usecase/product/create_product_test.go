@@ -4,9 +4,9 @@ import (
 	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/errors"
 	"bom-pedido-api/internal/infra/factory"
+	"bom-pedido-api/pkg/faker"
 	"context"
 	"fmt"
-	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/require"
 	"testing"
 )

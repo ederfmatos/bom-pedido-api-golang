@@ -6,8 +6,8 @@ import (
 	"bom-pedido-api/internal/domain/errors"
 	"bom-pedido-api/internal/domain/value_object"
 	"bom-pedido-api/internal/infra/factory"
+	"bom-pedido-api/pkg/faker"
 	"context"
-	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -26,7 +26,7 @@ func Test_CheckoutShoppingCart(t *testing.T) {
 		require.Nil(t, output)
 		require.ErrorIs(t, err, errors.ShoppingCartEmptyError)
 
-		shoppingCart := entity.NewShoppingCart(input.CustomerId, faker.WORD)
+		shoppingCart := entity.NewShoppingCart(input.CustomerId, faker.Word())
 		err = shoppingCartRepository.Upsert(ctx, shoppingCart)
 		require.NoError(t, err)
 
@@ -45,7 +45,7 @@ func Test_CheckoutShoppingCart(t *testing.T) {
 			Payback:         0,
 			CreditCardToken: "",
 		}
-		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.PhoneNumber(), faker.DomainName())
 		require.NoError(t, err)
 
 		err = applicationFactory.MerchantRepository.Create(ctx, merchant)

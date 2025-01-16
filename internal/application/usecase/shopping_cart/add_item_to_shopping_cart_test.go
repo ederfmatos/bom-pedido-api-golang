@@ -5,8 +5,8 @@ import (
 	"bom-pedido-api/internal/domain/errors"
 	"bom-pedido-api/internal/domain/value_object"
 	"bom-pedido-api/internal/infra/factory"
+	"bom-pedido-api/pkg/faker"
 	"context"
-	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -26,7 +26,7 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 	})
 
 	t.Run("should return error is product is unavailable", func(t *testing.T) {
-		product, err := entity.NewProduct(faker.Name(), faker.Word(), 10.0, faker.WORD, faker.Word())
+		product, err := entity.NewProduct(faker.Name(), faker.Word(), 10.0, faker.Word(), faker.Word())
 		product.MarkUnAvailable()
 		if err != nil {
 			t.Fatalf("failed to restore product: %v", err)
@@ -47,7 +47,7 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 	})
 
 	t.Run("should create a shopping cart with one item", func(t *testing.T) {
-		product, err := entity.NewProduct(faker.Name(), faker.Word(), 10.0, faker.WORD, faker.Word())
+		product, err := entity.NewProduct(faker.Name(), faker.Word(), 10.0, faker.Word(), faker.Word())
 		if err != nil {
 			t.Fatalf("failed to restore product: %v", err)
 		}

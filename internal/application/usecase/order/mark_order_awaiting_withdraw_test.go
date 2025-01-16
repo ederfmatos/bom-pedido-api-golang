@@ -7,8 +7,8 @@ import (
 	"bom-pedido-api/internal/domain/errors"
 	"bom-pedido-api/internal/domain/value_object"
 	"bom-pedido-api/internal/infra/factory"
+	"bom-pedido-api/pkg/faker"
 	"context"
-	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -31,7 +31,7 @@ func Test_MarkOrderAwaitingWithdraw(t *testing.T) {
 	t.Run("should mark an order in delivering", func(t *testing.T) {
 		ctx := context.Background()
 		customerId := value_object.NewID()
-		order, err := entity.NewOrder(customerId, enums.CreditCard, enums.InReceiving, enums.Withdraw, "", 0, 0, time.Now(), faker.WORD)
+		order, err := entity.NewOrder(customerId, enums.CreditCard, enums.InReceiving, enums.Withdraw, "", 0, 0, time.Now(), faker.Word())
 		require.NoError(t, err)
 		err = order.Approve()
 		require.NoError(t, err)

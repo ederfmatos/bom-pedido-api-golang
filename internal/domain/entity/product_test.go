@@ -3,9 +3,9 @@ package entity
 import (
 	domainError "bom-pedido-api/internal/domain/errors"
 	"bom-pedido-api/internal/domain/value_object"
+	"bom-pedido-api/pkg/faker"
 	"errors"
 	"fmt"
-	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/require"
 	"testing"
 )

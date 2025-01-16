@@ -8,8 +8,8 @@ import (
 	"bom-pedido-api/internal/infra/factory"
 	"bom-pedido-api/internal/infra/http/middlewares"
 	"bom-pedido-api/internal/infra/json"
+	"bom-pedido-api/pkg/faker"
 	"context"
-	"github.com/go-faker/faker/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/require"
 	"net/http"
@@ -21,8 +21,8 @@ func Test_GetCustomer(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
 
 	t.Run("should success get customer", func(t *testing.T) {
-		customer, _ := entity.NewCustomer(faker.Name(), faker.Email(), faker.WORD)
-		_ = customer.SetPhoneNumber(faker.Phonenumber())
+		customer, _ := entity.NewCustomer(faker.Name(), faker.Email(), faker.Word())
+		_ = customer.SetPhoneNumber(faker.PhoneNumber())
 		_ = applicationFactory.CustomerRepository.Create(context.Background(), customer)
 
 		e := echo.New()

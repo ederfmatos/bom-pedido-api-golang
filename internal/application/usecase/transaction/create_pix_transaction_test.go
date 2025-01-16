@@ -8,9 +8,9 @@ import (
 	"bom-pedido-api/internal/infra/event"
 	"bom-pedido-api/internal/infra/factory"
 	"bom-pedido-api/internal/infra/gateway/pix"
+	"bom-pedido-api/pkg/faker"
 	"context"
 	"fmt"
-	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -45,7 +45,7 @@ func Test_CreatePixTransaction(t *testing.T) {
 				continue
 			}
 			t.Run(fmt.Sprintf("should return nil order is %s %s", paymentMethod.String(), paymentMode.String()), func(t *testing.T) {
-				order, err := entity.NewOrder(customerId, paymentMethod.String(), paymentMode.String(), enums.Withdraw, faker.Word(), 0, 0, time.Now(), faker.WORD)
+				order, err := entity.NewOrder(customerId, paymentMethod.String(), paymentMode.String(), enums.Withdraw, faker.Word(), 0, 0, time.Now(), faker.Word())
 				require.NoError(t, err)
 
 				input := CreatePixTransactionInput{OrderId: order.Id, PaymentId: value_object.NewID()}
@@ -58,7 +58,7 @@ func Test_CreatePixTransaction(t *testing.T) {
 	}
 
 	t.Run("should return nil if already exists a transaction to the order", func(t *testing.T) {
-		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.PhoneNumber(), faker.DomainName())
 		require.NoError(t, err)
 
 		err = applicationFactory.MerchantRepository.Create(ctx, merchant)
@@ -82,7 +82,7 @@ func Test_CreatePixTransaction(t *testing.T) {
 	})
 
 	t.Run("should return nil payment does not exists", func(t *testing.T) {
-		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.PhoneNumber(), faker.DomainName())
 		require.NoError(t, err)
 
 		err = applicationFactory.MerchantRepository.Create(ctx, merchant)
@@ -105,7 +105,7 @@ func Test_CreatePixTransaction(t *testing.T) {
 	})
 
 	t.Run("should create a pix transaction", func(t *testing.T) {
-		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.PhoneNumber(), faker.DomainName())
 		require.NoError(t, err)
 
 		err = applicationFactory.MerchantRepository.Create(ctx, merchant)

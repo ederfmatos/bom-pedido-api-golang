@@ -7,9 +7,9 @@ import (
 	"bom-pedido-api/internal/domain/enums"
 	"bom-pedido-api/internal/infra/factory"
 	"bom-pedido-api/internal/infra/test"
+	"bom-pedido-api/pkg/faker"
 	"context"
 	"fmt"
-	"github.com/go-faker/faker/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/require"
 	"net/http"
@@ -25,7 +25,7 @@ func TestHandle(t *testing.T) {
 	defer container.Down()
 	applicationFactory := factory.NewApplicationFactory(container.GetEnvironment(), container.RedisClient, container.MongoClient)
 
-	merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+	merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.PhoneNumber(), faker.DomainName())
 	require.NoError(t, err)
 
 	err = applicationFactory.MerchantRepository.Create(ctx, merchant)

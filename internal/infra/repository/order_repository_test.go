@@ -5,8 +5,8 @@ import (
 	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/enums"
 	"bom-pedido-api/internal/infra/test"
+	"bom-pedido-api/pkg/faker"
 	"context"
-	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -27,11 +27,11 @@ func Test_OrderRepository(t *testing.T) {
 			customer, err := entity.NewCustomer(faker.Name(), faker.Email(), faker.Word())
 			require.NoError(t, err)
 
-			order, err := entity.NewOrder(customer.Id, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 10.0, 100, time.Now(), faker.WORD)
+			order, err := entity.NewOrder(customer.Id, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 10.0, 100, time.Now(), faker.Word())
 			require.NoError(t, err)
 
 			category := entity.NewCategory(faker.Name(), faker.Word(), faker.Word())
-			product, err := entity.NewProduct(faker.Name(), faker.Word(), 10.0, category.Id, faker.WORD)
+			product, err := entity.NewProduct(faker.Name(), faker.Word(), 10.0, category.Id, faker.Word())
 			require.NoError(t, err)
 
 			err = order.AddProduct(product, 1, "")

@@ -9,9 +9,9 @@ import (
 	"bom-pedido-api/internal/infra/event"
 	"bom-pedido-api/internal/infra/factory"
 	"bom-pedido-api/internal/infra/gateway/pix"
+	"bom-pedido-api/pkg/faker"
 	"context"
 	"fmt"
-	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -46,7 +46,7 @@ func Test_PayPixTransaction(t *testing.T) {
 				continue
 			}
 			t.Run(fmt.Sprintf("should return nil order is %s %s", paymentMethod.String(), paymentMode.String()), func(t *testing.T) {
-				order, err := entity.NewOrder(customerId, paymentMethod.String(), paymentMode.String(), enums.Withdraw, faker.Word(), 0, 0, time.Now(), faker.WORD)
+				order, err := entity.NewOrder(customerId, paymentMethod.String(), paymentMode.String(), enums.Withdraw, faker.Word(), 0, 0, time.Now(), faker.Word())
 				require.NoError(t, err)
 
 				input := PayPixTransactionInput{OrderId: order.Id}
@@ -63,7 +63,7 @@ func Test_PayPixTransaction(t *testing.T) {
 			continue
 		}
 		t.Run("should return nil order is %s"+orderStatus.Name(), func(t *testing.T) {
-			order, err := entity.RestoreOrder(value_object.NewID(), customerId, enums.Pix, enums.InApp, enums.Delivery, "", orderStatus.Name(), time.Now(), 0, 1, 1, time.Now(), []entity.OrderItem{}, faker.WORD)
+			order, err := entity.RestoreOrder(value_object.NewID(), customerId, enums.Pix, enums.InApp, enums.Delivery, "", orderStatus.Name(), time.Now(), 0, 1, 1, time.Now(), []entity.OrderItem{}, faker.Word())
 			require.NoError(t, err)
 
 			input := PayPixTransactionInput{OrderId: order.Id}
@@ -75,7 +75,7 @@ func Test_PayPixTransaction(t *testing.T) {
 	}
 
 	t.Run("should return nil if not exists transaction to the order", func(t *testing.T) {
-		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.PhoneNumber(), faker.DomainName())
 		require.NoError(t, err)
 
 		err = applicationFactory.MerchantRepository.Create(ctx, merchant)
@@ -98,7 +98,7 @@ func Test_PayPixTransaction(t *testing.T) {
 	})
 
 	t.Run("should return nil payment does not exists", func(t *testing.T) {
-		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.PhoneNumber(), faker.DomainName())
 		require.NoError(t, err)
 
 		err = applicationFactory.MerchantRepository.Create(ctx, merchant)
@@ -130,7 +130,7 @@ func Test_PayPixTransaction(t *testing.T) {
 
 	for _, paymentStatus := range []gateway.PaymentStatus{gateway.TransactionCancelled, gateway.TransactionPending, gateway.TransactionRefunded} {
 		t.Run("should return nil payment status is "+string(paymentStatus), func(t *testing.T) {
-			merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+			merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.PhoneNumber(), faker.DomainName())
 			require.NoError(t, err)
 
 			err = applicationFactory.MerchantRepository.Create(ctx, merchant)
@@ -170,7 +170,7 @@ func Test_PayPixTransaction(t *testing.T) {
 	}
 
 	t.Run("should pay a pix transaction", func(t *testing.T) {
-		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.PhoneNumber(), faker.DomainName())
 		require.NoError(t, err)
 
 		err = applicationFactory.MerchantRepository.Create(ctx, merchant)

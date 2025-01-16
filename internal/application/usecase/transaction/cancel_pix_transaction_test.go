@@ -6,8 +6,8 @@ import (
 	"bom-pedido-api/internal/domain/value_object"
 	"bom-pedido-api/internal/infra/event"
 	"bom-pedido-api/internal/infra/factory"
+	"bom-pedido-api/pkg/faker"
 	"context"
-	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -27,7 +27,7 @@ func Test_CancelPixTransaction(t *testing.T) {
 	useCase := NewCancelPixTransaction(applicationFactory)
 
 	t.Run("should return nil if not exists transaction to the order", func(t *testing.T) {
-		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.PhoneNumber(), faker.DomainName())
 		require.NoError(t, err)
 
 		err = applicationFactory.MerchantRepository.Create(ctx, merchant)
@@ -50,7 +50,7 @@ func Test_CancelPixTransaction(t *testing.T) {
 	})
 
 	t.Run("should return nil transaction status is paid", func(t *testing.T) {
-		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.PhoneNumber(), faker.DomainName())
 		require.NoError(t, err)
 
 		err = applicationFactory.MerchantRepository.Create(ctx, merchant)
@@ -76,7 +76,7 @@ func Test_CancelPixTransaction(t *testing.T) {
 	})
 
 	t.Run("should return nil transaction status is cancelled", func(t *testing.T) {
-		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.PhoneNumber(), faker.DomainName())
 		require.NoError(t, err)
 
 		err = applicationFactory.MerchantRepository.Create(ctx, merchant)
@@ -102,7 +102,7 @@ func Test_CancelPixTransaction(t *testing.T) {
 	})
 
 	t.Run("should return nil transaction status is refunded", func(t *testing.T) {
-		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.PhoneNumber(), faker.DomainName())
 		require.NoError(t, err)
 
 		err = applicationFactory.MerchantRepository.Create(ctx, merchant)
@@ -128,7 +128,7 @@ func Test_CancelPixTransaction(t *testing.T) {
 	})
 
 	t.Run("should refund a pix transaction", func(t *testing.T) {
-		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.PhoneNumber(), faker.DomainName())
 		require.NoError(t, err)
 
 		err = applicationFactory.MerchantRepository.Create(ctx, merchant)

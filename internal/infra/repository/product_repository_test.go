@@ -4,8 +4,8 @@ import (
 	"bom-pedido-api/internal/application/repository"
 	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/infra/test"
+	"bom-pedido-api/pkg/faker"
 	"context"
-	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -32,7 +32,7 @@ func Test_ProductRepository(t *testing.T) {
 				require.NoError(t, err)
 				require.Nil(t, savedProduct)
 
-				existsByName, err := productRepository.ExistsByNameAndTenantId(ctx, product.Name, faker.WORD)
+				existsByName, err := productRepository.ExistsByNameAndTenantId(ctx, product.Name, faker.Word())
 				require.NoError(t, err)
 				require.False(t, existsByName)
 

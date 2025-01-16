@@ -3,9 +3,10 @@ package customer
 import (
 	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/errors"
+	"bom-pedido-api/internal/domain/value_object"
 	"bom-pedido-api/internal/infra/factory"
+	"bom-pedido-api/pkg/faker"
 	"context"
-	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -15,7 +16,7 @@ func TestGetCustomerUseCase_Execute(t *testing.T) {
 
 	t.Run("it should return CustomerNotFoundError when the customer does not exist", func(t *testing.T) {
 		useCase := NewGetCustomer(applicationFactory)
-		input := GetCustomerInput{Id: faker.UUIDDigit()}
+		input := GetCustomerInput{Id: value_object.NewID()}
 
 		output, err := useCase.Execute(context.Background(), input)
 
@@ -25,7 +26,7 @@ func TestGetCustomerUseCase_Execute(t *testing.T) {
 
 	t.Run("should return a customer", func(t *testing.T) {
 		customer, _ := entity.NewCustomer(faker.Name(), faker.Email(), faker.Word())
-		_ = customer.SetPhoneNumber(faker.Phonenumber())
+		_ = customer.SetPhoneNumber(faker.PhoneNumber())
 		_ = applicationFactory.CustomerRepository.Create(context.Background(), customer)
 
 		useCase := NewGetCustomer(applicationFactory)

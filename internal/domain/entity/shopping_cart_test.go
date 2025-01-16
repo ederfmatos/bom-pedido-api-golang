@@ -4,8 +4,8 @@ import (
 	"bom-pedido-api/internal/domain/enums"
 	"bom-pedido-api/internal/domain/errors"
 	"bom-pedido-api/internal/domain/value_object"
+	"bom-pedido-api/pkg/faker"
 	"fmt"
-	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -38,9 +38,9 @@ func TestShoppingCart_Checkout(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(fmt.Sprintf("should return errors %v", test.Errors), func(t *testing.T) {
-			shoppingCart := NewShoppingCart(value_object.NewID(), faker.WORD)
+			shoppingCart := NewShoppingCart(value_object.NewID(), faker.Word())
 
-			newProduct, _ := NewProduct(faker.Name(), faker.Word(), 11.0, faker.WORD, faker.Word())
+			newProduct, _ := NewProduct(faker.Name(), faker.Word(), 11.0, faker.Word(), faker.Word())
 			err := shoppingCart.AddItem(newProduct, 1, faker.Word())
 			require.NoError(t, err)
 
@@ -52,13 +52,13 @@ func TestShoppingCart_Checkout(t *testing.T) {
 	}
 
 	t.Run("should return product errors", func(t *testing.T) {
-		product1, _ := NewProduct(faker.Name(), faker.Word(), 11.0, faker.WORD, faker.Word())
-		product2, _ := NewProduct(faker.Name(), faker.Word(), 12.0, faker.WORD, faker.Word())
-		product3, _ := NewProduct(faker.Name(), faker.Word(), 13.0, faker.WORD, faker.Word())
+		product1, _ := NewProduct(faker.Name(), faker.Word(), 11.0, faker.Word(), faker.Word())
+		product2, _ := NewProduct(faker.Name(), faker.Word(), 12.0, faker.Word(), faker.Word())
+		product3, _ := NewProduct(faker.Name(), faker.Word(), 13.0, faker.Word(), faker.Word())
 
 		products := map[string]*Product{product1.Id: product1, product2.Id: product2}
 
-		shoppingCart := NewShoppingCart(value_object.NewID(), faker.WORD)
+		shoppingCart := NewShoppingCart(value_object.NewID(), faker.Word())
 		err := shoppingCart.AddItem(product2, 1, faker.Word())
 		require.NoError(t, err)
 		err = shoppingCart.AddItem(product3, 1, faker.Word())
@@ -74,13 +74,13 @@ func TestShoppingCart_Checkout(t *testing.T) {
 	})
 
 	t.Run("should checkout a shopping cart", func(t *testing.T) {
-		product1, _ := NewProduct(faker.Name(), faker.Word(), 11.0, faker.WORD, faker.Word())
-		product2, _ := NewProduct(faker.Name(), faker.Word(), 12.0, faker.WORD, faker.Word())
-		product3, _ := NewProduct(faker.Name(), faker.Word(), 13.0, faker.WORD, faker.Word())
+		product1, _ := NewProduct(faker.Name(), faker.Word(), 11.0, faker.Word(), faker.Word())
+		product2, _ := NewProduct(faker.Name(), faker.Word(), 12.0, faker.Word(), faker.Word())
+		product3, _ := NewProduct(faker.Name(), faker.Word(), 13.0, faker.Word(), faker.Word())
 
 		products := map[string]*Product{product1.Id: product1, product2.Id: product2, product3.Id: product3}
 
-		shoppingCart := NewShoppingCart(value_object.NewID(), faker.WORD)
+		shoppingCart := NewShoppingCart(value_object.NewID(), faker.Word())
 		err := shoppingCart.AddItem(product1, 1, faker.Word())
 		require.NoError(t, err)
 		err = shoppingCart.AddItem(product2, 1, faker.Word())

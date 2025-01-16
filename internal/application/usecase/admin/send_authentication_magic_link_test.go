@@ -5,8 +5,8 @@ import (
 	"bom-pedido-api/internal/infra/event"
 	"bom-pedido-api/internal/infra/factory"
 	"bom-pedido-api/internal/infra/token"
+	"bom-pedido-api/pkg/faker"
 	"context"
-	"github.com/go-faker/faker/v4"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -29,7 +29,7 @@ func TestUseCase_Execute(t *testing.T) {
 
 	t.Run("it should return nil if merchant is inactive", func(t *testing.T) {
 		ctx := context.Background()
-		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.PhoneNumber(), faker.DomainName())
 		require.Nil(t, err)
 		merchant.Inactive()
 		_ = applicationFactory.MerchantRepository.Create(ctx, merchant)
@@ -45,14 +45,14 @@ func TestUseCase_Execute(t *testing.T) {
 
 	t.Run("should return nil on success", func(t *testing.T) {
 		ctx := context.Background()
-		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.PhoneNumber(), faker.DomainName())
 		require.Nil(t, err)
 		_ = applicationFactory.MerchantRepository.Create(ctx, merchant)
 
 		admin, _ := entity.NewAdmin(faker.Name(), faker.Email(), merchant.Id)
 		_ = applicationFactory.AdminRepository.Create(context.Background(), admin)
 
-		magicLinkToken := faker.UUIDHyphenated()
+		magicLinkToken := faker.Jwt()
 		tokenManager.On("Encrypt", mock.Anything).Return(magicLinkToken, nil).Once()
 		eventEmitter.On("Emit", mock.Anything, mock.Anything).Return(nil).Once()
 
