@@ -3,9 +3,7 @@ package messaging
 import (
 	"bom-pedido-api/internal/application/event"
 	"bom-pedido-api/internal/application/factory"
-	"bom-pedido-api/internal/application/usecase/payment/check_pix_payment_failed"
-	"bom-pedido-api/internal/application/usecase/payment/create_pix_payment"
-	"bom-pedido-api/internal/application/usecase/payment/refund_pix_payment"
+	"bom-pedido-api/internal/application/usecase/payment"
 	"context"
 )
 
@@ -16,9 +14,9 @@ func HandlePaymentEvents(factory *factory.ApplicationFactory) {
 }
 
 func handleCheckPixPaymentFailed(factory *factory.ApplicationFactory) event.HandlerFunc {
-	useCase := check_pix_payment_failed.New(factory)
+	useCase := payment.NewCheckPixPaymentFailed(factory)
 	return func(ctx context.Context, message *event.MessageEvent) error {
-		input := check_pix_payment_failed.Input{
+		input := payment.CheckPixPaymentFailedInput{
 			OrderId: message.Event.Data["orderId"],
 		}
 		err := useCase.Execute(ctx, input)
@@ -27,9 +25,9 @@ func handleCheckPixPaymentFailed(factory *factory.ApplicationFactory) event.Hand
 }
 
 func handleCreatePixPayment(factory *factory.ApplicationFactory) event.HandlerFunc {
-	useCase := create_pix_payment.New(factory)
+	useCase := payment.NewCreatePixPayment(factory)
 	return func(ctx context.Context, message *event.MessageEvent) error {
-		input := create_pix_payment.Input{
+		input := payment.CreatePixPaymentInput{
 			OrderId: message.Event.Data["orderId"],
 		}
 		err := useCase.Execute(ctx, input)
@@ -38,9 +36,9 @@ func handleCreatePixPayment(factory *factory.ApplicationFactory) event.HandlerFu
 }
 
 func handleRefundPixPayment(factory *factory.ApplicationFactory) event.HandlerFunc {
-	useCase := refund_pix_payment.New(factory)
+	useCase := payment.NewRefundPixPayment(factory)
 	return func(ctx context.Context, message *event.MessageEvent) error {
-		input := refund_pix_payment.Input{
+		input := payment.RefundPixPaymentInput{
 			OrderId: message.Event.Data["orderId"],
 		}
 		err := useCase.Execute(ctx, input)

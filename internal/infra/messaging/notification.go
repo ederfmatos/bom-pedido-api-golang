@@ -3,8 +3,7 @@ package messaging
 import (
 	"bom-pedido-api/internal/application/event"
 	"bom-pedido-api/internal/application/factory"
-	"bom-pedido-api/internal/application/usecase/notification/notify_customer_order_status_changed"
-	"bom-pedido-api/internal/application/usecase/notification/send_notification"
+	"bom-pedido-api/internal/application/usecase/notification"
 	"context"
 )
 
@@ -25,14 +24,14 @@ func HandleNotificationEvents(factory *factory.ApplicationFactory) {
 		handleNotifyCustomerOrderStatusChanged(factory),
 	)
 
-	sendNotificationsUseCase := send_notification.New(factory)
+	sendNotificationsUseCase := notification.NewSendNotification(factory)
 	go sendNotificationsUseCase.Execute(context.Background())
 }
 
 func handleNotifyCustomerOrderStatusChanged(factory *factory.ApplicationFactory) event.HandlerFunc {
-	useCase := notify_customer_order_status_changed.New(factory)
+	useCase := notification.NewNotifyCustomerOrderStatusChanged(factory)
 	return func(ctx context.Context, message *event.MessageEvent) error {
-		input := notify_customer_order_status_changed.Input{
+		input := notification.NotifyCustomerOrderStatusChangedInput{
 			OrderId: message.Event.Data["orderId"],
 		}
 		err := useCase.Execute(ctx, input)

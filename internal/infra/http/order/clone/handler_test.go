@@ -1,9 +1,8 @@
 package clone
 
 import (
-	"bom-pedido-api/internal/application/usecase/product/create_product"
-	"bom-pedido-api/internal/application/usecase/shopping_cart/add_item_to_shopping_cart"
-	"bom-pedido-api/internal/application/usecase/shopping_cart/checkout"
+	"bom-pedido-api/internal/application/usecase/product"
+	"bom-pedido-api/internal/application/usecase/shopping_cart"
 	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/enums"
 	"bom-pedido-api/internal/infra/factory"
@@ -41,8 +40,8 @@ func TestHandle(t *testing.T) {
 	err = applicationFactory.ProductCategoryRepository.Create(ctx, category)
 	require.NoError(t, err)
 
-	createProduct := create_product.New(applicationFactory)
-	createProductOutput, err := createProduct.Execute(ctx, create_product.Input{
+	createProduct := product.NewCreateProduct(applicationFactory)
+	createProductOutput, err := createProduct.Execute(ctx, product.CreateProductInput{
 		Name:        faker.Name(),
 		Description: faker.Word(),
 		Price:       10.0,
@@ -51,8 +50,8 @@ func TestHandle(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	addItemToShoppingCart := add_item_to_shopping_cart.New(applicationFactory)
-	err = addItemToShoppingCart.Execute(ctx, add_item_to_shopping_cart.Input{
+	addItemToShoppingCart := shopping_cart.NewAddItemToShoppingCart(applicationFactory)
+	err = addItemToShoppingCart.Execute(ctx, shopping_cart.AddItemToShoppingCartInput{
 		CustomerId:  customer.Id,
 		ProductId:   createProductOutput.Id,
 		Quantity:    1,
@@ -61,8 +60,8 @@ func TestHandle(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	checkoutShoppingCart := checkout.New(applicationFactory)
-	checkoutOutput, err := checkoutShoppingCart.Execute(ctx, checkout.Input{
+	checkoutShoppingCart := shopping_cart.NewCheckoutShoppingCart(applicationFactory)
+	checkoutOutput, err := checkoutShoppingCart.Execute(ctx, shopping_cart.CheckoutShoppingCartInput{
 		CustomerId:      customer.Id,
 		PaymentMethod:   enums.Money,
 		DeliveryMode:    enums.Withdraw,

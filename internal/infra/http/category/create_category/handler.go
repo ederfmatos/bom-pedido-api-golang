@@ -2,7 +2,7 @@ package create_category
 
 import (
 	"bom-pedido-api/internal/application/factory"
-	"bom-pedido-api/internal/application/usecase/product/category/create_category"
+	"bom-pedido-api/internal/application/usecase/category"
 	"bom-pedido-api/internal/infra/http/response"
 	"bom-pedido-api/internal/infra/tenant"
 	"github.com/labstack/echo/v4"
@@ -14,14 +14,14 @@ type requestBody struct {
 }
 
 func Handle(factory *factory.ApplicationFactory) func(context echo.Context) error {
-	createProductUseCase := create_category.New(factory)
+	createProductUseCase := category.NewCreateCategory(factory)
 	return func(context echo.Context) error {
 		var request requestBody
 		err := context.Bind(&request)
 		if err != nil {
 			return err
 		}
-		input := create_category.Input{
+		input := category.CreateCategoryInput{
 			Name:        request.Name,
 			Description: request.Description,
 			TenantId:    context.Get(tenant.Id).(string),

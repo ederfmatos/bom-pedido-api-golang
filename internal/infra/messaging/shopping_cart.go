@@ -3,7 +3,7 @@ package messaging
 import (
 	"bom-pedido-api/internal/application/event"
 	"bom-pedido-api/internal/application/factory"
-	"bom-pedido-api/internal/application/usecase/shopping_cart/delete_shopping_cart"
+	"bom-pedido-api/internal/application/usecase/shopping_cart"
 	"context"
 )
 
@@ -12,10 +12,10 @@ func HandleShoppingCart(factory *factory.ApplicationFactory) {
 }
 
 func handleDeleteShoppingCart(factory *factory.ApplicationFactory) func(context.Context, *event.MessageEvent) error {
-	useCase := delete_shopping_cart.New(factory)
+	useCase := shopping_cart.NewDeleteShoppingCart(factory)
 	return func(ctx context.Context, message *event.MessageEvent) error {
 		customerId := message.Event.Data["customerId"]
-		err := useCase.Execute(ctx, delete_shopping_cart.Input{CustomerId: customerId})
+		err := useCase.Execute(ctx, shopping_cart.DeleteShoppingCartInput{CustomerId: customerId})
 		return message.AckIfNoError(ctx, err)
 	}
 }

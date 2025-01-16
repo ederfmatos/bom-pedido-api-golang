@@ -3,7 +3,7 @@ package messaging
 import (
 	"bom-pedido-api/internal/application/event"
 	"bom-pedido-api/internal/application/factory"
-	"bom-pedido-api/internal/application/usecase/transaction/pay_pix_transaction"
+	"bom-pedido-api/internal/application/usecase/transaction"
 	"context"
 )
 
@@ -12,9 +12,9 @@ func HandleTransactionCallback(factory *factory.ApplicationFactory) {
 }
 
 func handlePayPixTransaction(factory *factory.ApplicationFactory) func(context.Context, *event.MessageEvent) error {
-	useCase := pay_pix_transaction.New(factory)
+	useCase := transaction.NewPayPixTransaction(factory)
 	return func(ctx context.Context, message *event.MessageEvent) error {
-		input := pay_pix_transaction.Input{
+		input := transaction.PayPixTransactionInput{
 			OrderId: message.Event.Data["orderId"],
 		}
 		err := useCase.Execute(ctx, input)

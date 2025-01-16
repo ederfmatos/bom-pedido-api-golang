@@ -1,7 +1,7 @@
 package create_product
 
 import (
-	"bom-pedido-api/internal/application/usecase/product/create_product"
+	"bom-pedido-api/internal/application/usecase/product"
 	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/infra/factory"
 	"bom-pedido-api/internal/infra/json"
@@ -44,7 +44,7 @@ func Test_CreateProduct(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusCreated, response.Code)
 
-	var output create_product.Output
+	var output product.CreateProductOutput
 	_ = json.Decode(request.Context(), response.Body, &output)
 	require.NotEmpty(t, output.Id)
 

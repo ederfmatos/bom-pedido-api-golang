@@ -2,7 +2,7 @@ package checkout_shopping_cart
 
 import (
 	"bom-pedido-api/internal/application/factory"
-	"bom-pedido-api/internal/application/usecase/shopping_cart/checkout"
+	"bom-pedido-api/internal/application/usecase/shopping_cart"
 	"bom-pedido-api/internal/infra/http/middlewares"
 	"bom-pedido-api/internal/infra/http/response"
 	"github.com/labstack/echo/v4"
@@ -18,14 +18,14 @@ type checkoutShoppingCartRequest struct {
 }
 
 func Handle(factory *factory.ApplicationFactory) func(context echo.Context) error {
-	useCase := checkout.New(factory)
+	useCase := shopping_cart.NewCheckoutShoppingCart(factory)
 	return func(context echo.Context) error {
 		var request checkoutShoppingCartRequest
 		err := context.Bind(&request)
 		if err != nil {
 			return err
 		}
-		input := checkout.Input{
+		input := shopping_cart.CheckoutShoppingCartInput{
 			CustomerId:      context.Get(middlewares.CustomerIdParam).(string),
 			PaymentMethod:   request.PaymentMethod,
 			DeliveryMode:    request.DeliveryMode,

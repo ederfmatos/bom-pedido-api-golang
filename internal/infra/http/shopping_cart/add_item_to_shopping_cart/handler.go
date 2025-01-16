@@ -2,7 +2,7 @@ package add_item_to_shopping_cart
 
 import (
 	"bom-pedido-api/internal/application/factory"
-	"bom-pedido-api/internal/application/usecase/shopping_cart/add_item_to_shopping_cart"
+	"bom-pedido-api/internal/application/usecase/shopping_cart"
 	"bom-pedido-api/internal/infra/http/middlewares"
 	"bom-pedido-api/internal/infra/http/response"
 	"bom-pedido-api/internal/infra/tenant"
@@ -16,14 +16,14 @@ type addItemToShoppingCartRequest struct {
 }
 
 func Handle(factory *factory.ApplicationFactory) func(context echo.Context) error {
-	useCase := add_item_to_shopping_cart.New(factory)
+	useCase := shopping_cart.NewAddItemToShoppingCart(factory)
 	return func(context echo.Context) error {
 		var request addItemToShoppingCartRequest
 		err := context.Bind(&request)
 		if err != nil {
 			return err
 		}
-		input := add_item_to_shopping_cart.Input{
+		input := shopping_cart.AddItemToShoppingCartInput{
 			CustomerId:  context.Get(middlewares.CustomerIdParam).(string),
 			ProductId:   request.ProductId,
 			Quantity:    request.Quantity,

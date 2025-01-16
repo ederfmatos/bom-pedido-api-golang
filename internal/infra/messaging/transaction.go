@@ -3,9 +3,7 @@ package messaging
 import (
 	"bom-pedido-api/internal/application/event"
 	"bom-pedido-api/internal/application/factory"
-	"bom-pedido-api/internal/application/usecase/transaction/cancel_pix_transaction"
-	"bom-pedido-api/internal/application/usecase/transaction/create_pix_transaction"
-	"bom-pedido-api/internal/application/usecase/transaction/refund_pix_transaction"
+	"bom-pedido-api/internal/application/usecase/transaction"
 	"context"
 )
 
@@ -16,9 +14,9 @@ func HandleTransactionEvents(factory *factory.ApplicationFactory) {
 }
 
 func handleCreatePixTransaction(factory *factory.ApplicationFactory) event.HandlerFunc {
-	useCase := create_pix_transaction.New(factory)
+	useCase := transaction.NewCreatePixTransaction(factory)
 	return func(ctx context.Context, message *event.MessageEvent) error {
-		input := create_pix_transaction.Input{
+		input := transaction.CreatePixTransactionInput{
 			OrderId:        message.Event.Data["orderId"],
 			PaymentId:      message.Event.Data["paymentId"],
 			PaymentGateway: message.Event.Data["paymentGateway"],
@@ -29,9 +27,9 @@ func handleCreatePixTransaction(factory *factory.ApplicationFactory) event.Handl
 }
 
 func handleRefundPixTransaction(factory *factory.ApplicationFactory) event.HandlerFunc {
-	useCase := refund_pix_transaction.New(factory)
+	useCase := transaction.NewRefundPixTransaction(factory)
 	return func(ctx context.Context, message *event.MessageEvent) error {
-		input := refund_pix_transaction.Input{
+		input := transaction.RefundPixTransactionInput{
 			OrderId: message.Event.Data["orderId"],
 		}
 		err := useCase.Execute(ctx, input)
@@ -40,9 +38,9 @@ func handleRefundPixTransaction(factory *factory.ApplicationFactory) event.Handl
 }
 
 func handleCancelPixTransaction(factory *factory.ApplicationFactory) event.HandlerFunc {
-	useCase := cancel_pix_transaction.New(factory)
+	useCase := transaction.NewCancelPixTransaction(factory)
 	return func(ctx context.Context, message *event.MessageEvent) error {
-		input := cancel_pix_transaction.Input{
+		input := transaction.CancelPixTransactionInput{
 			OrderId: message.Event.Data["orderId"],
 		}
 		err := useCase.Execute(ctx, input)

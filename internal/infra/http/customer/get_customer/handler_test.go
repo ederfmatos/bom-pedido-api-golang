@@ -1,7 +1,7 @@
 package get_customer
 
 import (
-	"bom-pedido-api/internal/application/usecase/customer/get_customer"
+	customerUsecase "bom-pedido-api/internal/application/usecase/customer"
 	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/errors"
 	"bom-pedido-api/internal/domain/value_object"
@@ -35,7 +35,7 @@ func Test_GetCustomer(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, http.StatusOK, response.Code)
 
-		var output get_customer.Output
+		var output customerUsecase.GetCustomerOutput
 		_ = json.Decode(request.Context(), response.Body, &output)
 		require.Equal(t, customer.Name, output.Name)
 		require.Equal(t, customer.GetEmail(), output.Email)
