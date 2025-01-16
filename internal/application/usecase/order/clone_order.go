@@ -3,7 +3,7 @@ package order
 import (
 	"bom-pedido-api/internal/application/factory"
 	"bom-pedido-api/internal/application/repository"
-	"bom-pedido-api/internal/domain/entity/shopping_cart"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/errors"
 	"context"
 )
@@ -33,6 +33,6 @@ func (useCase *CloneOrderUseCase) Execute(ctx context.Context, input CloneOrderI
 	if order == nil {
 		return errors.OrderNotFoundError
 	}
-	aShoppingCart := shopping_cart.CloneOrder(order)
-	return useCase.shoppingCartRepository.Upsert(ctx, aShoppingCart)
+	shoppingCart := entity.NewShoppingCartFromOrder(order)
+	return useCase.shoppingCartRepository.Upsert(ctx, shoppingCart)
 }

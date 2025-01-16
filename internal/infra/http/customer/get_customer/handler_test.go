@@ -2,7 +2,7 @@ package get_customer
 
 import (
 	"bom-pedido-api/internal/application/usecase/customer/get_customer"
-	"bom-pedido-api/internal/domain/entity/customer"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/errors"
 	"bom-pedido-api/internal/domain/value_object"
 	"bom-pedido-api/internal/infra/factory"
@@ -21,15 +21,15 @@ func Test_GetCustomer(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
 
 	t.Run("should success get customer", func(t *testing.T) {
-		aCustomer, _ := customer.New(faker.Name(), faker.Email(), faker.WORD)
-		_ = aCustomer.SetPhoneNumber(faker.Phonenumber())
-		_ = applicationFactory.CustomerRepository.Create(context.Background(), aCustomer)
+		customer, _ := entity.NewCustomer(faker.Name(), faker.Email(), faker.WORD)
+		_ = customer.SetPhoneNumber(faker.Phonenumber())
+		_ = applicationFactory.CustomerRepository.Create(context.Background(), customer)
 
 		e := echo.New()
 		request := httptest.NewRequest(http.MethodGet, "/v1/customers/me", nil)
 		response := httptest.NewRecorder()
 		echoContext := e.NewContext(request, response)
-		echoContext.Set(middlewares.CustomerIdParam, aCustomer.Id)
+		echoContext.Set(middlewares.CustomerIdParam, customer.Id)
 
 		err := Handle(applicationFactory)(echoContext)
 		require.NoError(t, err)
@@ -37,9 +37,9 @@ func Test_GetCustomer(t *testing.T) {
 
 		var output get_customer.Output
 		_ = json.Decode(request.Context(), response.Body, &output)
-		require.Equal(t, aCustomer.Name, output.Name)
-		require.Equal(t, aCustomer.GetEmail(), output.Email)
-		require.Equal(t, aCustomer.GetPhoneNumber(), output.PhoneNumber)
+		require.Equal(t, customer.Name, output.Name)
+		require.Equal(t, customer.GetEmail(), output.Email)
+		require.Equal(t, customer.GetPhoneNumber(), output.PhoneNumber)
 	})
 
 	t.Run("should return CustomerNotFoundError if customer does not exists", func(t *testing.T) {

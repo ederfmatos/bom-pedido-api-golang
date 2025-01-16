@@ -1,7 +1,7 @@
 package event
 
 import (
-	"bom-pedido-api/internal/domain/entity/product"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/value_object"
 )
 
@@ -9,7 +9,7 @@ var (
 	ProductCreated = "PRODUCT_CREATED"
 )
 
-func NewProductCreatedEvent(product *product.Product) *Event {
+func NewProductCreatedEvent(product *entity.Product) *Event {
 	return &Event{
 		Id:            value_object.NewID(),
 		CorrelationId: product.Id,

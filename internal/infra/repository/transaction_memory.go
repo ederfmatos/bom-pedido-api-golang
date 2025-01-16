@@ -1,21 +1,21 @@
 package repository
 
 import (
-	"bom-pedido-api/internal/domain/entity/transaction"
+	"bom-pedido-api/internal/domain/entity"
 	"context"
 )
 
 type TransactionMemoryRepository struct {
-	pixTransactionsByOrder map[string]*transaction.PixTransaction
+	pixTransactionsByOrder map[string]*entity.PixTransaction
 }
 
 func NewTransactionMemoryRepository() *TransactionMemoryRepository {
 	return &TransactionMemoryRepository{
-		pixTransactionsByOrder: make(map[string]*transaction.PixTransaction),
+		pixTransactionsByOrder: make(map[string]*entity.PixTransaction),
 	}
 }
 
-func (r *TransactionMemoryRepository) CreatePixTransaction(_ context.Context, transaction *transaction.PixTransaction) error {
+func (r *TransactionMemoryRepository) CreatePixTransaction(_ context.Context, transaction *entity.PixTransaction) error {
 	r.pixTransactionsByOrder[transaction.OrderId] = transaction
 	return nil
 }
@@ -25,11 +25,11 @@ func (r *TransactionMemoryRepository) ExistsByOrderId(_ context.Context, id stri
 	return ok, nil
 }
 
-func (r *TransactionMemoryRepository) UpdatePixTransaction(_ context.Context, transaction *transaction.PixTransaction) error {
+func (r *TransactionMemoryRepository) UpdatePixTransaction(_ context.Context, transaction *entity.PixTransaction) error {
 	r.pixTransactionsByOrder[transaction.OrderId] = transaction
 	return nil
 }
 
-func (r *TransactionMemoryRepository) FindByOrderId(_ context.Context, id string) (*transaction.PixTransaction, error) {
+func (r *TransactionMemoryRepository) FindByOrderId(_ context.Context, id string) (*entity.PixTransaction, error) {
 	return r.pixTransactionsByOrder[id], nil
 }

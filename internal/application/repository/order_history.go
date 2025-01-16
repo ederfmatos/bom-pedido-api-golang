@@ -1,11 +1,11 @@
 package repository
 
 import (
-	"bom-pedido-api/internal/domain/entity/order"
+	"bom-pedido-api/internal/domain/entity"
 	"context"
 )
 
 type OrderStatusHistoryRepository interface {
-	Create(ctx context.Context, history *order.StatusHistory) error
-	ListByOrderId(ctx context.Context, id string) ([]order.StatusHistory, error)
+	Create(ctx context.Context, history *entity.OrderStatusHistory) error
+	ListByOrderId(ctx context.Context, id string) ([]entity.OrderStatusHistory, error)
 }

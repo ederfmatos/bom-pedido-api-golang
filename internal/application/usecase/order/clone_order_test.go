@@ -1,8 +1,7 @@
 package order
 
 import (
-	"bom-pedido-api/internal/domain/entity/order"
-	"bom-pedido-api/internal/domain/entity/product"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/enums"
 	"bom-pedido-api/internal/domain/errors"
 	"bom-pedido-api/internal/domain/value_object"
@@ -30,28 +29,28 @@ func Test_CloneOrder(t *testing.T) {
 	t.Run("should clone an order", func(t *testing.T) {
 		ctx := context.Background()
 		customerId := value_object.NewID()
-		anOrder, err := order.New(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, 0, time.Now(), faker.Word())
+		order, err := entity.NewOrder(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, 0, time.Now(), faker.Word())
 		require.NoError(t, err)
-		aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.Word(), faker.Word())
+		product, err := entity.NewProduct(faker.Name(), faker.Word(), 10.0, faker.Word(), faker.Word())
 		require.NoError(t, err)
-		err = anOrder.AddProduct(aProduct, 1, "observation")
+		err = order.AddProduct(product, 1, "observation")
 		require.NoError(t, err)
-		err = applicationFactory.OrderRepository.Create(ctx, anOrder)
+		err = applicationFactory.OrderRepository.Create(ctx, order)
 		require.NoError(t, err)
 
 		input := CloneOrderInput{
-			OrderId: anOrder.Id,
+			OrderId: order.Id,
 		}
 		err = useCase.Execute(ctx, input)
 		require.NoError(t, err)
 
-		savedShoppingCart, err := applicationFactory.ShoppingCartRepository.FindByCustomerId(ctx, anOrder.CustomerID)
+		savedShoppingCart, err := applicationFactory.ShoppingCartRepository.FindByCustomerId(ctx, order.CustomerID)
 		require.NoError(t, err)
 		require.NotNil(t, savedShoppingCart)
 		require.Equal(t, len(savedShoppingCart.Items), 1)
 		for _, shoppingCartItem := range savedShoppingCart.Items {
-			require.Equal(t, shoppingCartItem.ProductId, aProduct.Id)
-			require.Equal(t, shoppingCartItem.Price, aProduct.Price)
+			require.Equal(t, shoppingCartItem.ProductId, product.Id)
+			require.Equal(t, shoppingCartItem.Price, product.Price)
 			require.Equal(t, shoppingCartItem.Quantity, 1)
 			require.Equal(t, shoppingCartItem.Observation, "observation")
 		}

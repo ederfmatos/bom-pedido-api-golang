@@ -3,7 +3,7 @@ package google_authenticate_customer
 import (
 	"bom-pedido-api/internal/application/factory"
 	"bom-pedido-api/internal/application/gateway"
-	"bom-pedido-api/internal/domain/entity/customer"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/errors"
 	"bom-pedido-api/internal/domain/value_object"
 	"bom-pedido-api/internal/infra/gateway/google"
@@ -79,8 +79,8 @@ func TestGoogleAuthenticateCustomerUseCase_Execute(t *testing.T) {
 		tokenManager.On("Encrypt", mock.Anything).Return("token", nil).Once()
 
 		googleAuthenticateCustomerUseCase := New(applicationFactory)
-		aCustomer, _ := customer.New(faker.Name(), faker.Email(), faker.Word())
-		_ = applicationFactory.CustomerRepository.Create(context.Background(), aCustomer)
+		customer, _ := entity.NewCustomer(faker.Name(), faker.Email(), faker.Word())
+		_ = applicationFactory.CustomerRepository.Create(context.Background(), customer)
 		input := Input{Token: "google Token", TenantId: faker.Word()}
 
 		output, err := googleAuthenticateCustomerUseCase.Execute(context.Background(), input)

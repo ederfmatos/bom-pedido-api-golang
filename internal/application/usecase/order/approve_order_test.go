@@ -1,8 +1,8 @@
 package order
 
 import (
-	"bom-pedido-api/internal/domain/entity/order"
-	"bom-pedido-api/internal/domain/entity/order/status"
+	"bom-pedido-api/internal/domain/entity"
+	"bom-pedido-api/internal/domain/entity/status"
 	"bom-pedido-api/internal/domain/enums"
 	"bom-pedido-api/internal/domain/errors"
 	"bom-pedido-api/internal/domain/value_object"
@@ -46,17 +46,17 @@ func Test_ApproveOrder(t *testing.T) {
 				ctx := context.Background()
 				orderId := value_object.NewID()
 				customerId := value_object.NewID()
-				anOrder, err := order.Restore(orderId, customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", currentStatus, time.Now(), 0, 1, 1, time.Now(), []order.Item{}, faker.WORD)
+				order, err := entity.RestoreOrder(orderId, customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", currentStatus, time.Now(), 0, 1, 1, time.Now(), []entity.OrderItem{}, faker.WORD)
 				require.NoError(t, err)
-				err = applicationFactory.OrderRepository.Create(ctx, anOrder)
+				err = applicationFactory.OrderRepository.Create(ctx, order)
 				require.NoError(t, err)
 				input := ApproveOrderUseCaseInput{
-					OrderId:    anOrder.Id,
+					OrderId:    order.Id,
 					ApprovedBy: value_object.NewID(),
 				}
 				err = useCase.Execute(ctx, input)
 				require.ErrorIs(t, err, status.OperationNotAllowedError)
-				savedOrder, err := applicationFactory.OrderRepository.FindById(ctx, anOrder.Id)
+				savedOrder, err := applicationFactory.OrderRepository.FindById(ctx, order.Id)
 				require.NoError(t, err)
 				require.Equal(t, savedOrder.GetStatus(), currentStatus)
 			})
@@ -66,17 +66,17 @@ func Test_ApproveOrder(t *testing.T) {
 	t.Run("should approve order", func(t *testing.T) {
 		ctx := context.Background()
 		customerId := value_object.NewID()
-		anOrder, err := order.New(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, 10.0, time.Now(), faker.WORD)
+		order, err := entity.NewOrder(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, 10.0, time.Now(), faker.WORD)
 		require.NoError(t, err)
-		err = applicationFactory.OrderRepository.Create(ctx, anOrder)
+		err = applicationFactory.OrderRepository.Create(ctx, order)
 		require.NoError(t, err)
 		input := ApproveOrderUseCaseInput{
-			OrderId:    anOrder.Id,
+			OrderId:    order.Id,
 			ApprovedBy: value_object.NewID(),
 		}
 		err = useCase.Execute(ctx, input)
 		require.NoError(t, err)
-		savedOrder, err := applicationFactory.OrderRepository.FindById(ctx, anOrder.Id)
+		savedOrder, err := applicationFactory.OrderRepository.FindById(ctx, order.Id)
 		require.NoError(t, err)
 		require.Equal(t, savedOrder.GetStatus(), status.ApprovedStatus.Name())
 	})

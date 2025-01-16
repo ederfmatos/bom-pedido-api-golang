@@ -2,8 +2,7 @@ package repository
 
 import (
 	"bom-pedido-api/internal/application/repository"
-	"bom-pedido-api/internal/domain/entity/product"
-	"bom-pedido-api/internal/domain/entity/shopping_cart"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/value_object"
 	"bom-pedido-api/internal/infra/test"
 	"context"
@@ -31,11 +30,11 @@ func Test_ShoppingCartMongoRepository(t *testing.T) {
 			require.NoError(t, err)
 			require.Nil(t, shoppingCart)
 
-			shoppingCart = shopping_cart.New(customerId, faker.WORD)
-			aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.WORD, faker.Word())
+			shoppingCart = entity.NewShoppingCart(customerId, faker.WORD)
+			product, err := entity.NewProduct(faker.Name(), faker.Word(), 10.0, faker.WORD, faker.Word())
 			require.NoError(t, err)
 
-			require.NoError(t, shoppingCart.AddItem(aProduct, 2, ""))
+			require.NoError(t, shoppingCart.AddItem(product, 2, ""))
 			require.NoError(t, shoppingCartRepository.Upsert(ctx, shoppingCart))
 
 			savedShoppingCart, err := shoppingCartRepository.FindByCustomerId(ctx, customerId)

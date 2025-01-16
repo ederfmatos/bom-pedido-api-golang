@@ -2,7 +2,7 @@ package repository
 
 import (
 	"bom-pedido-api/internal/application/repository"
-	"bom-pedido-api/internal/domain/entity/order"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/infra/test"
 	"context"
 	"github.com/go-faker/faker/v4"
@@ -29,7 +29,7 @@ func TestOrderStatusHistoryMongoRepository(t *testing.T) {
 			require.NoError(t, err)
 			require.Empty(t, history)
 
-			statusHistory := order.NewStatusHistory(time.Now(), "CREATED", faker.Word(), faker.Word(), orderID)
+			statusHistory := entity.NewOrderStatusHistory(time.Now(), "CREATED", faker.Word(), faker.Word(), orderID)
 
 			err = orderStatusHistoryRepository.Create(ctx, statusHistory)
 			require.NoError(t, err)

@@ -1,7 +1,7 @@
 package add_item_to_shopping_cart
 
 import (
-	"bom-pedido-api/internal/domain/entity/product"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/errors"
 	"bom-pedido-api/internal/domain/value_object"
 	"bom-pedido-api/internal/infra/factory"
@@ -26,16 +26,16 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 	})
 
 	t.Run("should return error is product is unavailable", func(t *testing.T) {
-		aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.WORD, faker.Word())
-		aProduct.MarkUnAvailable()
+		product, err := entity.NewProduct(faker.Name(), faker.Word(), 10.0, faker.WORD, faker.Word())
+		product.MarkUnAvailable()
 		if err != nil {
-			t.Fatalf("failed to restore aProduct: %v", err)
+			t.Fatalf("failed to restore product: %v", err)
 		}
-		_ = applicationFactory.ProductRepository.Create(ctx, aProduct)
+		_ = applicationFactory.ProductRepository.Create(ctx, product)
 
 		input := Input{
 			CustomerId:  value_object.NewID(),
-			ProductId:   aProduct.Id,
+			ProductId:   product.Id,
 			Quantity:    2,
 			Observation: faker.Word(),
 		}
@@ -47,15 +47,15 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 	})
 
 	t.Run("should create a shopping cart with one item", func(t *testing.T) {
-		aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.WORD, faker.Word())
+		product, err := entity.NewProduct(faker.Name(), faker.Word(), 10.0, faker.WORD, faker.Word())
 		if err != nil {
-			t.Fatalf("failed to restore aProduct: %v", err)
+			t.Fatalf("failed to restore product: %v", err)
 		}
-		_ = applicationFactory.ProductRepository.Create(ctx, aProduct)
+		_ = applicationFactory.ProductRepository.Create(ctx, product)
 
 		input := Input{
 			CustomerId:  value_object.NewID(),
-			ProductId:   aProduct.Id,
+			ProductId:   product.Id,
 			Quantity:    2,
 			Observation: faker.Word(),
 		}
@@ -68,7 +68,7 @@ func TestAddItemToShoppingCartUseCase_Execute(t *testing.T) {
 		require.Equal(t, 20.0, shoppingCart.GetPrice())
 		require.Equal(t, 1, len(shoppingCart.Items))
 		for _, item := range shoppingCart.Items {
-			require.Equal(t, aProduct.Id, item.ProductId)
+			require.Equal(t, product.Id, item.ProductId)
 			require.Equal(t, input.Quantity, item.Quantity)
 			require.Equal(t, input.Observation, item.Observation)
 			require.Equal(t, 10.0, item.Price)

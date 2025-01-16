@@ -1,11 +1,11 @@
-package customer
+package entity
 
 import (
 	"bom-pedido-api/internal/domain/value_object"
 )
 
 const (
-	ACTIVE string = "ACTIVE"
+	CustomerStatusActive string = "ACTIVE"
 )
 
 type Customer struct {
@@ -17,7 +17,7 @@ type Customer struct {
 	TenantId    string                   `bson:"tenantId"`
 }
 
-func New(name, email, tenantId string) (*Customer, error) {
+func NewCustomer(name, email, tenantId string) (*Customer, error) {
 	newEmail, err := value_object.NewEmail(email)
 	if err != nil {
 		return nil, err
@@ -26,7 +26,7 @@ func New(name, email, tenantId string) (*Customer, error) {
 		Id:       value_object.NewID(),
 		Name:     name,
 		Email:    *newEmail,
-		Status:   ACTIVE,
+		Status:   CustomerStatusActive,
 		TenantId: tenantId,
 	}, nil
 }

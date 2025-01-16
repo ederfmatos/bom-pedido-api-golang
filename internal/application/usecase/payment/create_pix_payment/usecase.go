@@ -42,31 +42,31 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) error {
 		return err
 	}
 	defer uc.locker.Release(ctx, lockKey)
-	anOrder, err := uc.orderRepository.FindById(ctx, input.OrderId)
-	if err != nil || anOrder == nil || !anOrder.IsPixInApp() {
+	order, err := uc.orderRepository.FindById(ctx, input.OrderId)
+	if err != nil || order == nil || !order.IsPixInApp() {
 		return err
 	}
-	aCustomer, err := uc.customerRepository.FindById(ctx, anOrder.CustomerID)
-	if err != nil || aCustomer == nil {
+	customer, err := uc.customerRepository.FindById(ctx, order.CustomerID)
+	if err != nil || customer == nil {
 		return err
 	}
-	existsTransaction, err := uc.transactionRepository.ExistsByOrderId(ctx, anOrder.Id)
+	existsTransaction, err := uc.transactionRepository.ExistsByOrderId(ctx, order.Id)
 	if err != nil || existsTransaction {
 		return err
 	}
 	createPixInput := gateway.CreateQrCodePixInput{
-		InternalOrderId: anOrder.Id,
-		Amount:          anOrder.Amount,
-		MerchantId:      anOrder.MerchantId,
+		InternalOrderId: order.Id,
+		Amount:          order.Amount,
+		MerchantId:      order.MerchantId,
 		Description:     "Pedido no Bom Pedido",
 		Customer: gateway.PixCustomer{
-			Name:  aCustomer.Name,
-			Email: aCustomer.GetEmail(),
+			Name:  customer.Name,
+			Email: customer.GetEmail(),
 		},
 	}
 	createPixOutput, err := uc.pixGateway.CreateQrCodePix(ctx, createPixInput)
 	if err != nil {
 		return err
 	}
-	return uc.eventEmitter.Emit(ctx, event.NewPixPaymentCreated(anOrder.Id, createPixOutput.Id, createPixOutput.PaymentGateway))
+	return uc.eventEmitter.Emit(ctx, event.NewPixPaymentCreated(order.Id, createPixOutput.Id, createPixOutput.PaymentGateway))
 }

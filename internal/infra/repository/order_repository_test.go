@@ -2,9 +2,7 @@ package repository
 
 import (
 	"bom-pedido-api/internal/application/repository"
-	"bom-pedido-api/internal/domain/entity/customer"
-	"bom-pedido-api/internal/domain/entity/order"
-	"bom-pedido-api/internal/domain/entity/product"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/enums"
 	"bom-pedido-api/internal/infra/test"
 	"context"
@@ -26,92 +24,92 @@ func Test_OrderRepository(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctx := context.Background()
 
-			aCustomer, err := customer.New(faker.Name(), faker.Email(), faker.Word())
+			customer, err := entity.NewCustomer(faker.Name(), faker.Email(), faker.Word())
 			require.NoError(t, err)
 
-			anOrder, err := order.New(aCustomer.Id, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 10.0, 100, time.Now(), faker.WORD)
+			order, err := entity.NewOrder(customer.Id, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 10.0, 100, time.Now(), faker.WORD)
 			require.NoError(t, err)
 
-			category := product.NewCategory(faker.Name(), faker.Word(), faker.Word())
-			aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, category.Id, faker.WORD)
+			category := entity.NewCategory(faker.Name(), faker.Word(), faker.Word())
+			product, err := entity.NewProduct(faker.Name(), faker.Word(), 10.0, category.Id, faker.WORD)
 			require.NoError(t, err)
 
-			err = anOrder.AddProduct(aProduct, 1, "")
+			err = order.AddProduct(product, 1, "")
 			require.NoError(t, err)
 
-			anOrder.Code = 1
+			order.Code = 1
 			require.NoError(t, err)
 
-			savedOrder, err := orderRepository.FindById(ctx, anOrder.Id)
+			savedOrder, err := orderRepository.FindById(ctx, order.Id)
 			require.NoError(t, err)
 			require.Nil(t, savedOrder)
 
-			err = orderRepository.Create(ctx, anOrder)
+			err = orderRepository.Create(ctx, order)
 			require.NoError(t, err)
 
-			savedOrder, err = orderRepository.FindById(ctx, anOrder.Id)
+			savedOrder, err = orderRepository.FindById(ctx, order.Id)
 			require.NoError(t, err)
-			assertOrder(t, anOrder, savedOrder)
+			assertOrder(t, order, savedOrder)
 
 			// Approve
-			err = anOrder.Approve()
+			err = order.Approve()
 			require.NoError(t, err)
 
-			err = orderRepository.Update(ctx, anOrder)
+			err = orderRepository.Update(ctx, order)
 			require.NoError(t, err)
 
-			savedOrder, err = orderRepository.FindById(ctx, anOrder.Id)
+			savedOrder, err = orderRepository.FindById(ctx, order.Id)
 			require.NoError(t, err)
-			assertOrder(t, anOrder, savedOrder)
+			assertOrder(t, order, savedOrder)
 
 			// MarkAsInProgress
-			err = anOrder.MarkAsInProgress()
+			err = order.MarkAsInProgress()
 			require.NoError(t, err)
 
-			err = orderRepository.Update(ctx, anOrder)
+			err = orderRepository.Update(ctx, order)
 			require.NoError(t, err)
 
-			savedOrder, err = orderRepository.FindById(ctx, anOrder.Id)
+			savedOrder, err = orderRepository.FindById(ctx, order.Id)
 			require.NoError(t, err)
-			assertOrder(t, anOrder, savedOrder)
+			assertOrder(t, order, savedOrder)
 
 			// MarkAsAwaitingDelivery
-			err = anOrder.MarkAsAwaitingDelivery()
+			err = order.MarkAsAwaitingDelivery()
 			require.NoError(t, err)
 
-			err = orderRepository.Update(ctx, anOrder)
+			err = orderRepository.Update(ctx, order)
 			require.NoError(t, err)
 
-			savedOrder, err = orderRepository.FindById(ctx, anOrder.Id)
+			savedOrder, err = orderRepository.FindById(ctx, order.Id)
 			require.NoError(t, err)
-			assertOrder(t, anOrder, savedOrder)
+			assertOrder(t, order, savedOrder)
 
 			// MarkAsDelivering
-			err = anOrder.MarkAsDelivering()
+			err = order.MarkAsDelivering()
 			require.NoError(t, err)
 
-			err = orderRepository.Update(ctx, anOrder)
+			err = orderRepository.Update(ctx, order)
 			require.NoError(t, err)
 
-			savedOrder, err = orderRepository.FindById(ctx, anOrder.Id)
+			savedOrder, err = orderRepository.FindById(ctx, order.Id)
 			require.NoError(t, err)
-			assertOrder(t, anOrder, savedOrder)
+			assertOrder(t, order, savedOrder)
 
 			// Finish
-			err = anOrder.Finish()
+			err = order.Finish()
 			require.NoError(t, err)
 
-			err = orderRepository.Update(ctx, anOrder)
+			err = orderRepository.Update(ctx, order)
 			require.NoError(t, err)
 
-			savedOrder, err = orderRepository.FindById(ctx, anOrder.Id)
+			savedOrder, err = orderRepository.FindById(ctx, order.Id)
 			require.NoError(t, err)
-			assertOrder(t, anOrder, savedOrder)
+			assertOrder(t, order, savedOrder)
 		})
 	}
 }
 
-func assertOrder(t *testing.T, expectedOrder, actualOrder *order.Order) {
+func assertOrder(t *testing.T, expectedOrder, actualOrder *entity.Order) {
 	require.Equal(t, expectedOrder.Id, actualOrder.Id)
 	require.Equal(t, expectedOrder.CustomerID, actualOrder.CustomerID)
 	require.Equal(t, expectedOrder.PaymentMethod, actualOrder.PaymentMethod)

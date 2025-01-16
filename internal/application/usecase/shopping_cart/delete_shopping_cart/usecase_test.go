@@ -1,7 +1,7 @@
 package delete_shopping_cart
 
 import (
-	"bom-pedido-api/internal/domain/entity/shopping_cart"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/value_object"
 	"bom-pedido-api/internal/infra/factory"
 	"context"
@@ -14,12 +14,12 @@ func TestUseCase_Execute(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
 	useCase := New(applicationFactory)
 	customerId := value_object.NewID()
-	aShoppingCart := shopping_cart.New(customerId, faker.WORD)
+	shoppingCart := entity.NewShoppingCart(customerId, faker.WORD)
 	input := Input{
 		CustomerId: customerId,
 	}
 	ctx := context.Background()
-	err := applicationFactory.ShoppingCartRepository.Upsert(ctx, aShoppingCart)
+	err := applicationFactory.ShoppingCartRepository.Upsert(ctx, shoppingCart)
 	require.NoError(t, err)
 	err = useCase.Execute(ctx, input)
 	require.NoError(t, err)

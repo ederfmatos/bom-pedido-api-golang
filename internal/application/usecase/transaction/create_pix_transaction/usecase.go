@@ -6,7 +6,7 @@ import (
 	"bom-pedido-api/internal/application/gateway"
 	"bom-pedido-api/internal/application/lock"
 	"bom-pedido-api/internal/application/repository"
-	"bom-pedido-api/internal/domain/entity/transaction"
+	"bom-pedido-api/internal/domain/entity"
 	"context"
 	"time"
 )
@@ -43,26 +43,26 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) error {
 		return err
 	}
 	defer uc.locker.Release(ctx, lockKey)
-	anOrder, err := uc.orderRepository.FindById(ctx, input.OrderId)
-	if err != nil || anOrder == nil || !anOrder.IsPixInApp() {
+	order, err := uc.orderRepository.FindById(ctx, input.OrderId)
+	if err != nil || order == nil || !order.IsPixInApp() {
 		return err
 	}
-	existsTransaction, err := uc.transactionRepository.ExistsByOrderId(ctx, anOrder.Id)
+	existsTransaction, err := uc.transactionRepository.ExistsByOrderId(ctx, order.Id)
 	if err != nil || existsTransaction {
 		return err
 	}
 	pixPayment, err := uc.pixGateway.GetPaymentById(ctx, gateway.GetPaymentInput{
 		PaymentId:      input.PaymentId,
-		MerchantId:     anOrder.MerchantId,
+		MerchantId:     order.MerchantId,
 		PaymentGateway: input.PaymentGateway,
 	})
 	if err != nil || pixPayment == nil {
 		return err
 	}
-	pixTransaction := transaction.NewPixTransaction(pixPayment.Id, anOrder.Id, pixPayment.QrCode, pixPayment.PaymentGateway, pixPayment.QrCodeLink, anOrder.Amount)
+	pixTransaction := entity.NewPixTransaction(pixPayment.Id, order.Id, pixPayment.QrCode, pixPayment.PaymentGateway, pixPayment.QrCodeLink, order.Amount)
 	err = uc.transactionRepository.CreatePixTransaction(ctx, pixTransaction)
 	if err != nil {
 		return err
 	}
-	return uc.eventEmitter.Emit(ctx, event.NewPixTransactionCreated(anOrder.Id, pixTransaction.PaymentId))
+	return uc.eventEmitter.Emit(ctx, event.NewPixTransactionCreated(order.Id, pixTransaction.PaymentId))
 }

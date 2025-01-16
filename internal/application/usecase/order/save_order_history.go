@@ -3,7 +3,7 @@ package order
 import (
 	"bom-pedido-api/internal/application/factory"
 	"bom-pedido-api/internal/application/repository"
-	"bom-pedido-api/internal/domain/entity/order"
+	"bom-pedido-api/internal/domain/entity"
 	"context"
 	"time"
 )
@@ -27,7 +27,7 @@ func NewSaveOrderHistory(factory *factory.ApplicationFactory) *SaveOrderHistoryU
 }
 
 func (u *SaveOrderHistoryUseCase) Execute(ctx context.Context, input SaveOrderHistoryInput) error {
-	history := &order.StatusHistory{
+	history := &entity.OrderStatusHistory{
 		Time:      input.Time,
 		Status:    input.Status,
 		ChangedBy: input.ChangedBy,

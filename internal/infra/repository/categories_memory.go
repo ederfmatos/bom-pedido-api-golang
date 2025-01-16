@@ -1,24 +1,24 @@
 package repository
 
 import (
-	"bom-pedido-api/internal/domain/entity/product"
+	"bom-pedido-api/internal/domain/entity"
 	"context"
 )
 
 type CategoriesMemoryRepository struct {
-	categories map[string]*product.Category
+	categories map[string]*entity.Category
 }
 
 func NewCategoriesMemoryRepository() *CategoriesMemoryRepository {
-	return &CategoriesMemoryRepository{categories: make(map[string]*product.Category)}
+	return &CategoriesMemoryRepository{categories: make(map[string]*entity.Category)}
 }
 
-func (r *CategoriesMemoryRepository) Create(_ context.Context, product *product.Category) error {
+func (r *CategoriesMemoryRepository) Create(_ context.Context, product *entity.Category) error {
 	r.categories[product.Id] = product
 	return nil
 }
 
-func (r *CategoriesMemoryRepository) Update(_ context.Context, product *product.Category) error {
+func (r *CategoriesMemoryRepository) Update(_ context.Context, product *entity.Category) error {
 	r.categories[product.Id] = product
 	return nil
 }
@@ -29,8 +29,8 @@ func (r *CategoriesMemoryRepository) ExistsById(_ context.Context, id string) (b
 }
 
 func (r *CategoriesMemoryRepository) ExistsByNameAndTenantId(_ context.Context, name, tenantId string) (bool, error) {
-	for _, aProductCategory := range r.categories {
-		if aProductCategory.Name == name && aProductCategory.TenantId == tenantId {
+	for _, category := range r.categories {
+		if category.Name == name && category.TenantId == tenantId {
 			return true, nil
 		}
 	}

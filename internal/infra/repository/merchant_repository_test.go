@@ -2,7 +2,7 @@ package repository
 
 import (
 	"bom-pedido-api/internal/application/repository"
-	"bom-pedido-api/internal/domain/entity/merchant"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/infra/test"
 	"context"
 	"github.com/go-faker/faker/v4"
@@ -21,35 +21,35 @@ func Test_MerchantRepository(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctx := context.Background()
 
-			aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+			merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
 			require.NoError(t, err)
 
-			savedMerchant, err := merchantRepository.FindByTenantId(ctx, aMerchant.TenantId)
+			savedMerchant, err := merchantRepository.FindByTenantId(ctx, merchant.TenantId)
 			require.NoError(t, err)
 			require.Nil(t, savedMerchant)
 
-			merchantIsActive, err := merchantRepository.IsActive(ctx, aMerchant.Id)
+			merchantIsActive, err := merchantRepository.IsActive(ctx, merchant.Id)
 			require.NoError(t, err)
 			require.False(t, merchantIsActive)
 
-			err = merchantRepository.Create(ctx, aMerchant)
+			err = merchantRepository.Create(ctx, merchant)
 			require.NoError(t, err)
 
-			savedMerchant, err = merchantRepository.FindByTenantId(ctx, aMerchant.TenantId)
+			savedMerchant, err = merchantRepository.FindByTenantId(ctx, merchant.TenantId)
 			require.NoError(t, err)
 			require.NotNil(t, savedMerchant)
-			require.Equal(t, aMerchant, savedMerchant)
+			require.Equal(t, merchant, savedMerchant)
 
-			merchantIsActive, err = merchantRepository.IsActive(ctx, aMerchant.Id)
+			merchantIsActive, err = merchantRepository.IsActive(ctx, merchant.Id)
 			require.NoError(t, err)
 			require.True(t, merchantIsActive)
 
-			aMerchant.Inactive()
+			merchant.Inactive()
 
-			err = merchantRepository.Update(ctx, aMerchant)
+			err = merchantRepository.Update(ctx, merchant)
 			require.NoError(t, err)
 
-			merchantIsActive, err = merchantRepository.IsActive(ctx, aMerchant.Id)
+			merchantIsActive, err = merchantRepository.IsActive(ctx, merchant.Id)
 			require.NoError(t, err)
 			require.False(t, merchantIsActive)
 		})

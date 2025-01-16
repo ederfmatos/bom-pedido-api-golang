@@ -3,9 +3,8 @@ package notify_customer_order_status_changed
 import (
 	"bom-pedido-api/internal/application/factory"
 	"bom-pedido-api/internal/application/repository"
-	"bom-pedido-api/internal/domain/entity/notification"
-	"bom-pedido-api/internal/domain/entity/order"
-	"bom-pedido-api/internal/domain/entity/order/status"
+	"bom-pedido-api/internal/domain/entity"
+	"bom-pedido-api/internal/domain/entity/status"
 	"context"
 )
 
@@ -30,26 +29,26 @@ func New(factory *factory.ApplicationFactory) *UseCase {
 }
 
 func (u *UseCase) Execute(ctx context.Context, input Input) error {
-	anOrder, err := u.orderRepository.FindById(ctx, input.OrderId)
-	if err != nil || anOrder == nil {
+	order, err := u.orderRepository.FindById(ctx, input.OrderId)
+	if err != nil || order == nil {
 		return err
 	}
-	title, body := u.getNotification(anOrder)
+	title, body := u.getNotification(order)
 	if title == "" || body == "" {
 		return nil
 	}
-	customerNotification, err := u.customerNotificationRepository.FindByCustomerId(ctx, anOrder.CustomerID)
+	customerNotification, err := u.customerNotificationRepository.FindByCustomerId(ctx, order.CustomerID)
 	if err != nil || customerNotification == nil {
 		return err
 	}
-	aNotification := notification.New(title, body, customerNotification.Recipient, anOrder.Id)
-	aNotification.Put("orderId", anOrder.Id).
+	notification := entity.NewNotification(title, body, customerNotification.Recipient, order.Id)
+	notification.Put("orderId", order.Id).
 		Put("event", "ORDER_STATUS_CHANGED").
-		Put("status", anOrder.GetStatus())
-	return u.notificationRepository.Create(ctx, aNotification)
+		Put("status", order.GetStatus())
+	return u.notificationRepository.Create(ctx, notification)
 }
 
-func (u *UseCase) getNotification(order *order.Order) (string, string) {
+func (u *UseCase) getNotification(order *entity.Order) (string, string) {
 	switch order.GetStatus() {
 
 	case status.AwaitingApprovalStatus.Name():

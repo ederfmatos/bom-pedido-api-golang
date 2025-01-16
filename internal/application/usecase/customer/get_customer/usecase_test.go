@@ -1,7 +1,7 @@
 package get_customer
 
 import (
-	"bom-pedido-api/internal/domain/entity/customer"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/errors"
 	"bom-pedido-api/internal/infra/factory"
 	"context"
@@ -24,19 +24,19 @@ func TestGetCustomerUseCase_Execute(t *testing.T) {
 	})
 
 	t.Run("should return a customer", func(t *testing.T) {
-		aCustomer, _ := customer.New(faker.Name(), faker.Email(), faker.Word())
-		_ = aCustomer.SetPhoneNumber(faker.Phonenumber())
-		_ = applicationFactory.CustomerRepository.Create(context.Background(), aCustomer)
+		customer, _ := entity.NewCustomer(faker.Name(), faker.Email(), faker.Word())
+		_ = customer.SetPhoneNumber(faker.Phonenumber())
+		_ = applicationFactory.CustomerRepository.Create(context.Background(), customer)
 
 		useCase := New(applicationFactory)
-		input := Input{Id: aCustomer.Id}
+		input := Input{Id: customer.Id}
 
 		output, err := useCase.Execute(context.Background(), input)
 
 		require.NoError(t, err)
 		require.NotNil(t, output)
-		require.Equal(t, aCustomer.Name, output.Name)
-		require.Equal(t, aCustomer.GetEmail(), output.Email)
-		require.Equal(t, aCustomer.GetPhoneNumber(), output.PhoneNumber)
+		require.Equal(t, customer.Name, output.Name)
+		require.Equal(t, customer.GetEmail(), output.Email)
+		require.Equal(t, customer.GetPhoneNumber(), output.PhoneNumber)
 	})
 }

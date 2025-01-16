@@ -2,7 +2,7 @@ package notification
 
 import (
 	"bom-pedido-api/internal/application/gateway"
-	"bom-pedido-api/internal/domain/entity/notification"
+	"bom-pedido-api/internal/domain/entity"
 	"context"
 	"github.com/stretchr/testify/mock"
 )
@@ -19,7 +19,7 @@ func NewMockNotificationGateway() gateway.NotificationGateway {
 	return &MockNotificationGateway{}
 }
 
-func (f *MockNotificationGateway) Send(ctx context.Context, notification *notification.Notification) error {
+func (f *MockNotificationGateway) Send(ctx context.Context, notification *entity.Notification) error {
 	args := f.Called(ctx, notification)
 	return args.Error(0)
 }

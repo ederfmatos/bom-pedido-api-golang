@@ -49,8 +49,8 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) (*Output, erro
 	if shoppingCart == nil || shoppingCart.IsEmpty() {
 		return nil, errors.ShoppingCartEmptyError
 	}
-	aMerchant, err := useCase.merchantRepository.FindByTenantId(ctx, shoppingCart.TenantId)
-	if err != nil || aMerchant == nil {
+	merchant, err := useCase.merchantRepository.FindByTenantId(ctx, shoppingCart.TenantId)
+	if err != nil || merchant == nil {
 		return nil, err
 	}
 	var productIds []string
@@ -71,7 +71,7 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) (*Output, erro
 		input.Payback,
 		products,
 		deliveryTimeInMinutes,
-		aMerchant.Id,
+		merchant.Id,
 	)
 	if err != nil {
 		return nil, err

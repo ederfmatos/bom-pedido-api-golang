@@ -1,36 +1,36 @@
 package repository
 
 import (
-	"bom-pedido-api/internal/domain/entity/notification"
+	"bom-pedido-api/internal/domain/entity"
 	"context"
 )
 
 type NotificationMemoryRepository struct {
-	notifications map[string]*notification.Notification
-	channel       chan *notification.Notification
+	notifications map[string]*entity.Notification
+	channel       chan *entity.Notification
 }
 
 func NewNotificationMemoryRepository() *NotificationMemoryRepository {
 	return &NotificationMemoryRepository{
-		notifications: make(map[string]*notification.Notification),
-		channel:       make(chan *notification.Notification),
+		notifications: make(map[string]*entity.Notification),
+		channel:       make(chan *entity.Notification),
 	}
 }
 
-func (r *NotificationMemoryRepository) Create(_ context.Context, notification *notification.Notification) error {
+func (r *NotificationMemoryRepository) Create(_ context.Context, notification *entity.Notification) error {
 	r.notifications[notification.Id] = notification
 	r.channel <- notification
 	return nil
 }
 
-func (r *NotificationMemoryRepository) Stream(context.Context) <-chan *notification.Notification {
+func (r *NotificationMemoryRepository) Stream(context.Context) <-chan *entity.Notification {
 	return r.channel
 }
 
-func (r *NotificationMemoryRepository) Delete(_ context.Context, notification *notification.Notification) {
+func (r *NotificationMemoryRepository) Delete(_ context.Context, notification *entity.Notification) {
 	delete(r.notifications, notification.Id)
 }
 
-func (r *NotificationMemoryRepository) Update(_ context.Context, notification *notification.Notification) {
+func (r *NotificationMemoryRepository) Update(_ context.Context, notification *entity.Notification) {
 	r.notifications[notification.Id] = notification
 }

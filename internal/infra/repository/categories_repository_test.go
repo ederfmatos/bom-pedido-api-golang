@@ -2,7 +2,7 @@ package repository
 
 import (
 	"bom-pedido-api/internal/application/repository"
-	"bom-pedido-api/internal/domain/entity/product"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/value_object"
 	"bom-pedido-api/internal/infra/test"
 	"context"
@@ -24,24 +24,24 @@ func TestCategoriesRepository(t *testing.T) {
 			t.Parallel()
 			ctx := context.Background()
 
-			aCategory := product.NewCategory(faker.Name(), faker.Word(), value_object.NewTenantId())
+			category := entity.NewCategory(faker.Name(), faker.Word(), value_object.NewTenantId())
 
-			existsById, err := categoryRepository.ExistsById(ctx, aCategory.Id)
+			existsById, err := categoryRepository.ExistsById(ctx, category.Id)
 			require.NoError(t, err)
 			require.False(t, existsById)
 
-			existsByNameAndTenantId, err := categoryRepository.ExistsByNameAndTenantId(ctx, aCategory.Name, aCategory.TenantId)
+			existsByNameAndTenantId, err := categoryRepository.ExistsByNameAndTenantId(ctx, category.Name, category.TenantId)
 			require.NoError(t, err)
 			require.False(t, existsByNameAndTenantId)
 
-			err = categoryRepository.Create(ctx, aCategory)
+			err = categoryRepository.Create(ctx, category)
 			require.NoError(t, err)
 
-			existsById, err = categoryRepository.ExistsById(ctx, aCategory.Id)
+			existsById, err = categoryRepository.ExistsById(ctx, category.Id)
 			require.NoError(t, err)
 			require.True(t, existsById)
 
-			existsByNameAndTenantId, err = categoryRepository.ExistsByNameAndTenantId(ctx, aCategory.Name, aCategory.TenantId)
+			existsByNameAndTenantId, err = categoryRepository.ExistsByNameAndTenantId(ctx, category.Name, category.TenantId)
 			require.NoError(t, err)
 			require.True(t, existsByNameAndTenantId)
 		})

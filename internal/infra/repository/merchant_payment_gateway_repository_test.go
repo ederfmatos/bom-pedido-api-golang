@@ -2,7 +2,7 @@ package repository
 
 import (
 	"bom-pedido-api/internal/application/repository"
-	"bom-pedido-api/internal/domain/entity/merchant"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/infra/test"
 	"context"
 	"github.com/stretchr/testify/require"
@@ -31,7 +31,7 @@ func TestMerchantPaymentGatewayConfigRepository(t *testing.T) {
 			require.NoError(t, err)
 			require.Nil(t, merchantPaymentGatewayConfig)
 
-			merchantPaymentGatewayConfig = merchant.NewPaymentGatewayConfig(merchantId, paymentGatewayId, "123")
+			merchantPaymentGatewayConfig = entity.NewMerchantPaymentGatewayConfig(merchantId, paymentGatewayId, "123")
 			require.NoError(t, merchantPaymentGatewayConfigRepository.Create(ctx, merchantPaymentGatewayConfig))
 
 			savedMerchantPaymentGatewayConfig, err := merchantPaymentGatewayConfigRepository.FindByMerchantAndGateway(ctx, merchantId, paymentGatewayId)

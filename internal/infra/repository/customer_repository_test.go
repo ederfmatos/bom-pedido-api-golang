@@ -2,7 +2,7 @@ package repository
 
 import (
 	"bom-pedido-api/internal/application/repository"
-	"bom-pedido-api/internal/domain/entity/customer"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/infra/test"
 	"context"
 	"github.com/go-faker/faker/v4"
@@ -21,47 +21,47 @@ func Test_CustomerRepository(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctx := context.Background()
 
-			aCustomer, err := customer.New(faker.Name(), faker.Email(), faker.Word())
+			customer, err := entity.NewCustomer(faker.Name(), faker.Email(), faker.Word())
 			require.NoError(t, err)
 
-			savedCustomer, err := customerRepository.FindByEmail(ctx, aCustomer.GetEmail(), aCustomer.TenantId)
+			savedCustomer, err := customerRepository.FindByEmail(ctx, customer.GetEmail(), customer.TenantId)
 			require.NoError(t, err)
 			require.Nil(t, savedCustomer)
 
-			savedCustomer, err = customerRepository.FindById(ctx, aCustomer.Id)
+			savedCustomer, err = customerRepository.FindById(ctx, customer.Id)
 			require.NoError(t, err)
 			require.Nil(t, savedCustomer)
 
-			err = customerRepository.Create(ctx, aCustomer)
+			err = customerRepository.Create(ctx, customer)
 			require.NoError(t, err)
 
-			savedCustomer, err = customerRepository.FindByEmail(ctx, aCustomer.GetEmail(), aCustomer.TenantId)
+			savedCustomer, err = customerRepository.FindByEmail(ctx, customer.GetEmail(), customer.TenantId)
 			require.NoError(t, err)
 			require.NotNil(t, savedCustomer)
-			require.Equal(t, aCustomer, savedCustomer)
+			require.Equal(t, customer, savedCustomer)
 
-			savedCustomer, err = customerRepository.FindById(ctx, aCustomer.Id)
+			savedCustomer, err = customerRepository.FindById(ctx, customer.Id)
 			require.NoError(t, err)
 			require.NotNil(t, savedCustomer)
-			require.Equal(t, aCustomer, savedCustomer)
+			require.Equal(t, customer, savedCustomer)
 
 			phoneNumber := "11999999999"
-			err = aCustomer.SetPhoneNumber(phoneNumber)
+			err = customer.SetPhoneNumber(phoneNumber)
 			require.NoError(t, err)
 
-			err = customerRepository.Update(ctx, aCustomer)
+			err = customerRepository.Update(ctx, customer)
 			require.NoError(t, err)
 
-			savedCustomer, err = customerRepository.FindByEmail(ctx, aCustomer.GetEmail(), aCustomer.TenantId)
+			savedCustomer, err = customerRepository.FindByEmail(ctx, customer.GetEmail(), customer.TenantId)
 			require.NoError(t, err)
 			require.NotNil(t, savedCustomer)
-			require.Equal(t, aCustomer, savedCustomer)
+			require.Equal(t, customer, savedCustomer)
 			require.Equal(t, phoneNumber, *savedCustomer.GetPhoneNumber())
 
-			savedCustomer, err = customerRepository.FindById(ctx, aCustomer.Id)
+			savedCustomer, err = customerRepository.FindById(ctx, customer.Id)
 			require.NoError(t, err)
 			require.NotNil(t, savedCustomer)
-			require.Equal(t, aCustomer, savedCustomer)
+			require.Equal(t, customer, savedCustomer)
 			require.Equal(t, phoneNumber, *savedCustomer.GetPhoneNumber())
 		})
 	}

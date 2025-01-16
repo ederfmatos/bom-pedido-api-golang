@@ -1,8 +1,6 @@
-package shopping_cart
+package entity
 
 import (
-	"bom-pedido-api/internal/domain/entity/order"
-	"bom-pedido-api/internal/domain/entity/product"
 	"bom-pedido-api/internal/domain/errors"
 	"bom-pedido-api/internal/domain/value_object"
 	"time"
@@ -24,7 +22,7 @@ type (
 	}
 )
 
-func New(customerId, tenantId string) *ShoppingCart {
+func NewShoppingCart(customerId, tenantId string) *ShoppingCart {
 	return &ShoppingCart{
 		CustomerId: customerId,
 		TenantId:   tenantId,
@@ -32,7 +30,24 @@ func New(customerId, tenantId string) *ShoppingCart {
 	}
 }
 
-func (shoppingCart *ShoppingCart) AddItem(product *product.Product, quantity int, observation string) error {
+func NewShoppingCartFromOrder(order *Order) *ShoppingCart {
+	shoppingCart := &ShoppingCart{
+		CustomerId: order.CustomerID,
+		Items:      make(map[string]ShoppingCartItem, len(order.Items)),
+	}
+	for _, item := range order.Items {
+		shoppingCart.Items[item.Id] = ShoppingCartItem{
+			Id:          item.Id,
+			ProductId:   item.ProductId,
+			Quantity:    item.Quantity,
+			Observation: item.Observation,
+			Price:       item.Price,
+		}
+	}
+	return shoppingCart
+}
+
+func (shoppingCart *ShoppingCart) AddItem(product *Product, quantity int, observation string) error {
 	if product.IsUnAvailable() {
 		return errors.ProductUnAvailableError
 	}
@@ -66,25 +81,25 @@ func (item *ShoppingCartItem) GetTotalPrice() float64 {
 	return float64(item.Quantity) * item.Price
 }
 
-func (shoppingCart *ShoppingCart) Checkout(paymentMethodString, deliveryModeString, paymentModeString, cardToken string, payback float64, products map[string]*product.Product, deliveryTime time.Duration, merchantId string) (*order.Order, error) {
+func (shoppingCart *ShoppingCart) Checkout(paymentMethodString, deliveryModeString, paymentModeString, cardToken string, payback float64, products map[string]*Product, deliveryTime time.Duration, merchantId string) (*Order, error) {
 	if shoppingCart.IsEmpty() {
 		return nil, errors.ShoppingCartEmptyError
 	}
 	price := shoppingCart.GetPrice()
-	anOrder, err := order.New(shoppingCart.CustomerId, paymentMethodString, paymentModeString, deliveryModeString, cardToken, payback, price, time.Now().Add(deliveryTime), merchantId)
+	order, err := NewOrder(shoppingCart.CustomerId, paymentMethodString, paymentModeString, deliveryModeString, cardToken, payback, price, time.Now().Add(deliveryTime), merchantId)
 	if err != nil {
 		return nil, err
 	}
 	compositeError := errors.NewCompositeError()
 	for _, item := range shoppingCart.Items {
-		aProduct := products[item.ProductId]
-		err = anOrder.AddProduct(aProduct, item.Quantity, item.Observation)
+		product := products[item.ProductId]
+		err = order.AddProduct(product, item.Quantity, item.Observation)
 		compositeError.Append(err)
 	}
 	if compositeError.HasError() {
 		return nil, compositeError
 	}
-	return anOrder, nil
+	return order, nil
 }
 
 func (shoppingCart *ShoppingCart) IsEmpty() bool {
@@ -93,21 +108,4 @@ func (shoppingCart *ShoppingCart) IsEmpty() bool {
 
 func (shoppingCart *ShoppingCart) RemoveItem(id string) {
 	delete(shoppingCart.Items, id)
-}
-
-func CloneOrder(order *order.Order) *ShoppingCart {
-	shoppingCart := &ShoppingCart{
-		CustomerId: order.CustomerID,
-		Items:      make(map[string]ShoppingCartItem, len(order.Items)),
-	}
-	for _, item := range order.Items {
-		shoppingCart.Items[item.Id] = ShoppingCartItem{
-			Id:          item.Id,
-			ProductId:   item.ProductId,
-			Quantity:    item.Quantity,
-			Observation: item.Observation,
-			Price:       item.Price,
-		}
-	}
-	return shoppingCart
 }

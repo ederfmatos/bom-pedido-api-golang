@@ -1,8 +1,7 @@
 package delete_shopping_cart_item
 
 import (
-	"bom-pedido-api/internal/domain/entity/product"
-	"bom-pedido-api/internal/domain/entity/shopping_cart"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/value_object"
 	"bom-pedido-api/internal/infra/factory"
 	"context"
@@ -15,22 +14,22 @@ func Test_DeleteShoppingCartItem(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
 	useCase := New(applicationFactory)
 	customerId := value_object.NewID()
-	aShoppingCart := shopping_cart.New(customerId, faker.WORD)
+	shoppingCart := entity.NewShoppingCart(customerId, faker.WORD)
 
-	aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, faker.Word(), faker.Word())
+	product, err := entity.NewProduct(faker.Name(), faker.Word(), 10.0, faker.Word(), faker.Word())
 	require.NoError(t, err)
 
-	err = aShoppingCart.AddItem(aProduct, 1, "")
+	err = shoppingCart.AddItem(product, 1, "")
 	require.NoError(t, err)
 	var itemId string
-	for id := range aShoppingCart.Items {
+	for id := range shoppingCart.Items {
 		itemId = id
 	}
 
 	input := Input{CustomerId: customerId, ItemId: itemId}
 	ctx := context.Background()
 
-	err = applicationFactory.ShoppingCartRepository.Upsert(ctx, aShoppingCart)
+	err = applicationFactory.ShoppingCartRepository.Upsert(ctx, shoppingCart)
 	require.NoError(t, err)
 
 	err = useCase.Execute(ctx, input)

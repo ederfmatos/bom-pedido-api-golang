@@ -1,4 +1,4 @@
-package product
+package entity
 
 import (
 	"bom-pedido-api/internal/domain/value_object"

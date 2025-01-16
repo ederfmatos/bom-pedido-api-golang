@@ -1,8 +1,7 @@
 package send_authentication_magic_link
 
 import (
-	"bom-pedido-api/internal/domain/entity/admin"
-	"bom-pedido-api/internal/domain/entity/merchant"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/infra/event"
 	"bom-pedido-api/internal/infra/factory"
 	"bom-pedido-api/internal/infra/token"
@@ -30,35 +29,35 @@ func TestUseCase_Execute(t *testing.T) {
 
 	t.Run("it should return nil if merchant is inactive", func(t *testing.T) {
 		ctx := context.Background()
-		aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
 		require.Nil(t, err)
-		aMerchant.Inactive()
-		_ = applicationFactory.MerchantRepository.Create(ctx, aMerchant)
+		merchant.Inactive()
+		_ = applicationFactory.MerchantRepository.Create(ctx, merchant)
 
-		anAdmin, _ := admin.New(faker.Name(), faker.Email(), aMerchant.Id)
-		_ = applicationFactory.AdminRepository.Create(ctx, anAdmin)
+		admin, _ := entity.NewAdmin(faker.Name(), faker.Email(), merchant.Id)
+		_ = applicationFactory.AdminRepository.Create(ctx, admin)
 
 		useCase := New(baseUrl, applicationFactory)
-		input := Input{Email: anAdmin.GetEmail()}
+		input := Input{Email: admin.GetEmail()}
 		err = useCase.Execute(ctx, input)
 		require.Nil(t, err)
 	})
 
 	t.Run("should return nil on success", func(t *testing.T) {
 		ctx := context.Background()
-		aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
 		require.Nil(t, err)
-		_ = applicationFactory.MerchantRepository.Create(ctx, aMerchant)
+		_ = applicationFactory.MerchantRepository.Create(ctx, merchant)
 
-		anAdmin, _ := admin.New(faker.Name(), faker.Email(), aMerchant.Id)
-		_ = applicationFactory.AdminRepository.Create(context.Background(), anAdmin)
+		admin, _ := entity.NewAdmin(faker.Name(), faker.Email(), merchant.Id)
+		_ = applicationFactory.AdminRepository.Create(context.Background(), admin)
 
 		magicLinkToken := faker.UUIDHyphenated()
 		tokenManager.On("Encrypt", mock.Anything).Return(magicLinkToken, nil).Once()
 		eventEmitter.On("Emit", mock.Anything, mock.Anything).Return(nil).Once()
 
 		useCase := New(baseUrl, applicationFactory)
-		input := Input{Email: anAdmin.GetEmail()}
+		input := Input{Email: admin.GetEmail()}
 
 		err = useCase.Execute(ctx, input)
 		require.NoError(t, err)

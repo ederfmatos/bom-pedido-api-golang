@@ -2,7 +2,7 @@ package repository
 
 import (
 	"bom-pedido-api/internal/application/repository"
-	"bom-pedido-api/internal/domain/entity/order"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/pkg/mongo"
 	"context"
 )
@@ -15,19 +15,19 @@ func NewOrderMongoRepository(database *mongo.Database) repository.OrderRepositor
 	return &OrderMongoRepository{collection: database.ForCollection("orders")}
 }
 
-func (r *OrderMongoRepository) Create(ctx context.Context, order *order.Order) error {
+func (r *OrderMongoRepository) Create(ctx context.Context, order *entity.Order) error {
 	return r.collection.InsertOne(ctx, order)
 }
 
-func (r *OrderMongoRepository) FindById(ctx context.Context, id string) (*order.Order, error) {
-	var anOrder order.Order
-	err := r.collection.FindByID(ctx, id, &anOrder)
-	if err != nil || anOrder.Id == "" {
+func (r *OrderMongoRepository) FindById(ctx context.Context, id string) (*entity.Order, error) {
+	var order entity.Order
+	err := r.collection.FindByID(ctx, id, &order)
+	if err != nil || order.Id == "" {
 		return nil, err
 	}
-	return &anOrder, nil
+	return &order, nil
 }
 
-func (r *OrderMongoRepository) Update(ctx context.Context, order *order.Order) error {
+func (r *OrderMongoRepository) Update(ctx context.Context, order *entity.Order) error {
 	return r.collection.UpdateByID(ctx, order.Id, order)
 }

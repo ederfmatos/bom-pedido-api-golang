@@ -2,7 +2,7 @@ package repository
 
 import (
 	"bom-pedido-api/internal/application/repository"
-	"bom-pedido-api/internal/domain/entity/order"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/pkg/mongo"
 	"context"
 	"fmt"
@@ -16,12 +16,12 @@ func NewOrderStatusHistoryMongoRepository(database *mongo.Database) repository.O
 	return &OrderStatusHistoryMongoRepository{collection: database.ForCollection("order_status_history")}
 }
 
-func (r *OrderStatusHistoryMongoRepository) Create(ctx context.Context, history *order.StatusHistory) error {
+func (r *OrderStatusHistoryMongoRepository) Create(ctx context.Context, history *entity.OrderStatusHistory) error {
 	return r.collection.InsertOne(ctx, history)
 }
 
-func (r *OrderStatusHistoryMongoRepository) ListByOrderId(ctx context.Context, id string) ([]order.StatusHistory, error) {
-	items := make([]order.StatusHistory, 0)
+func (r *OrderStatusHistoryMongoRepository) ListByOrderId(ctx context.Context, id string) ([]entity.OrderStatusHistory, error) {
+	items := make([]entity.OrderStatusHistory, 0)
 	cursor, err := r.collection.FindAllBy(ctx, map[string]interface{}{"orderId": id})
 	if err != nil {
 		return nil, err

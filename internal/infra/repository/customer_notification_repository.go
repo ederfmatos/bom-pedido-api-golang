@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"bom-pedido-api/internal/domain/entity/customer"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/pkg/mongo"
 	"context"
 )
@@ -14,8 +14,8 @@ func NewCustomerNotificationMongoRepository(database *mongo.Database) *CustomerN
 	return &CustomerNotificationMongoRepository{collection: database.ForCollection("customer_notifications")}
 }
 
-func (r *CustomerNotificationMongoRepository) FindByCustomerId(ctx context.Context, id string) (*customer.Notification, error) {
-	var notification customer.Notification
+func (r *CustomerNotificationMongoRepository) FindByCustomerId(ctx context.Context, id string) (*entity.CustomerNotification, error) {
+	var notification entity.CustomerNotification
 	err := r.collection.FindByID(ctx, id, &notification)
 	if err != nil || notification.CustomerId == "" {
 		return nil, err
@@ -23,6 +23,6 @@ func (r *CustomerNotificationMongoRepository) FindByCustomerId(ctx context.Conte
 	return &notification, nil
 }
 
-func (r *CustomerNotificationMongoRepository) Upsert(ctx context.Context, notification *customer.Notification) error {
+func (r *CustomerNotificationMongoRepository) Upsert(ctx context.Context, notification *entity.CustomerNotification) error {
 	return r.collection.Upsert(ctx, notification.CustomerId, notification)
 }

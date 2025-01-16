@@ -1,13 +1,13 @@
 package repository
 
 import (
-	"bom-pedido-api/internal/domain/entity/notification"
+	"bom-pedido-api/internal/domain/entity"
 	"context"
 )
 
 type NotificationRepository interface {
-	Create(ctx context.Context, notification *notification.Notification) error
-	Stream(ctx context.Context) <-chan *notification.Notification
-	Delete(ctx context.Context, notification *notification.Notification)
-	Update(ctx context.Context, notification *notification.Notification)
+	Create(ctx context.Context, notification *entity.Notification) error
+	Stream(ctx context.Context) <-chan *entity.Notification
+	Delete(ctx context.Context, notification *entity.Notification)
+	Update(ctx context.Context, notification *entity.Notification)
 }

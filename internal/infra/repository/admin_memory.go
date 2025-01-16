@@ -1,27 +1,27 @@
 package repository
 
 import (
-	"bom-pedido-api/internal/domain/entity/admin"
+	"bom-pedido-api/internal/domain/entity"
 	"context"
 )
 
 type AdminMemoryRepository struct {
-	admins map[string]*admin.Admin
+	admins map[string]*entity.Admin
 }
 
 func NewAdminMemoryRepository() *AdminMemoryRepository {
-	return &AdminMemoryRepository{admins: make(map[string]*admin.Admin)}
+	return &AdminMemoryRepository{admins: make(map[string]*entity.Admin)}
 }
 
-func (repository *AdminMemoryRepository) Create(_ context.Context, admin *admin.Admin) error {
+func (repository *AdminMemoryRepository) Create(_ context.Context, admin *entity.Admin) error {
 	repository.admins[admin.Id] = admin
 	return nil
 }
 
-func (repository *AdminMemoryRepository) FindByEmail(_ context.Context, email string) (*admin.Admin, error) {
-	for _, anAdmin := range repository.admins {
-		if anAdmin.GetEmail() == email {
-			return anAdmin, nil
+func (repository *AdminMemoryRepository) FindByEmail(_ context.Context, email string) (*entity.Admin, error) {
+	for _, admin := range repository.admins {
+		if admin.GetEmail() == email {
+			return admin, nil
 		}
 	}
 	return nil, nil

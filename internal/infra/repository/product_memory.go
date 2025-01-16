@@ -1,20 +1,20 @@
 package repository
 
 import (
-	"bom-pedido-api/internal/domain/entity/product"
+	"bom-pedido-api/internal/domain/entity"
 	"context"
 	"fmt"
 )
 
 type ProductMemoryRepository struct {
-	products map[string]*product.Product
+	products map[string]*entity.Product
 }
 
 func NewProductMemoryRepository() *ProductMemoryRepository {
-	return &ProductMemoryRepository{products: make(map[string]*product.Product)}
+	return &ProductMemoryRepository{products: make(map[string]*entity.Product)}
 }
 
-func (r *ProductMemoryRepository) Create(_ context.Context, product *product.Product) error {
+func (r *ProductMemoryRepository) Create(_ context.Context, product *entity.Product) error {
 	for _, p := range r.products {
 		if p.Name == product.Name {
 			return fmt.Errorf("duplicated product name")
@@ -24,30 +24,30 @@ func (r *ProductMemoryRepository) Create(_ context.Context, product *product.Pro
 	return nil
 }
 
-func (r *ProductMemoryRepository) Update(_ context.Context, product *product.Product) error {
+func (r *ProductMemoryRepository) Update(_ context.Context, product *entity.Product) error {
 	r.products[product.Id] = product
 	return nil
 }
 
-func (r *ProductMemoryRepository) FindById(_ context.Context, id string) (*product.Product, error) {
+func (r *ProductMemoryRepository) FindById(_ context.Context, id string) (*entity.Product, error) {
 	return r.products[id], nil
 }
 
 func (r *ProductMemoryRepository) ExistsByNameAndTenantId(_ context.Context, name, tenantId string) (bool, error) {
-	for _, aProduct := range r.products {
-		if aProduct.Name == name && aProduct.TenantId == tenantId {
+	for _, product := range r.products {
+		if product.Name == name && product.TenantId == tenantId {
 			return true, nil
 		}
 	}
 	return false, nil
 }
 
-func (r *ProductMemoryRepository) FindAllById(_ context.Context, ids []string) (map[string]*product.Product, error) {
-	products := make(map[string]*product.Product)
+func (r *ProductMemoryRepository) FindAllById(_ context.Context, ids []string) (map[string]*entity.Product, error) {
+	products := make(map[string]*entity.Product)
 	for _, id := range ids {
-		aProduct := r.products[id]
-		if aProduct != nil {
-			products[id] = aProduct
+		product := r.products[id]
+		if product != nil {
+			products[id] = product
 		}
 	}
 	return products, nil

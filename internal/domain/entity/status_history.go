@@ -1,8 +1,8 @@
-package order
+package entity
 
 import "time"
 
-type StatusHistory struct {
+type OrderStatusHistory struct {
 	Time      time.Time `bson:"time"`
 	Status    string    `bson:"status"`
 	ChangedBy string    `bson:"changedBy"`
@@ -10,8 +10,8 @@ type StatusHistory struct {
 	OrderId   string    `bson:"orderId"`
 }
 
-func NewStatusHistory(at time.Time, status string, changedBy string, data string, orderId string) *StatusHistory {
-	return &StatusHistory{
+func NewOrderStatusHistory(at time.Time, status, changedBy, data, orderId string) *OrderStatusHistory {
+	return &OrderStatusHistory{
 		Time:      at.UTC().Truncate(time.Millisecond),
 		Status:    status,
 		ChangedBy: changedBy,

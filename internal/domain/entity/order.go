@@ -1,8 +1,7 @@
-package order
+package entity
 
 import (
-	"bom-pedido-api/internal/domain/entity/order/status"
-	"bom-pedido-api/internal/domain/entity/product"
+	"bom-pedido-api/internal/domain/entity/status"
 	"bom-pedido-api/internal/domain/enums"
 	"bom-pedido-api/internal/domain/errors"
 	"bom-pedido-api/internal/domain/value_object"
@@ -10,11 +9,11 @@ import (
 )
 
 const (
-	ItemStatusOk ItemStatus = "OK"
+	OrderItemStatusOk OrderItemStatus = "OK"
 )
 
 type (
-	ItemStatus string
+	OrderItemStatus string
 
 	Order struct {
 		Id              string              `bson:"id"`
@@ -28,22 +27,22 @@ type (
 		Code            int32               `bson:"code"`
 		DeliveryTime    time.Time           `bson:"deliveryTime"`
 		Status          string              `bson:"status"`
-		Items           []Item              `bson:"items"`
+		Items           []OrderItem         `bson:"items"`
 		MerchantId      string              `bson:"merchantId"`
 		Amount          float64             `bson:"amount"`
 	}
 
-	Item struct {
-		Id          string     `bson:"id"`
-		ProductId   string     `bson:"productId"`
-		Quantity    int        `bson:"quantity"`
-		Observation string     `bson:"observation"`
-		Status      ItemStatus `bson:"status"`
-		Price       float64    `bson:"price"`
+	OrderItem struct {
+		Id          string          `bson:"id"`
+		ProductId   string          `bson:"productId"`
+		Quantity    int             `bson:"quantity"`
+		Observation string          `bson:"observation"`
+		Status      OrderItemStatus `bson:"status"`
+		Price       float64         `bson:"price"`
 	}
 )
 
-func New(customerID, paymentMethodString, paymentModeString, deliveryModeString, creditCardToken string, payback, amount float64, deliveryTime time.Time, merchantId string) (*Order, error) {
+func NewOrder(customerID, paymentMethodString, paymentModeString, deliveryModeString, creditCardToken string, payback, amount float64, deliveryTime time.Time, merchantId string) (*Order, error) {
 	paymentMethod, deliveryMode, paymentMode, err := validateOrder(paymentMethodString, deliveryModeString, paymentModeString, creditCardToken, payback)
 	if err != nil {
 		return nil, err
@@ -63,7 +62,7 @@ func New(customerID, paymentMethodString, paymentModeString, deliveryModeString,
 		Payback:         payback,
 		Code:            0,
 		DeliveryTime:    deliveryTime.UTC(),
-		Items:           make([]Item, 0),
+		Items:           make([]OrderItem, 0),
 		MerchantId:      merchantId,
 		Amount:          amount,
 		Status:          state.Name(),
@@ -71,7 +70,7 @@ func New(customerID, paymentMethodString, paymentModeString, deliveryModeString,
 }
 
 // TODO: Remover. Nos testes trocar por fixture
-func Restore(Id, customerID, paymentMethodString, paymentModeString, deliveryModeString, creditCardToken, orderStatusString string, createdAt time.Time, payback, amount float64, code int32, deliveryTime time.Time, items []Item, merchantId string) (*Order, error) {
+func RestoreOrder(Id, customerID, paymentMethodString, paymentModeString, deliveryModeString, creditCardToken, orderStatusString string, createdAt time.Time, payback, amount float64, code int32, deliveryTime time.Time, items []OrderItem, merchantId string) (*Order, error) {
 	paymentMethod, deliveryMode, paymentMode, err := validateOrder(paymentMethodString, deliveryModeString, paymentModeString, creditCardToken, payback)
 	if err != nil {
 		return nil, err
@@ -120,20 +119,20 @@ func validateOrder(paymentMethodString, deliveryModeString, paymentModeString, c
 	return paymentMethod, deliveryMode, paymentMode, compositeError.AsError()
 }
 
-func (order *Order) AddProduct(product *product.Product, quantity int, observation string) error {
+func (order *Order) AddProduct(product *Product, quantity int, observation string) error {
 	if product == nil {
 		return errors.ProductNotFoundError
 	}
 	if product.IsUnAvailable() {
 		return errors.ProductUnAvailableError
 	}
-	order.Items = append(order.Items, Item{
+	order.Items = append(order.Items, OrderItem{
 		Id:          value_object.NewID(),
 		ProductId:   product.Id,
 		Quantity:    quantity,
 		Observation: observation,
 		Price:       product.Price,
-		Status:      ItemStatusOk,
+		Status:      OrderItemStatusOk,
 	})
 	return nil
 }

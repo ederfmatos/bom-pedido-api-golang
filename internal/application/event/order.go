@@ -1,7 +1,7 @@
 package event
 
 import (
-	"bom-pedido-api/internal/domain/entity/order"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/value_object"
 	"time"
 )
@@ -20,7 +20,7 @@ var (
 	OrderPaymentFailed    = "ORDER_PAYMENT_FAILED"
 )
 
-func NewOrderCreatedEvent(order *order.Order) *Event {
+func NewOrderCreatedEvent(order *entity.Order) *Event {
 	return &Event{
 		Id:            value_object.NewID(),
 		CorrelationId: order.Id,
@@ -33,7 +33,7 @@ func NewOrderCreatedEvent(order *order.Order) *Event {
 	}
 }
 
-func NewOrderApprovedEvent(order *order.Order, by string, at time.Time) *Event {
+func NewOrderApprovedEvent(order *entity.Order, by string, at time.Time) *Event {
 	return &Event{
 		Id:            value_object.NewID(),
 		CorrelationId: order.Id,
@@ -49,7 +49,7 @@ func NewOrderApprovedEvent(order *order.Order, by string, at time.Time) *Event {
 	}
 }
 
-func NewOrderInProgressEvent(order *order.Order, by string, at time.Time) *Event {
+func NewOrderInProgressEvent(order *entity.Order, by string, at time.Time) *Event {
 	return &Event{
 		Id:            value_object.NewID(),
 		CorrelationId: order.Id,
@@ -65,7 +65,7 @@ func NewOrderInProgressEvent(order *order.Order, by string, at time.Time) *Event
 	}
 }
 
-func NewOrderDeliveringEvent(order *order.Order, by string, at time.Time) *Event {
+func NewOrderDeliveringEvent(order *entity.Order, by string, at time.Time) *Event {
 	return &Event{
 		Id:            value_object.NewID(),
 		CorrelationId: order.Id,
@@ -81,7 +81,7 @@ func NewOrderDeliveringEvent(order *order.Order, by string, at time.Time) *Event
 	}
 }
 
-func NewOrderAwaitingWithdrawEvent(order *order.Order, by string, at time.Time) *Event {
+func NewOrderAwaitingWithdrawEvent(order *entity.Order, by string, at time.Time) *Event {
 	return &Event{
 		Id:            value_object.NewID(),
 		CorrelationId: order.Id,
@@ -97,7 +97,7 @@ func NewOrderAwaitingWithdrawEvent(order *order.Order, by string, at time.Time) 
 	}
 }
 
-func NewOrderAwaitingDeliveryEvent(order *order.Order, by string, at time.Time) *Event {
+func NewOrderAwaitingDeliveryEvent(order *entity.Order, by string, at time.Time) *Event {
 	return &Event{
 		Id:            value_object.NewID(),
 		CorrelationId: order.Id,
@@ -113,7 +113,7 @@ func NewOrderAwaitingDeliveryEvent(order *order.Order, by string, at time.Time) 
 	}
 }
 
-func NewOrderRejectedEvent(order *order.Order, by string, at time.Time, reason string) *Event {
+func NewOrderRejectedEvent(order *entity.Order, by string, at time.Time, reason string) *Event {
 	return &Event{
 		Id:            value_object.NewID(),
 		CorrelationId: order.Id,
@@ -130,7 +130,7 @@ func NewOrderRejectedEvent(order *order.Order, by string, at time.Time, reason s
 	}
 }
 
-func NewOrderCancelledEvent(order *order.Order, by string, at time.Time, reason string) *Event {
+func NewOrderCancelledEvent(order *entity.Order, by string, at time.Time, reason string) *Event {
 	return &Event{
 		Id:            value_object.NewID(),
 		CorrelationId: order.Id,
@@ -147,7 +147,7 @@ func NewOrderCancelledEvent(order *order.Order, by string, at time.Time, reason 
 	}
 }
 
-func NewOrderFinishedEvent(order *order.Order, by string, at time.Time) *Event {
+func NewOrderFinishedEvent(order *entity.Order, by string, at time.Time) *Event {
 	return &Event{
 		Id:            value_object.NewID(),
 		CorrelationId: order.Id,
@@ -163,7 +163,7 @@ func NewOrderFinishedEvent(order *order.Order, by string, at time.Time) *Event {
 	}
 }
 
-func NewOrderAwaitingApprovalEvent(order *order.Order, at time.Time) *Event {
+func NewOrderAwaitingApprovalEvent(order *entity.Order, at time.Time) *Event {
 	return &Event{
 		Id:            value_object.NewID(),
 		CorrelationId: order.Id,
@@ -179,7 +179,7 @@ func NewOrderAwaitingApprovalEvent(order *order.Order, at time.Time) *Event {
 	}
 }
 
-func NewOrderPaymentFailedEvent(order *order.Order, at time.Time) *Event {
+func NewOrderPaymentFailedEvent(order *entity.Order, at time.Time) *Event {
 	return &Event{
 		Id:            value_object.NewID(),
 		CorrelationId: order.Id,

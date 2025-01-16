@@ -1,7 +1,7 @@
 package create_product
 
 import (
-	"bom-pedido-api/internal/domain/entity/product"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/errors"
 	"bom-pedido-api/internal/infra/factory"
 	"context"
@@ -23,11 +23,11 @@ func TestCreateProductUseCase_Execute(t *testing.T) {
 			Price:       10.0,
 			TenantId:    faker.Word(),
 		}
-		aProduct, err := product.New(input.Name, faker.Word(), 10.0, faker.Word(), input.TenantId)
+		product, err := entity.NewProduct(input.Name, faker.Word(), 10.0, faker.Word(), input.TenantId)
 		if err != nil {
-			t.Fatalf("failed to restore aProduct: %v", err)
+			t.Fatalf("failed to restore product: %v", err)
 		}
-		_ = applicationFactory.ProductRepository.Create(ctx, aProduct)
+		_ = applicationFactory.ProductRepository.Create(ctx, product)
 
 		output, err := useCase.Execute(ctx, input)
 
@@ -61,7 +61,7 @@ func TestCreateProductUseCase_Execute(t *testing.T) {
 		}
 		for _, tt := range tests {
 			t.Run(fmt.Sprintf("should return %s error", tt.wantErr.Error()), func(t *testing.T) {
-				category := product.NewCategory(faker.Name(), faker.Word(), faker.Word())
+				category := entity.NewCategory(faker.Name(), faker.Word(), faker.Word())
 				err := applicationFactory.ProductCategoryRepository.Create(ctx, category)
 				require.NoError(t, err)
 
@@ -82,7 +82,7 @@ func TestCreateProductUseCase_Execute(t *testing.T) {
 	})
 
 	t.Run("should create a product", func(t *testing.T) {
-		category := product.NewCategory(faker.Name(), faker.Word(), faker.Word())
+		category := entity.NewCategory(faker.Name(), faker.Word(), faker.Word())
 		err := applicationFactory.ProductCategoryRepository.Create(ctx, category)
 		require.NoError(t, err)
 

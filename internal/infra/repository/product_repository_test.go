@@ -2,7 +2,7 @@ package repository
 
 import (
 	"bom-pedido-api/internal/application/repository"
-	"bom-pedido-api/internal/domain/entity/product"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/infra/test"
 	"context"
 	"github.com/go-faker/faker/v4"
@@ -23,45 +23,45 @@ func Test_ProductRepository(t *testing.T) {
 			ctx := context.Background()
 
 			t.Run("should create a product", func(t *testing.T) {
-				category := product.NewCategory(faker.Name(), faker.Word(), faker.Word())
+				category := entity.NewCategory(faker.Name(), faker.Word(), faker.Word())
 
-				aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, category.Id, faker.Word())
+				product, err := entity.NewProduct(faker.Name(), faker.Word(), 10.0, category.Id, faker.Word())
 				require.NoError(t, err)
 
-				savedProduct, err := productRepository.FindById(ctx, aProduct.Id)
+				savedProduct, err := productRepository.FindById(ctx, product.Id)
 				require.NoError(t, err)
 				require.Nil(t, savedProduct)
 
-				existsByName, err := productRepository.ExistsByNameAndTenantId(ctx, aProduct.Name, faker.WORD)
+				existsByName, err := productRepository.ExistsByNameAndTenantId(ctx, product.Name, faker.WORD)
 				require.NoError(t, err)
 				require.False(t, existsByName)
 
-				err = productRepository.Create(ctx, aProduct)
+				err = productRepository.Create(ctx, product)
 				require.NoError(t, err)
 
-				savedProduct, err = productRepository.FindById(ctx, aProduct.Id)
+				savedProduct, err = productRepository.FindById(ctx, product.Id)
 				require.NoError(t, err)
-				require.Equal(t, aProduct.Id, savedProduct.Id)
-				require.Equal(t, aProduct.Name, savedProduct.Name)
-				require.Equal(t, aProduct.Description, savedProduct.Description)
-				require.Equal(t, aProduct.Price, savedProduct.Price)
-				require.Equal(t, aProduct.Status, savedProduct.Status)
+				require.Equal(t, product.Id, savedProduct.Id)
+				require.Equal(t, product.Name, savedProduct.Name)
+				require.Equal(t, product.Description, savedProduct.Description)
+				require.Equal(t, product.Price, savedProduct.Price)
+				require.Equal(t, product.Status, savedProduct.Status)
 
-				existsByName, err = productRepository.ExistsByNameAndTenantId(ctx, aProduct.Name, aProduct.TenantId)
+				existsByName, err = productRepository.ExistsByNameAndTenantId(ctx, product.Name, product.TenantId)
 				require.NoError(t, err)
 				require.True(t, existsByName)
 			})
 
 			t.Run("should not create duplicated product", func(t *testing.T) {
-				category := product.NewCategory(faker.Name(), faker.Word(), faker.Word())
+				category := entity.NewCategory(faker.Name(), faker.Word(), faker.Word())
 
-				aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, category.Id, faker.Word())
+				product, err := entity.NewProduct(faker.Name(), faker.Word(), 10.0, category.Id, faker.Word())
 				require.NoError(t, err)
 
-				err = productRepository.Create(ctx, aProduct)
+				err = productRepository.Create(ctx, product)
 				require.NoError(t, err)
 
-				anotherProduct, err := product.New(aProduct.Name, aProduct.Description, aProduct.Price, aProduct.CategoryId, aProduct.TenantId)
+				anotherProduct, err := entity.NewProduct(product.Name, product.Description, product.Price, product.CategoryId, product.TenantId)
 				require.NoError(t, err)
 
 				// TODO: Não permitir registro repetido
@@ -74,27 +74,27 @@ func Test_ProductRepository(t *testing.T) {
 			})
 
 			t.Run("should update a product", func(t *testing.T) {
-				category := product.NewCategory(faker.Name(), faker.Word(), faker.Word())
+				category := entity.NewCategory(faker.Name(), faker.Word(), faker.Word())
 
-				aProduct, err := product.New(faker.Name(), faker.Word(), 10.0, category.Id, faker.Word())
+				product, err := entity.NewProduct(faker.Name(), faker.Word(), 10.0, category.Id, faker.Word())
 				require.NoError(t, err)
 
-				err = productRepository.Create(ctx, aProduct)
+				err = productRepository.Create(ctx, product)
 				require.NoError(t, err)
 
-				savedProduct, err := productRepository.FindById(ctx, aProduct.Id)
+				savedProduct, err := productRepository.FindById(ctx, product.Id)
 				require.NoError(t, err)
-				require.Equal(t, aProduct, savedProduct)
+				require.Equal(t, product, savedProduct)
 
-				aProduct.Name = faker.Name()
-				aProduct.Description = faker.Word()
-				aProduct.Price = 15.0
-				err = productRepository.Update(ctx, aProduct)
+				product.Name = faker.Name()
+				product.Description = faker.Word()
+				product.Price = 15.0
+				err = productRepository.Update(ctx, product)
 				require.NoError(t, err)
 
-				savedProduct, err = productRepository.FindById(ctx, aProduct.Id)
+				savedProduct, err = productRepository.FindById(ctx, product.Id)
 				require.NoError(t, err)
-				require.Equal(t, aProduct, savedProduct)
+				require.Equal(t, product, savedProduct)
 			})
 		})
 	}

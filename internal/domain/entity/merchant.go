@@ -1,16 +1,16 @@
-package merchant
+package entity
 
 import (
 	"bom-pedido-api/internal/domain/value_object"
 )
 
 const (
-	ACTIVE   Status = "ACTIVE"
-	INACTIVE Status = "INACTIVE"
+	MerchantStatusActive   MerchantStatus = "ACTIVE"
+	MerchantStatusInactive MerchantStatus = "INACTIVE"
 )
 
 type (
-	Status string
+	MerchantStatus string
 
 	Merchant struct {
 		Id          string                   `bson:"id"`
@@ -19,11 +19,11 @@ type (
 		PhoneNumber value_object.PhoneNumber `bson:"phoneNumber"`
 		Domain      string                   `bson:"domain"`
 		TenantId    string                   `bson:"tenantId"`
-		Status      Status                   `bson:"status"`
+		Status      MerchantStatus           `bson:"status"`
 	}
 )
 
-func New(name, rawEmail, rawPhoneNumber, domain string) (*Merchant, error) {
+func NewMerchant(name, rawEmail, rawPhoneNumber, domain string) (*Merchant, error) {
 	email, err := value_object.NewEmail(rawEmail)
 	if err != nil {
 		return nil, err
@@ -39,14 +39,14 @@ func New(name, rawEmail, rawPhoneNumber, domain string) (*Merchant, error) {
 		PhoneNumber: *phoneNumber,
 		Domain:      domain,
 		TenantId:    value_object.NewTenantId(),
-		Status:      ACTIVE,
+		Status:      MerchantStatusActive,
 	}, nil
 }
 
 func (m *Merchant) IsActive() bool {
-	return m.Status == ACTIVE
+	return m.Status == MerchantStatusActive
 }
 
 func (m *Merchant) Inactive() {
-	m.Status = INACTIVE
+	m.Status = MerchantStatusInactive
 }

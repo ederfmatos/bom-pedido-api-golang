@@ -2,7 +2,7 @@ package repository
 
 import (
 	"bom-pedido-api/internal/application/repository"
-	"bom-pedido-api/internal/domain/entity/transaction"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/value_object"
 	"bom-pedido-api/internal/infra/test"
 	"context"
@@ -23,7 +23,7 @@ func Test_TransactionRepository(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctx := context.Background()
 
-			pixTransaction := transaction.NewPixTransaction(value_object.NewID(), value_object.NewID(), faker.Word(), faker.Word(), faker.Word(), 10)
+			pixTransaction := entity.NewPixTransaction(value_object.NewID(), value_object.NewID(), faker.Word(), faker.Word(), faker.Word(), 10)
 
 			existsByOrderId, err := transactionRepository.ExistsByOrderId(ctx, pixTransaction.OrderId)
 			require.NoError(t, err)

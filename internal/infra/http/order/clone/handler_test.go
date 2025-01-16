@@ -4,9 +4,7 @@ import (
 	"bom-pedido-api/internal/application/usecase/product/create_product"
 	"bom-pedido-api/internal/application/usecase/shopping_cart/add_item_to_shopping_cart"
 	"bom-pedido-api/internal/application/usecase/shopping_cart/checkout"
-	"bom-pedido-api/internal/domain/entity/customer"
-	"bom-pedido-api/internal/domain/entity/merchant"
-	"bom-pedido-api/internal/domain/entity/product"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/enums"
 	"bom-pedido-api/internal/infra/factory"
 	"bom-pedido-api/internal/infra/test"
@@ -28,18 +26,18 @@ func TestHandle(t *testing.T) {
 	defer container.Down()
 	applicationFactory := factory.NewApplicationFactory(container.GetEnvironment(), container.RedisClient, container.MongoClient)
 
-	aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+	merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
 	require.NoError(t, err)
 
-	err = applicationFactory.MerchantRepository.Create(ctx, aMerchant)
+	err = applicationFactory.MerchantRepository.Create(ctx, merchant)
 	require.NoError(t, err)
 
-	aCustomer, err := customer.New(faker.Name(), faker.Email(), aMerchant.TenantId)
+	customer, err := entity.NewCustomer(faker.Name(), faker.Email(), merchant.TenantId)
 	require.NoError(t, err)
-	err = applicationFactory.CustomerRepository.Create(ctx, aCustomer)
+	err = applicationFactory.CustomerRepository.Create(ctx, customer)
 	require.NoError(t, err)
 
-	category := product.NewCategory(faker.Name(), faker.Word(), faker.Word())
+	category := entity.NewCategory(faker.Name(), faker.Word(), faker.Word())
 	err = applicationFactory.ProductCategoryRepository.Create(ctx, category)
 	require.NoError(t, err)
 
@@ -48,24 +46,24 @@ func TestHandle(t *testing.T) {
 		Name:        faker.Name(),
 		Description: faker.Word(),
 		Price:       10.0,
-		TenantId:    aMerchant.TenantId,
+		TenantId:    merchant.TenantId,
 		CategoryId:  category.Id,
 	})
 	require.NoError(t, err)
 
 	addItemToShoppingCart := add_item_to_shopping_cart.New(applicationFactory)
 	err = addItemToShoppingCart.Execute(ctx, add_item_to_shopping_cart.Input{
-		CustomerId:  aCustomer.Id,
+		CustomerId:  customer.Id,
 		ProductId:   createProductOutput.Id,
 		Quantity:    1,
 		Observation: "",
-		TenantId:    aMerchant.TenantId,
+		TenantId:    merchant.TenantId,
 	})
 	require.NoError(t, err)
 
 	checkoutShoppingCart := checkout.New(applicationFactory)
 	checkoutOutput, err := checkoutShoppingCart.Execute(ctx, checkout.Input{
-		CustomerId:      aCustomer.Id,
+		CustomerId:      customer.Id,
 		PaymentMethod:   enums.Money,
 		DeliveryMode:    enums.Withdraw,
 		PaymentMode:     enums.InReceiving,
@@ -88,7 +86,7 @@ func TestHandle(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusNoContent, response.Code)
 
-	savedShoppingCart, err := applicationFactory.ShoppingCartRepository.FindByCustomerId(ctx, aCustomer.Id)
+	savedShoppingCart, err := applicationFactory.ShoppingCartRepository.FindByCustomerId(ctx, customer.Id)
 	require.NoError(t, err)
 	require.NotNil(t, savedShoppingCart)
 	require.Equal(t, len(savedShoppingCart.Items), 1)

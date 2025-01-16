@@ -4,7 +4,7 @@ import (
 	"bom-pedido-api/internal/application/event"
 	"bom-pedido-api/internal/application/factory"
 	"bom-pedido-api/internal/application/repository"
-	"bom-pedido-api/internal/domain/entity/product"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/errors"
 	"context"
 )
@@ -50,17 +50,17 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) (*Output, erro
 	if !existsCategory {
 		return nil, errors.ProductCategoryNotFoundError
 	}
-	aProduct, err := product.New(input.Name, input.Description, input.Price, input.CategoryId, input.TenantId)
+	product, err := entity.NewProduct(input.Name, input.Description, input.Price, input.CategoryId, input.TenantId)
 	if err != nil {
 		return nil, err
 	}
-	err = useCase.productRepository.Create(ctx, aProduct)
+	err = useCase.productRepository.Create(ctx, product)
 	if err != nil {
 		return nil, err
 	}
-	err = useCase.eventEmitter.Emit(ctx, event.NewProductCreatedEvent(aProduct))
+	err = useCase.eventEmitter.Emit(ctx, event.NewProductCreatedEvent(product))
 	if err != nil {
 		return nil, err
 	}
-	return &Output{Id: aProduct.Id}, nil
+	return &Output{Id: product.Id}, nil
 }

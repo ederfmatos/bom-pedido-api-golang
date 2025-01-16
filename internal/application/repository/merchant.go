@@ -1,19 +1,19 @@
 package repository
 
 import (
-	"bom-pedido-api/internal/domain/entity/merchant"
+	"bom-pedido-api/internal/domain/entity"
 	"context"
 )
 
 type MerchantRepository interface {
-	FindByTenantId(ctx context.Context, tenantId string) (*merchant.Merchant, error)
+	FindByTenantId(ctx context.Context, tenantId string) (*entity.Merchant, error)
 	IsActive(ctx context.Context, merchantId string) (bool, error)
-	Create(ctx context.Context, merchant *merchant.Merchant) error
-	Update(ctx context.Context, merchant *merchant.Merchant) error
+	Create(ctx context.Context, merchant *entity.Merchant) error
+	Update(ctx context.Context, merchant *entity.Merchant) error
 }
 
 type MerchantPaymentGatewayConfigRepository interface {
-	FindByMerchantAndGateway(ctx context.Context, merchantId, gateway string) (*merchant.PaymentGatewayConfig, error)
-	FindByMerchant(ctx context.Context, merchantId string) (*merchant.PaymentGatewayConfig, error)
-	Create(ctx context.Context, config *merchant.PaymentGatewayConfig) error
+	FindByMerchantAndGateway(ctx context.Context, merchantId, gateway string) (*entity.MerchantPaymentGatewayConfig, error)
+	FindByMerchant(ctx context.Context, merchantId string) (*entity.MerchantPaymentGatewayConfig, error)
+	Create(ctx context.Context, config *entity.MerchantPaymentGatewayConfig) error
 }

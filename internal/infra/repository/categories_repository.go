@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"bom-pedido-api/internal/domain/entity/product"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/pkg/mongo"
 	"context"
 )
@@ -14,7 +14,7 @@ func NewCategoriesMongoRepository(database *mongo.Database) *CategoriesMongoRepo
 	return &CategoriesMongoRepository{Collection: database.ForCollection("product_categories")}
 }
 
-func (r *CategoriesMongoRepository) Create(ctx context.Context, category *product.Category) error {
+func (r *CategoriesMongoRepository) Create(ctx context.Context, category *entity.Category) error {
 	return r.InsertOne(ctx, category)
 }
 

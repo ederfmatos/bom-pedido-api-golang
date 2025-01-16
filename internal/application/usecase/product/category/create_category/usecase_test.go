@@ -1,7 +1,7 @@
 package create_category
 
 import (
-	"bom-pedido-api/internal/domain/entity/product"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/value_object"
 	"bom-pedido-api/internal/infra/factory"
 	"context"
@@ -15,7 +15,7 @@ func Test_CreateCategory(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
 
 	t.Run("should return error if exists a category with the same name", func(t *testing.T) {
-		category := product.NewCategory(faker.Name(), faker.Word(), faker.Word())
+		category := entity.NewCategory(faker.Name(), faker.Word(), faker.Word())
 		err := applicationFactory.ProductCategoryRepository.Create(ctx, category)
 		require.NoError(t, err)
 

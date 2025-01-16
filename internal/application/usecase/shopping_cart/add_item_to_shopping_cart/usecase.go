@@ -3,7 +3,7 @@ package add_item_to_shopping_cart
 import (
 	"bom-pedido-api/internal/application/factory"
 	"bom-pedido-api/internal/application/repository"
-	"bom-pedido-api/internal/domain/entity/shopping_cart"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/errors"
 	"context"
 )
@@ -42,7 +42,7 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) error {
 		return err
 	}
 	if shoppingCart == nil {
-		shoppingCart = shopping_cart.New(input.CustomerId, input.TenantId)
+		shoppingCart = entity.NewShoppingCart(input.CustomerId, input.TenantId)
 	}
 	err = shoppingCart.AddItem(product, input.Quantity, input.Observation)
 	if err != nil {

@@ -1,9 +1,7 @@
 package checkout
 
 import (
-	"bom-pedido-api/internal/domain/entity/merchant"
-	"bom-pedido-api/internal/domain/entity/product"
-	"bom-pedido-api/internal/domain/entity/shopping_cart"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/enums"
 	"bom-pedido-api/internal/domain/errors"
 	"bom-pedido-api/internal/domain/value_object"
@@ -28,7 +26,7 @@ func Test_CheckoutShoppingCart(t *testing.T) {
 		require.Nil(t, output)
 		require.ErrorIs(t, err, errors.ShoppingCartEmptyError)
 
-		shoppingCart := shopping_cart.New(input.CustomerId, faker.WORD)
+		shoppingCart := entity.NewShoppingCart(input.CustomerId, faker.WORD)
 		err = shoppingCartRepository.Upsert(ctx, shoppingCart)
 		require.NoError(t, err)
 
@@ -47,18 +45,18 @@ func Test_CheckoutShoppingCart(t *testing.T) {
 			Payback:         0,
 			CreditCardToken: "",
 		}
-		aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
 		require.NoError(t, err)
 
-		err = applicationFactory.MerchantRepository.Create(ctx, aMerchant)
+		err = applicationFactory.MerchantRepository.Create(ctx, merchant)
 		require.NoError(t, err)
 
-		aProduct, _ := product.New(faker.Name(), faker.Word(), 11.0, faker.Word(), aMerchant.TenantId)
-		err = productRepository.Create(ctx, aProduct)
+		product, _ := entity.NewProduct(faker.Name(), faker.Word(), 11.0, faker.Word(), merchant.TenantId)
+		err = productRepository.Create(ctx, product)
 		require.NoError(t, err)
 
-		shoppingCart := shopping_cart.New(input.CustomerId, aMerchant.TenantId)
-		err = shoppingCart.AddItem(aProduct, 1, "")
+		shoppingCart := entity.NewShoppingCart(input.CustomerId, merchant.TenantId)
+		err = shoppingCart.AddItem(product, 1, "")
 		require.NoError(t, err)
 
 		err = shoppingCartRepository.Upsert(ctx, shoppingCart)

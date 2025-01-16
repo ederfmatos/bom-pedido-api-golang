@@ -5,7 +5,7 @@ import (
 	"bom-pedido-api/internal/application/gateway"
 	"bom-pedido-api/internal/application/repository"
 	"bom-pedido-api/internal/application/token"
-	"bom-pedido-api/internal/domain/entity/customer"
+	"bom-pedido-api/internal/domain/entity"
 	"context"
 )
 
@@ -37,23 +37,23 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) (*Output, erro
 	if err != nil {
 		return nil, err
 	}
-	aCustomer, err := useCase.customerRepository.FindByEmail(ctx, googleUser.Email, input.TenantId)
+	customer, err := useCase.customerRepository.FindByEmail(ctx, googleUser.Email, input.TenantId)
 	if err != nil {
 		return nil, err
 	}
-	if aCustomer == nil {
-		aCustomer, err = customer.New(googleUser.Name, googleUser.Email, input.TenantId)
+	if customer == nil {
+		customer, err = entity.NewCustomer(googleUser.Name, googleUser.Email, input.TenantId)
 		if err != nil {
 			return nil, err
 		}
-		err = useCase.customerRepository.Create(ctx, aCustomer)
+		err = useCase.customerRepository.Create(ctx, customer)
 		if err != nil {
 			return nil, err
 		}
 	}
 	tokenData := token.Data{
 		Type:     "CUSTOMER",
-		Id:       aCustomer.Id,
+		Id:       customer.Id,
 		TenantId: input.TenantId,
 	}
 	customerToken, err := useCase.tokenManager.Encrypt(ctx, tokenData)

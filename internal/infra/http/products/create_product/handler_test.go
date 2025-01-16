@@ -2,7 +2,7 @@ package create_product
 
 import (
 	"bom-pedido-api/internal/application/usecase/product/create_product"
-	"bom-pedido-api/internal/domain/entity/product"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/infra/factory"
 	"bom-pedido-api/internal/infra/json"
 	"bom-pedido-api/internal/infra/tenant"
@@ -20,7 +20,7 @@ func Test_CreateProduct(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
 	ctx := context.Background()
 
-	category := product.NewCategory(faker.Name(), faker.Word(), faker.Word())
+	category := entity.NewCategory(faker.Name(), faker.Word(), faker.Word())
 	err := applicationFactory.ProductCategoryRepository.Create(ctx, category)
 	require.NoError(t, err)
 

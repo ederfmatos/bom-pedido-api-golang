@@ -1,4 +1,4 @@
-package notification
+package entity
 
 import (
 	"bom-pedido-api/internal/domain/value_object"
@@ -16,7 +16,7 @@ type Notification struct {
 	Data          map[string]string `bson:"data"`
 }
 
-func New(title, body, recipient, correlationId string) *Notification {
+func NewNotification(title, body, recipient, correlationId string) *Notification {
 	return &Notification{
 		Id:            value_object.NewID(),
 		Title:         title,

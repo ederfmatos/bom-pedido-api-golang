@@ -1,4 +1,4 @@
-package product
+package entity
 
 import (
 	domainError "bom-pedido-api/internal/domain/errors"

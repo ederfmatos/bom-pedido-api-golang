@@ -1,12 +1,12 @@
 package repository
 
 import (
-	"bom-pedido-api/internal/domain/entity/order"
+	"bom-pedido-api/internal/domain/entity"
 	"context"
 )
 
 type OrderRepository interface {
-	Create(ctx context.Context, order *order.Order) error
-	FindById(ctx context.Context, id string) (*order.Order, error)
-	Update(ctx context.Context, order *order.Order) error
+	Create(ctx context.Context, order *entity.Order) error
+	FindById(ctx context.Context, id string) (*entity.Order, error)
+	Update(ctx context.Context, order *entity.Order) error
 }

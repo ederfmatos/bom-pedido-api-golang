@@ -3,7 +3,7 @@ package create_category
 import (
 	"bom-pedido-api/internal/application/factory"
 	"bom-pedido-api/internal/application/repository"
-	"bom-pedido-api/internal/domain/entity/product"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/errors"
 	"context"
 )
@@ -38,6 +38,6 @@ func (u *UseCase) Execute(ctx context.Context, input Input) error {
 	if existsByName {
 		return CategoryWithSameNameError
 	}
-	category := product.NewCategory(input.Name, input.Description, input.TenantId)
+	category := entity.NewCategory(input.Name, input.Description, input.TenantId)
 	return u.categoryRepository.Create(ctx, category)
 }

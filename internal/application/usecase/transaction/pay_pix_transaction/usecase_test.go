@@ -2,11 +2,8 @@ package pay_pix_transaction
 
 import (
 	"bom-pedido-api/internal/application/gateway"
-	"bom-pedido-api/internal/domain/entity/customer"
-	"bom-pedido-api/internal/domain/entity/merchant"
-	"bom-pedido-api/internal/domain/entity/order"
-	"bom-pedido-api/internal/domain/entity/order/status"
-	"bom-pedido-api/internal/domain/entity/transaction"
+	"bom-pedido-api/internal/domain/entity"
+	"bom-pedido-api/internal/domain/entity/status"
 	"bom-pedido-api/internal/domain/enums"
 	"bom-pedido-api/internal/domain/value_object"
 	"bom-pedido-api/internal/infra/event"
@@ -29,10 +26,10 @@ func Test_PayPixTransaction(t *testing.T) {
 	applicationFactory.EventEmitter = eventEmitter
 	ctx := context.Background()
 
-	aCustomer, err := customer.New(faker.Name(), faker.Email(), value_object.NewTenantId())
+	customer, err := entity.NewCustomer(faker.Name(), faker.Email(), value_object.NewTenantId())
 	require.NoError(t, err)
 
-	customerId := aCustomer.Id
+	customerId := customer.Id
 	useCase := New(applicationFactory)
 
 	t.Run("should return nil if order does not exists", func(t *testing.T) {
@@ -49,10 +46,10 @@ func Test_PayPixTransaction(t *testing.T) {
 				continue
 			}
 			t.Run(fmt.Sprintf("should return nil order is %s %s", paymentMethod.String(), paymentMode.String()), func(t *testing.T) {
-				anOrder, err := order.New(customerId, paymentMethod.String(), paymentMode.String(), enums.Withdraw, faker.Word(), 0, 0, time.Now(), faker.WORD)
+				order, err := entity.NewOrder(customerId, paymentMethod.String(), paymentMode.String(), enums.Withdraw, faker.Word(), 0, 0, time.Now(), faker.WORD)
 				require.NoError(t, err)
 
-				input := Input{OrderId: anOrder.Id}
+				input := Input{OrderId: order.Id}
 				err = useCase.Execute(ctx, input)
 				require.NoError(t, err)
 
@@ -66,10 +63,10 @@ func Test_PayPixTransaction(t *testing.T) {
 			continue
 		}
 		t.Run("should return nil order is %s"+orderStatus.Name(), func(t *testing.T) {
-			anOrder, err := order.Restore(value_object.NewID(), customerId, enums.Pix, enums.InApp, enums.Delivery, "", orderStatus.Name(), time.Now(), 0, 1, 1, time.Now(), []order.Item{}, faker.WORD)
+			order, err := entity.RestoreOrder(value_object.NewID(), customerId, enums.Pix, enums.InApp, enums.Delivery, "", orderStatus.Name(), time.Now(), 0, 1, 1, time.Now(), []entity.OrderItem{}, faker.WORD)
 			require.NoError(t, err)
 
-			input := Input{OrderId: anOrder.Id}
+			input := Input{OrderId: order.Id}
 			err = useCase.Execute(ctx, input)
 			require.NoError(t, err)
 
@@ -78,22 +75,22 @@ func Test_PayPixTransaction(t *testing.T) {
 	}
 
 	t.Run("should return nil if not exists transaction to the order", func(t *testing.T) {
-		aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
 		require.NoError(t, err)
 
-		err = applicationFactory.MerchantRepository.Create(ctx, aMerchant)
+		err = applicationFactory.MerchantRepository.Create(ctx, merchant)
 		require.NoError(t, err)
 
-		anOrder, err := order.New(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 10, time.Now(), aMerchant.TenantId)
+		order, err := entity.NewOrder(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 10, time.Now(), merchant.TenantId)
 		require.NoError(t, err)
 
-		err = anOrder.AwaitApproval()
+		err = order.AwaitApproval()
 		require.NoError(t, err)
 
-		err = applicationFactory.OrderRepository.Create(ctx, anOrder)
+		err = applicationFactory.OrderRepository.Create(ctx, order)
 		require.NoError(t, err)
 
-		input := Input{OrderId: anOrder.Id}
+		input := Input{OrderId: order.Id}
 		err = useCase.Execute(ctx, input)
 		require.NoError(t, err)
 
@@ -101,51 +98,51 @@ func Test_PayPixTransaction(t *testing.T) {
 	})
 
 	t.Run("should return nil payment does not exists", func(t *testing.T) {
-		aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
 		require.NoError(t, err)
 
-		err = applicationFactory.MerchantRepository.Create(ctx, aMerchant)
+		err = applicationFactory.MerchantRepository.Create(ctx, merchant)
 		require.NoError(t, err)
 
-		anOrder, err := order.New(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 10, time.Now(), aMerchant.Id)
+		order, err := entity.NewOrder(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 10, time.Now(), merchant.Id)
 		require.NoError(t, err)
 
-		err = applicationFactory.OrderRepository.Create(ctx, anOrder)
+		err = applicationFactory.OrderRepository.Create(ctx, order)
 		require.NoError(t, err)
 
-		pixTransaction := transaction.NewPixTransaction(value_object.NewID(), anOrder.Id, "", faker.Word(), "", 10)
+		pixTransaction := entity.NewPixTransaction(value_object.NewID(), order.Id, "", faker.Word(), "", 10)
 		err = applicationFactory.TransactionRepository.CreatePixTransaction(ctx, pixTransaction)
 		require.NoError(t, err)
 
 		pixGateway.On("GetPaymentById", mock.Anything, mock.Anything).Return(nil, nil).Once()
 
-		input := Input{OrderId: anOrder.Id}
+		input := Input{OrderId: order.Id}
 		err = useCase.Execute(ctx, input)
 		require.NoError(t, err)
 
 		eventEmitter.AssertNotCalled(t, "Emit")
 		pixGateway.AssertCalled(t, "GetPaymentById", ctx, gateway.GetPaymentInput{
 			PaymentId:      pixTransaction.PaymentId,
-			MerchantId:     anOrder.MerchantId,
+			MerchantId:     order.MerchantId,
 			PaymentGateway: pixTransaction.PaymentGateway,
 		})
 	})
 
 	for _, paymentStatus := range []gateway.PaymentStatus{gateway.TransactionCancelled, gateway.TransactionPending, gateway.TransactionRefunded} {
 		t.Run("should return nil payment status is "+string(paymentStatus), func(t *testing.T) {
-			aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+			merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
 			require.NoError(t, err)
 
-			err = applicationFactory.MerchantRepository.Create(ctx, aMerchant)
+			err = applicationFactory.MerchantRepository.Create(ctx, merchant)
 			require.NoError(t, err)
 
-			anOrder, err := order.New(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 10, time.Now(), aMerchant.Id)
+			order, err := entity.NewOrder(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 10, time.Now(), merchant.Id)
 			require.NoError(t, err)
 
-			err = applicationFactory.OrderRepository.Create(ctx, anOrder)
+			err = applicationFactory.OrderRepository.Create(ctx, order)
 			require.NoError(t, err)
 
-			pixTransaction := transaction.NewPixTransaction(value_object.NewID(), anOrder.Id, "", faker.Word(), "", 10)
+			pixTransaction := entity.NewPixTransaction(value_object.NewID(), order.Id, "", faker.Word(), "", 10)
 			err = applicationFactory.TransactionRepository.CreatePixTransaction(ctx, pixTransaction)
 			require.NoError(t, err)
 
@@ -158,7 +155,7 @@ func Test_PayPixTransaction(t *testing.T) {
 				Status:         paymentStatus,
 			}, nil).Once()
 
-			input := Input{OrderId: anOrder.Id}
+			input := Input{OrderId: order.Id}
 
 			err = useCase.Execute(ctx, input)
 			require.NoError(t, err)
@@ -166,26 +163,26 @@ func Test_PayPixTransaction(t *testing.T) {
 			eventEmitter.AssertNotCalled(t, "Emit")
 			pixGateway.AssertCalled(t, "GetPaymentById", ctx, gateway.GetPaymentInput{
 				PaymentId:      pixTransaction.PaymentId,
-				MerchantId:     anOrder.MerchantId,
+				MerchantId:     order.MerchantId,
 				PaymentGateway: pixTransaction.PaymentGateway,
 			})
 		})
 	}
 
 	t.Run("should pay a pix transaction", func(t *testing.T) {
-		aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
 		require.NoError(t, err)
 
-		err = applicationFactory.MerchantRepository.Create(ctx, aMerchant)
+		err = applicationFactory.MerchantRepository.Create(ctx, merchant)
 		require.NoError(t, err)
 
-		anOrder, err := order.New(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 10, time.Now(), aMerchant.Id)
+		order, err := entity.NewOrder(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 10, time.Now(), merchant.Id)
 		require.NoError(t, err)
 
-		err = applicationFactory.OrderRepository.Create(ctx, anOrder)
+		err = applicationFactory.OrderRepository.Create(ctx, order)
 		require.NoError(t, err)
 
-		pixTransaction := transaction.NewPixTransaction(value_object.NewID(), anOrder.Id, "", faker.Word(), "", 10)
+		pixTransaction := entity.NewPixTransaction(value_object.NewID(), order.Id, "", faker.Word(), "", 10)
 		err = applicationFactory.TransactionRepository.CreatePixTransaction(ctx, pixTransaction)
 		require.NoError(t, err)
 
@@ -200,18 +197,18 @@ func Test_PayPixTransaction(t *testing.T) {
 		pixGateway.On("GetPaymentById", mock.Anything, mock.Anything).Return(gatewayPayment, nil).Once()
 		eventEmitter.On("Emit", mock.Anything, mock.Anything).Return(nil).Once()
 
-		input := Input{OrderId: anOrder.Id}
+		input := Input{OrderId: order.Id}
 		err = useCase.Execute(ctx, input)
 		require.NoError(t, err)
 
 		eventEmitter.AssertCalled(t, "Emit", mock.Anything, mock.Anything)
 		pixGateway.AssertCalled(t, "GetPaymentById", ctx, gateway.GetPaymentInput{
 			PaymentId:      pixTransaction.PaymentId,
-			MerchantId:     anOrder.MerchantId,
+			MerchantId:     order.MerchantId,
 			PaymentGateway: pixTransaction.PaymentGateway,
 		})
 
-		savedTransaction, err := applicationFactory.TransactionRepository.FindByOrderId(ctx, anOrder.Id)
+		savedTransaction, err := applicationFactory.TransactionRepository.FindByOrderId(ctx, order.Id)
 		require.NoError(t, err)
 		require.True(t, savedTransaction.IsPaid())
 	})

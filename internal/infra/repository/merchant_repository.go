@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"bom-pedido-api/internal/domain/entity/merchant"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/pkg/mongo"
 	"context"
 )
@@ -14,28 +14,28 @@ func NewMerchantMongoRepository(database *mongo.Database) *MerchantMongoReposito
 	return &MerchantMongoRepository{collection: database.ForCollection("merchants")}
 }
 
-func (r *MerchantMongoRepository) Create(ctx context.Context, merchant *merchant.Merchant) error {
+func (r *MerchantMongoRepository) Create(ctx context.Context, merchant *entity.Merchant) error {
 	return r.collection.InsertOne(ctx, merchant)
 }
 
-func (r *MerchantMongoRepository) Update(ctx context.Context, merchant *merchant.Merchant) error {
+func (r *MerchantMongoRepository) Update(ctx context.Context, merchant *entity.Merchant) error {
 	return r.collection.UpdateByID(ctx, merchant.Id, merchant)
 }
 
-func (r *MerchantMongoRepository) FindByTenantId(ctx context.Context, tenantId string) (*merchant.Merchant, error) {
-	var aMerchant merchant.Merchant
-	err := r.collection.FindBy(ctx, "tenantId", tenantId, &aMerchant)
-	if err != nil || aMerchant.Id == "" {
+func (r *MerchantMongoRepository) FindByTenantId(ctx context.Context, tenantId string) (*entity.Merchant, error) {
+	var merchant entity.Merchant
+	err := r.collection.FindBy(ctx, "tenantId", tenantId, &merchant)
+	if err != nil || merchant.Id == "" {
 		return nil, err
 	}
-	return &aMerchant, nil
+	return &merchant, nil
 }
 
 func (r *MerchantMongoRepository) IsActive(ctx context.Context, merchantId string) (bool, error) {
-	var aMerchant merchant.Merchant
-	err := r.collection.FindByID(ctx, merchantId, &aMerchant)
-	if err != nil || aMerchant.Id == "" {
+	var merchant entity.Merchant
+	err := r.collection.FindByID(ctx, merchantId, &merchant)
+	if err != nil || merchant.Id == "" {
 		return false, err
 	}
-	return aMerchant.IsActive(), nil
+	return merchant.IsActive(), nil
 }

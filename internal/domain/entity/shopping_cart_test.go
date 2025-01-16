@@ -1,7 +1,6 @@
-package shopping_cart
+package entity
 
 import (
-	"bom-pedido-api/internal/domain/entity/product"
 	"bom-pedido-api/internal/domain/enums"
 	"bom-pedido-api/internal/domain/errors"
 	"bom-pedido-api/internal/domain/value_object"
@@ -39,13 +38,13 @@ func TestShoppingCart_Checkout(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(fmt.Sprintf("should return errors %v", test.Errors), func(t *testing.T) {
-			shoppingCart := New(value_object.NewID(), faker.WORD)
+			shoppingCart := NewShoppingCart(value_object.NewID(), faker.WORD)
 
-			newProduct, _ := product.New(faker.Name(), faker.Word(), 11.0, faker.WORD, faker.Word())
+			newProduct, _ := NewProduct(faker.Name(), faker.Word(), 11.0, faker.WORD, faker.Word())
 			err := shoppingCart.AddItem(newProduct, 1, faker.Word())
 			require.NoError(t, err)
 
-			order, err := shoppingCart.Checkout(test.paymentMethod, test.deliveryMode, test.paymentMode, test.cardToken, test.payback, make(map[string]*product.Product), time.Second, "")
+			order, err := shoppingCart.Checkout(test.paymentMethod, test.deliveryMode, test.paymentMode, test.cardToken, test.payback, make(map[string]*Product), time.Second, "")
 			require.Nil(t, order)
 			expectedError := errors.NewCompositeWithError(test.Errors...)
 			require.Equal(t, err, expectedError)
@@ -53,13 +52,13 @@ func TestShoppingCart_Checkout(t *testing.T) {
 	}
 
 	t.Run("should return product errors", func(t *testing.T) {
-		product1, _ := product.New(faker.Name(), faker.Word(), 11.0, faker.WORD, faker.Word())
-		product2, _ := product.New(faker.Name(), faker.Word(), 12.0, faker.WORD, faker.Word())
-		product3, _ := product.New(faker.Name(), faker.Word(), 13.0, faker.WORD, faker.Word())
+		product1, _ := NewProduct(faker.Name(), faker.Word(), 11.0, faker.WORD, faker.Word())
+		product2, _ := NewProduct(faker.Name(), faker.Word(), 12.0, faker.WORD, faker.Word())
+		product3, _ := NewProduct(faker.Name(), faker.Word(), 13.0, faker.WORD, faker.Word())
 
-		products := map[string]*product.Product{product1.Id: product1, product2.Id: product2}
+		products := map[string]*Product{product1.Id: product1, product2.Id: product2}
 
-		shoppingCart := New(value_object.NewID(), faker.WORD)
+		shoppingCart := NewShoppingCart(value_object.NewID(), faker.WORD)
 		err := shoppingCart.AddItem(product2, 1, faker.Word())
 		require.NoError(t, err)
 		err = shoppingCart.AddItem(product3, 1, faker.Word())
@@ -75,13 +74,13 @@ func TestShoppingCart_Checkout(t *testing.T) {
 	})
 
 	t.Run("should checkout a shopping cart", func(t *testing.T) {
-		product1, _ := product.New(faker.Name(), faker.Word(), 11.0, faker.WORD, faker.Word())
-		product2, _ := product.New(faker.Name(), faker.Word(), 12.0, faker.WORD, faker.Word())
-		product3, _ := product.New(faker.Name(), faker.Word(), 13.0, faker.WORD, faker.Word())
+		product1, _ := NewProduct(faker.Name(), faker.Word(), 11.0, faker.WORD, faker.Word())
+		product2, _ := NewProduct(faker.Name(), faker.Word(), 12.0, faker.WORD, faker.Word())
+		product3, _ := NewProduct(faker.Name(), faker.Word(), 13.0, faker.WORD, faker.Word())
 
-		products := map[string]*product.Product{product1.Id: product1, product2.Id: product2, product3.Id: product3}
+		products := map[string]*Product{product1.Id: product1, product2.Id: product2, product3.Id: product3}
 
-		shoppingCart := New(value_object.NewID(), faker.WORD)
+		shoppingCart := NewShoppingCart(value_object.NewID(), faker.WORD)
 		err := shoppingCart.AddItem(product1, 1, faker.Word())
 		require.NoError(t, err)
 		err = shoppingCart.AddItem(product2, 1, faker.Word())

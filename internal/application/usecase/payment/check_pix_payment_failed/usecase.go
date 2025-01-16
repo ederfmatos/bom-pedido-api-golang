@@ -40,16 +40,16 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) error {
 		return err
 	}
 	defer uc.locker.Release(ctx, lockKey)
-	anOrder, err := uc.orderRepository.FindById(ctx, input.OrderId)
-	if err != nil || anOrder == nil || !anOrder.IsPixInApp() || !anOrder.IsAwaitingPayment() {
+	order, err := uc.orderRepository.FindById(ctx, input.OrderId)
+	if err != nil || order == nil || !order.IsPixInApp() || !order.IsAwaitingPayment() {
 		return err
 	}
-	pixTransaction, err := uc.transactionRepository.FindByOrderId(ctx, anOrder.Id)
+	pixTransaction, err := uc.transactionRepository.FindByOrderId(ctx, order.Id)
 	if err != nil || pixTransaction == nil || pixTransaction.IsPaid() {
 		return err
 	}
 	getPaymentInput := gateway.GetPaymentInput{
-		MerchantId:     anOrder.MerchantId,
+		MerchantId:     order.MerchantId,
 		PaymentId:      pixTransaction.PaymentId,
 		PaymentGateway: pixTransaction.PaymentGateway,
 	}
@@ -57,5 +57,5 @@ func (uc *UseCase) Execute(ctx context.Context, input Input) error {
 	if err != nil || pixPayment == nil || pixPayment.Status != gateway.TransactionCancelled {
 		return err
 	}
-	return uc.eventEmitter.Emit(ctx, event.NewPixPaymentCancelled(anOrder.Id, pixPayment.Id, pixPayment.PaymentGateway))
+	return uc.eventEmitter.Emit(ctx, event.NewPixPaymentCancelled(order.Id, pixPayment.Id, pixPayment.PaymentGateway))
 }

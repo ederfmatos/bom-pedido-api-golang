@@ -2,8 +2,7 @@ package repository
 
 import (
 	"bom-pedido-api/internal/application/repository"
-	"bom-pedido-api/internal/domain/entity/admin"
-	"bom-pedido-api/internal/domain/entity/merchant"
+	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/infra/test"
 	"context"
 	"github.com/go-faker/faker/v4"
@@ -22,10 +21,10 @@ func Test_AdminRepository(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctx := context.Background()
 
-			aMerchant, err := merchant.New(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
+			merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.Phonenumber(), faker.DomainName())
 			require.NoError(t, err)
 
-			aAdmin, err := admin.New(faker.Name(), faker.Email(), aMerchant.Id)
+			aAdmin, err := entity.NewAdmin(faker.Name(), faker.Email(), merchant.Id)
 			require.NoError(t, err)
 
 			savedAdmin, err := adminRepository.FindByEmail(ctx, aAdmin.GetEmail())
