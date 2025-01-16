@@ -5,8 +5,8 @@ import (
 	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/infra/test"
 	"bom-pedido-api/pkg/faker"
+	"bom-pedido-api/pkg/testify/require"
 	"context"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )

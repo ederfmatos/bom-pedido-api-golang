@@ -5,7 +5,7 @@ import (
 	"bom-pedido-api/internal/domain/errors"
 	"bom-pedido-api/internal/domain/value_object"
 	"bom-pedido-api/pkg/faker"
-	"github.com/stretchr/testify/require"
+	"bom-pedido-api/pkg/testify/require"
 	"testing"
 	"time"
 )

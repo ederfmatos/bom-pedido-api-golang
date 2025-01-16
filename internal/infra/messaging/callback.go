@@ -7,7 +7,7 @@ import (
 	"context"
 )
 
-func HandleTransactionCallback(factory *factory.ApplicationFactory) {
+func HandleTransactiOnback(factory *factory.ApplicationFactory) {
 	factory.EventHandler.Consume(event.OptionsForTopics("PAY_PIX_TRANSACTION", event.PaymentCallbackReceived), handlePayPixTransaction(factory))
 }
 

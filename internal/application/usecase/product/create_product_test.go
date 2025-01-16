@@ -5,9 +5,9 @@ import (
 	"bom-pedido-api/internal/domain/errors"
 	"bom-pedido-api/internal/infra/factory"
 	"bom-pedido-api/pkg/faker"
+	"bom-pedido-api/pkg/testify/require"
 	"context"
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"testing"
 )
 

@@ -7,9 +7,9 @@ import (
 	"bom-pedido-api/internal/infra/event"
 	"bom-pedido-api/internal/infra/factory"
 	"bom-pedido-api/pkg/faker"
+	"bom-pedido-api/pkg/testify/require"
 	"context"
 	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )

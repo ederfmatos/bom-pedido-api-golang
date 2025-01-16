@@ -11,5 +11,5 @@ func HandleEvents(factory *factory.ApplicationFactory) {
 	HandleEmailEvents(factory)
 	HandlePaymentEvents(factory)
 	HandleNotificationEvents(factory)
-	HandleTransactionCallback(factory)
+	HandleTransactiOnback(factory)
 }

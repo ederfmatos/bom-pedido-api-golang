@@ -2,10 +2,10 @@ package lock
 
 import (
 	"bom-pedido-api/internal/infra/test"
+	"bom-pedido-api/pkg/testify/require"
 	"context"
 	"errors"
 	"github.com/redis/go-redis/v9"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )

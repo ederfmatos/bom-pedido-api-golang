@@ -3,8 +3,8 @@ package health
 import (
 	"bom-pedido-api/internal/infra/json"
 	"bom-pedido-api/internal/infra/test"
+	"bom-pedido-api/pkg/testify/require"
 	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"testing"

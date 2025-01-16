@@ -10,10 +10,10 @@ import (
 	"bom-pedido-api/internal/infra/factory"
 	"bom-pedido-api/internal/infra/gateway/pix"
 	"bom-pedido-api/pkg/faker"
+	"bom-pedido-api/pkg/testify/require"
 	"context"
 	"fmt"
 	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )
