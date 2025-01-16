@@ -2,16 +2,16 @@ package mark_delivering
 
 import (
 	"bom-pedido-api/internal/application/factory"
-	"bom-pedido-api/internal/application/usecase/order/mark_order_delivering"
+	"bom-pedido-api/internal/application/usecase/order"
 	"bom-pedido-api/internal/infra/http/middlewares"
 	"bom-pedido-api/internal/infra/http/response"
 	"github.com/labstack/echo/v4"
 )
 
 func Handle(factory *factory.ApplicationFactory) func(context echo.Context) error {
-	useCase := mark_order_delivering.New(factory)
+	useCase := order.NewMarkOrderDeliveringUseCase(factory)
 	return func(context echo.Context) error {
-		input := mark_order_delivering.Input{
+		input := order.MarkOrderDeliveringInput{
 			OrderId: context.Param("id"),
 			By:      context.Get(middlewares.AdminIdParam).(string),
 		}

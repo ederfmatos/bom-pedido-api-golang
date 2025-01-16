@@ -1,4 +1,4 @@
-package cancel_order
+package order
 
 import (
 	"bom-pedido-api/internal/domain/entity/order"
@@ -16,11 +16,11 @@ import (
 
 func Test_CancelOrder(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
-	useCase := New(applicationFactory)
+	useCase := NewCancelOrder(applicationFactory)
 
 	t.Run("should return order not found", func(t *testing.T) {
 		ctx := context.Background()
-		input := Input{
+		input := CancelOrderInput{
 			OrderId:     value_object.NewID(),
 			CancelledBy: value_object.NewID(),
 			Reason:      faker.Word(),
@@ -39,7 +39,7 @@ func Test_CancelOrder(t *testing.T) {
 
 		err = applicationFactory.OrderRepository.Create(ctx, anOrder)
 		require.NoError(t, err)
-		input := Input{
+		input := CancelOrderInput{
 			OrderId:     anOrder.Id,
 			CancelledBy: value_object.NewID(),
 			Reason:      faker.Word(),
@@ -68,7 +68,7 @@ func Test_CancelOrder(t *testing.T) {
 				require.NoError(t, err)
 				err = applicationFactory.OrderRepository.Create(ctx, order)
 				require.NoError(t, err)
-				input := Input{
+				input := CancelOrderInput{
 					OrderId:     order.Id,
 					CancelledBy: value_object.NewID(),
 					Reason:      faker.Word(),

@@ -1,4 +1,4 @@
-package mark_order_delivering
+package order
 
 import (
 	"bom-pedido-api/internal/application/event"
@@ -10,24 +10,25 @@ import (
 )
 
 type (
-	UseCase struct {
+	RejectOrderUseCase struct {
 		orderRepository repository.OrderRepository
 		eventEmitter    event.Emitter
 	}
-	Input struct {
-		OrderId string
-		By      string
+	RejectOrderInput struct {
+		OrderId    string
+		RejectedBy string
+		Reason     string
 	}
 )
 
-func New(factory *factory.ApplicationFactory) *UseCase {
-	return &UseCase{
+func NewRejectOrder(factory *factory.ApplicationFactory) *RejectOrderUseCase {
+	return &RejectOrderUseCase{
 		orderRepository: factory.OrderRepository,
 		eventEmitter:    factory.EventEmitter,
 	}
 }
 
-func (useCase *UseCase) Execute(ctx context.Context, input Input) error {
+func (useCase *RejectOrderUseCase) Execute(ctx context.Context, input RejectOrderInput) error {
 	order, err := useCase.orderRepository.FindById(ctx, input.OrderId)
 	if err != nil {
 		return err
@@ -35,12 +36,12 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) error {
 	if order == nil {
 		return errors.OrderNotFoundError
 	}
-	if err = order.MarkAsDelivering(); err != nil {
+	if err = order.Reject(); err != nil {
 		return err
 	}
 	err = useCase.orderRepository.Update(ctx, order)
 	if err != nil {
 		return err
 	}
-	return useCase.eventEmitter.Emit(ctx, event.NewOrderDeliveringEvent(order, input.By, time.Now()))
+	return useCase.eventEmitter.Emit(ctx, event.NewOrderRejectedEvent(order, input.RejectedBy, time.Now(), input.Reason))
 }

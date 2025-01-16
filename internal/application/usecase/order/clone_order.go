@@ -1,4 +1,4 @@
-package clone_order
+package order
 
 import (
 	"bom-pedido-api/internal/application/factory"
@@ -9,23 +9,23 @@ import (
 )
 
 type (
-	UseCase struct {
+	CloneOrderUseCase struct {
 		orderRepository        repository.OrderRepository
 		shoppingCartRepository repository.ShoppingCartRepository
 	}
-	Input struct {
+	CloneOrderInput struct {
 		OrderId string
 	}
 )
 
-func New(factory *factory.ApplicationFactory) *UseCase {
-	return &UseCase{
+func NewCloneOrder(factory *factory.ApplicationFactory) *CloneOrderUseCase {
+	return &CloneOrderUseCase{
 		orderRepository:        factory.OrderRepository,
 		shoppingCartRepository: factory.ShoppingCartRepository,
 	}
 }
 
-func (useCase *UseCase) Execute(ctx context.Context, input Input) error {
+func (useCase *CloneOrderUseCase) Execute(ctx context.Context, input CloneOrderInput) error {
 	order, err := useCase.orderRepository.FindById(ctx, input.OrderId)
 	if err != nil {
 		return err

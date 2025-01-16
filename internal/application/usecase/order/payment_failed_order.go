@@ -1,4 +1,4 @@
-package payment_failed_order
+package order
 
 import (
 	"bom-pedido-api/internal/application/event"
@@ -9,25 +9,25 @@ import (
 )
 
 type (
-	UseCase struct {
+	FailOrderPaymentUseCase struct {
 		orderRepository       repository.OrderRepository
 		eventEmitter          event.Emitter
 		transactionRepository repository.TransactionRepository
 	}
-	Input struct {
+	FailOrderPaymentInput struct {
 		OrderId string
 	}
 )
 
-func New(factory *factory.ApplicationFactory) *UseCase {
-	return &UseCase{
+func NewFailOrderPayment(factory *factory.ApplicationFactory) *FailOrderPaymentUseCase {
+	return &FailOrderPaymentUseCase{
 		orderRepository:       factory.OrderRepository,
 		eventEmitter:          factory.EventEmitter,
 		transactionRepository: factory.TransactionRepository,
 	}
 }
 
-func (useCase *UseCase) Execute(ctx context.Context, input Input) error {
+func (useCase *FailOrderPaymentUseCase) Execute(ctx context.Context, input FailOrderPaymentInput) error {
 	order, err := useCase.orderRepository.FindById(ctx, input.OrderId)
 	if err != nil || order == nil || !order.IsAwaitingPayment() {
 		return err

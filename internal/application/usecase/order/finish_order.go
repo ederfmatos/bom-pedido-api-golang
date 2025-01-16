@@ -1,4 +1,4 @@
-package mark_order_in_progress
+package order
 
 import (
 	"bom-pedido-api/internal/application/event"
@@ -10,24 +10,24 @@ import (
 )
 
 type (
-	UseCase struct {
+	FinishOrderUseCase struct {
 		orderRepository repository.OrderRepository
 		eventEmitter    event.Emitter
 	}
-	Input struct {
-		OrderId string
-		By      string
+	FinishOrderInput struct {
+		OrderId    string
+		FinishedBy string
 	}
 )
 
-func New(factory *factory.ApplicationFactory) *UseCase {
-	return &UseCase{
+func NewFinishOrder(factory *factory.ApplicationFactory) *FinishOrderUseCase {
+	return &FinishOrderUseCase{
 		orderRepository: factory.OrderRepository,
 		eventEmitter:    factory.EventEmitter,
 	}
 }
 
-func (useCase *UseCase) Execute(ctx context.Context, input Input) error {
+func (useCase *FinishOrderUseCase) Execute(ctx context.Context, input FinishOrderInput) error {
 	order, err := useCase.orderRepository.FindById(ctx, input.OrderId)
 	if err != nil {
 		return err
@@ -35,12 +35,12 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) error {
 	if order == nil {
 		return errors.OrderNotFoundError
 	}
-	if err = order.MarkAsInProgress(); err != nil {
+	if err = order.Finish(); err != nil {
 		return err
 	}
 	err = useCase.orderRepository.Update(ctx, order)
 	if err != nil {
 		return err
 	}
-	return useCase.eventEmitter.Emit(ctx, event.NewOrderInProgressEvent(order, input.By, time.Now()))
+	return useCase.eventEmitter.Emit(ctx, event.NewOrderFinishedEvent(order, input.FinishedBy, time.Now()))
 }

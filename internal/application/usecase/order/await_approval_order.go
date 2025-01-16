@@ -1,4 +1,4 @@
-package await_approval_order
+package order
 
 import (
 	"bom-pedido-api/internal/application/event"
@@ -9,25 +9,25 @@ import (
 )
 
 type (
-	UseCase struct {
+	AwaitApprovalOrderUseCase struct {
 		orderRepository       repository.OrderRepository
 		eventEmitter          event.Emitter
 		transactionRepository repository.TransactionRepository
 	}
-	Input struct {
+	AwaitApprovalOrderUseCaseInput struct {
 		OrderId string
 	}
 )
 
-func New(factory *factory.ApplicationFactory) *UseCase {
-	return &UseCase{
+func NewAwaitApprovalOrderUseCase(factory *factory.ApplicationFactory) *AwaitApprovalOrderUseCase {
+	return &AwaitApprovalOrderUseCase{
 		orderRepository:       factory.OrderRepository,
 		eventEmitter:          factory.EventEmitter,
 		transactionRepository: factory.TransactionRepository,
 	}
 }
 
-func (useCase *UseCase) Execute(ctx context.Context, input Input) error {
+func (useCase *AwaitApprovalOrderUseCase) Execute(ctx context.Context, input AwaitApprovalOrderUseCaseInput) error {
 	order, err := useCase.orderRepository.FindById(ctx, input.OrderId)
 	if err != nil || order == nil || order.IsAwaitingApproval() {
 		return err

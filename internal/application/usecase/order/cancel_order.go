@@ -1,4 +1,4 @@
-package approve_order
+package order
 
 import (
 	"bom-pedido-api/internal/application/event"
@@ -10,24 +10,25 @@ import (
 )
 
 type (
-	UseCase struct {
+	CancelOrderUseCase struct {
 		orderRepository repository.OrderRepository
 		eventEmitter    event.Emitter
 	}
-	Input struct {
-		OrderId    string
-		ApprovedBy string
+	CancelOrderInput struct {
+		OrderId     string
+		CancelledBy string
+		Reason      string
 	}
 )
 
-func New(factory *factory.ApplicationFactory) *UseCase {
-	return &UseCase{
+func NewCancelOrder(factory *factory.ApplicationFactory) *CancelOrderUseCase {
+	return &CancelOrderUseCase{
 		orderRepository: factory.OrderRepository,
 		eventEmitter:    factory.EventEmitter,
 	}
 }
 
-func (useCase *UseCase) Execute(ctx context.Context, input Input) error {
+func (useCase *CancelOrderUseCase) Execute(ctx context.Context, input CancelOrderInput) error {
 	order, err := useCase.orderRepository.FindById(ctx, input.OrderId)
 	if err != nil {
 		return err
@@ -35,12 +36,12 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) error {
 	if order == nil {
 		return errors.OrderNotFoundError
 	}
-	if err = order.Approve(); err != nil {
+	if err = order.Cancel(); err != nil {
 		return err
 	}
 	err = useCase.orderRepository.Update(ctx, order)
 	if err != nil {
 		return err
 	}
-	return useCase.eventEmitter.Emit(ctx, event.NewOrderApprovedEvent(order, input.ApprovedBy, time.Now()))
+	return useCase.eventEmitter.Emit(ctx, event.NewOrderCancelledEvent(order, input.CancelledBy, time.Now(), input.Reason))
 }

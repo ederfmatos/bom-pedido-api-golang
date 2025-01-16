@@ -1,4 +1,4 @@
-package finish_order
+package order
 
 import (
 	"bom-pedido-api/internal/domain/entity/order"
@@ -16,11 +16,11 @@ import (
 
 func Test_FinishOrder(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
-	useCase := New(applicationFactory)
+	useCase := NewFinishOrder(applicationFactory)
 
 	t.Run("should return order not found", func(t *testing.T) {
 		ctx := context.Background()
-		input := Input{
+		input := FinishOrderInput{
 			OrderId:    value_object.NewID(),
 			FinishedBy: value_object.NewID(),
 		}
@@ -44,7 +44,7 @@ func Test_FinishOrder(t *testing.T) {
 
 		err = applicationFactory.OrderRepository.Create(ctx, anOrder)
 		require.NoError(t, err)
-		input := Input{
+		input := FinishOrderInput{
 			OrderId:    anOrder.Id,
 			FinishedBy: value_object.NewID(),
 		}
@@ -76,7 +76,7 @@ func Test_FinishOrder(t *testing.T) {
 				require.NoError(t, err)
 				err = applicationFactory.OrderRepository.Create(ctx, order)
 				require.NoError(t, err)
-				input := Input{
+				input := FinishOrderInput{
 					OrderId:    order.Id,
 					FinishedBy: value_object.NewID(),
 				}

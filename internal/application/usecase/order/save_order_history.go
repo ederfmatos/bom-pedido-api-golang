@@ -1,4 +1,4 @@
-package save_history
+package order
 
 import (
 	"bom-pedido-api/internal/application/factory"
@@ -9,11 +9,11 @@ import (
 )
 
 type (
-	UseCase struct {
+	SaveOrderHistoryUseCase struct {
 		orderHistoryRepository repository.OrderStatusHistoryRepository
 	}
 
-	Input struct {
+	SaveOrderHistoryInput struct {
 		Time      time.Time
 		OrderId   string
 		Status    string
@@ -22,11 +22,11 @@ type (
 	}
 )
 
-func New(factory *factory.ApplicationFactory) *UseCase {
-	return &UseCase{orderHistoryRepository: factory.OrderHistoryRepository}
+func NewSaveOrderHistory(factory *factory.ApplicationFactory) *SaveOrderHistoryUseCase {
+	return &SaveOrderHistoryUseCase{orderHistoryRepository: factory.OrderHistoryRepository}
 }
 
-func (u *UseCase) Execute(ctx context.Context, input Input) error {
+func (u *SaveOrderHistoryUseCase) Execute(ctx context.Context, input SaveOrderHistoryInput) error {
 	history := &order.StatusHistory{
 		Time:      input.Time,
 		Status:    input.Status,

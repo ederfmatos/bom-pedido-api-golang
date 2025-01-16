@@ -1,4 +1,4 @@
-package finish_order
+package order
 
 import (
 	"bom-pedido-api/internal/application/event"
@@ -10,24 +10,24 @@ import (
 )
 
 type (
-	UseCase struct {
+	MarkOrderAwaitingWithdrawUseCase struct {
 		orderRepository repository.OrderRepository
 		eventEmitter    event.Emitter
 	}
-	Input struct {
-		OrderId    string
-		FinishedBy string
+	MarkOrderAwaitingWithdrawInput struct {
+		OrderId string
+		By      string
 	}
 )
 
-func New(factory *factory.ApplicationFactory) *UseCase {
-	return &UseCase{
+func New(factory *factory.ApplicationFactory) *MarkOrderAwaitingWithdrawUseCase {
+	return &MarkOrderAwaitingWithdrawUseCase{
 		orderRepository: factory.OrderRepository,
 		eventEmitter:    factory.EventEmitter,
 	}
 }
 
-func (useCase *UseCase) Execute(ctx context.Context, input Input) error {
+func (useCase *MarkOrderAwaitingWithdrawUseCase) Execute(ctx context.Context, input MarkOrderAwaitingWithdrawInput) error {
 	order, err := useCase.orderRepository.FindById(ctx, input.OrderId)
 	if err != nil {
 		return err
@@ -35,12 +35,12 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) error {
 	if order == nil {
 		return errors.OrderNotFoundError
 	}
-	if err = order.Finish(); err != nil {
+	if err = order.MarkAsAwaitingWithdraw(); err != nil {
 		return err
 	}
 	err = useCase.orderRepository.Update(ctx, order)
 	if err != nil {
 		return err
 	}
-	return useCase.eventEmitter.Emit(ctx, event.NewOrderFinishedEvent(order, input.FinishedBy, time.Now()))
+	return useCase.eventEmitter.Emit(ctx, event.NewOrderAwaitingWithdrawEvent(order, input.By, time.Now()))
 }

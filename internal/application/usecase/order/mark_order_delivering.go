@@ -1,4 +1,4 @@
-package mark_order_awaiting_delivery
+package order
 
 import (
 	"bom-pedido-api/internal/application/event"
@@ -10,24 +10,24 @@ import (
 )
 
 type (
-	UseCase struct {
+	MarkOrderDeliveringUseCase struct {
 		orderRepository repository.OrderRepository
 		eventEmitter    event.Emitter
 	}
-	Input struct {
+	MarkOrderDeliveringInput struct {
 		OrderId string
 		By      string
 	}
 )
 
-func New(factory *factory.ApplicationFactory) *UseCase {
-	return &UseCase{
+func NewMarkOrderDeliveringUseCase(factory *factory.ApplicationFactory) *MarkOrderDeliveringUseCase {
+	return &MarkOrderDeliveringUseCase{
 		orderRepository: factory.OrderRepository,
 		eventEmitter:    factory.EventEmitter,
 	}
 }
 
-func (useCase *UseCase) Execute(ctx context.Context, input Input) error {
+func (useCase *MarkOrderDeliveringUseCase) Execute(ctx context.Context, input MarkOrderDeliveringInput) error {
 	order, err := useCase.orderRepository.FindById(ctx, input.OrderId)
 	if err != nil {
 		return err
@@ -35,12 +35,12 @@ func (useCase *UseCase) Execute(ctx context.Context, input Input) error {
 	if order == nil {
 		return errors.OrderNotFoundError
 	}
-	if err = order.MarkAsAwaitingDelivery(); err != nil {
+	if err = order.MarkAsDelivering(); err != nil {
 		return err
 	}
 	err = useCase.orderRepository.Update(ctx, order)
 	if err != nil {
 		return err
 	}
-	return useCase.eventEmitter.Emit(ctx, event.NewOrderAwaitingDeliveryEvent(order, input.By, time.Now()))
+	return useCase.eventEmitter.Emit(ctx, event.NewOrderDeliveringEvent(order, input.By, time.Now()))
 }

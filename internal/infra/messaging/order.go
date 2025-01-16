@@ -3,9 +3,7 @@ package messaging
 import (
 	"bom-pedido-api/internal/application/event"
 	"bom-pedido-api/internal/application/factory"
-	"bom-pedido-api/internal/application/usecase/order/await_approval_order"
-	"bom-pedido-api/internal/application/usecase/order/payment_failed_order"
-	"bom-pedido-api/internal/application/usecase/order/save_history"
+	"bom-pedido-api/internal/application/usecase/order"
 	"context"
 	"time"
 )
@@ -32,9 +30,9 @@ func HandleOrderEvents(factory *factory.ApplicationFactory) {
 }
 
 func handleAwaitApprovalOrder(factory *factory.ApplicationFactory) event.HandlerFunc {
-	useCase := await_approval_order.New(factory)
+	useCase := order.NewAwaitApprovalOrderUseCase(factory)
 	return func(ctx context.Context, message *event.MessageEvent) error {
-		input := await_approval_order.Input{
+		input := order.AwaitApprovalOrderUseCaseInput{
 			OrderId: message.Event.Data["orderId"],
 		}
 		err := useCase.Execute(ctx, input)
@@ -43,9 +41,9 @@ func handleAwaitApprovalOrder(factory *factory.ApplicationFactory) event.Handler
 }
 
 func handleOrderPaymentFailed(factory *factory.ApplicationFactory) event.HandlerFunc {
-	useCase := payment_failed_order.New(factory)
+	useCase := order.NewFailOrderPayment(factory)
 	return func(ctx context.Context, message *event.MessageEvent) error {
-		input := payment_failed_order.Input{
+		input := order.FailOrderPaymentInput{
 			OrderId: message.Event.Data["orderId"],
 		}
 		err := useCase.Execute(ctx, input)
@@ -54,13 +52,13 @@ func handleOrderPaymentFailed(factory *factory.ApplicationFactory) event.Handler
 }
 
 func handleOrderStatusChanged(factory *factory.ApplicationFactory) event.HandlerFunc {
-	useCase := save_history.New(factory)
+	useCase := order.NewSaveOrderHistory(factory)
 	return func(ctx context.Context, message *event.MessageEvent) error {
 		eventTime, err := time.Parse(time.RFC3339, message.Event.Data["at"])
 		if err != nil {
 			return err
 		}
-		input := save_history.Input{
+		input := order.SaveOrderHistoryInput{
 			Time:      eventTime,
 			ChangedBy: message.Event.Data["by"],
 			OrderId:   message.Event.Data["orderId"],

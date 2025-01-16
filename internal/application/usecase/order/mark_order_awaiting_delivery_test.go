@@ -1,4 +1,4 @@
-package mark_order_awaiting_withdraw
+package order
 
 import (
 	"bom-pedido-api/internal/domain/entity/order"
@@ -14,13 +14,13 @@ import (
 	"time"
 )
 
-func Test_MarkOrderAwaitingWithdraw(t *testing.T) {
+func Test_MarkOrderAwaitingDelivery(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
-	useCase := New(applicationFactory)
+	useCase := NewMarkOrderAwaitingDelivery(applicationFactory)
 
 	t.Run("should return order not found", func(t *testing.T) {
 		ctx := context.Background()
-		input := Input{
+		input := MarkOrderAwaitingDeliveryInput{
 			OrderId: value_object.NewID(),
 			By:      value_object.NewID(),
 		}
@@ -31,7 +31,7 @@ func Test_MarkOrderAwaitingWithdraw(t *testing.T) {
 	t.Run("should mark an order in delivering", func(t *testing.T) {
 		ctx := context.Background()
 		customerId := value_object.NewID()
-		anOrder, err := order.New(customerId, enums.CreditCard, enums.InReceiving, enums.Withdraw, "", 0, 0, time.Now(), faker.WORD)
+		anOrder, err := order.New(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, 0, time.Now(), faker.WORD)
 		require.NoError(t, err)
 		err = anOrder.Approve()
 		require.NoError(t, err)
@@ -41,7 +41,7 @@ func Test_MarkOrderAwaitingWithdraw(t *testing.T) {
 
 		err = applicationFactory.OrderRepository.Create(ctx, anOrder)
 		require.NoError(t, err)
-		input := Input{
+		input := MarkOrderAwaitingDeliveryInput{
 			OrderId: anOrder.Id,
 			By:      value_object.NewID(),
 		}
@@ -49,6 +49,6 @@ func Test_MarkOrderAwaitingWithdraw(t *testing.T) {
 		require.NoError(t, err)
 		savedOrder, err := applicationFactory.OrderRepository.FindById(ctx, anOrder.Id)
 		require.NoError(t, err)
-		require.Equal(t, savedOrder.GetStatus(), status.AwaitingWithdrawStatus.Name())
+		require.Equal(t, savedOrder.GetStatus(), status.AwaitingDeliveryStatus.Name())
 	})
 }

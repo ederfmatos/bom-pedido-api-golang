@@ -1,4 +1,4 @@
-package mark_order_awaiting_delivery
+package order
 
 import (
 	"bom-pedido-api/internal/domain/entity/order"
@@ -14,13 +14,13 @@ import (
 	"time"
 )
 
-func Test_MarkOrderAwaitingDelivery(t *testing.T) {
+func Test_MarkOrderDelivering(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
-	useCase := New(applicationFactory)
+	useCase := NewMarkOrderDeliveringUseCase(applicationFactory)
 
 	t.Run("should return order not found", func(t *testing.T) {
 		ctx := context.Background()
-		input := Input{
+		input := MarkOrderDeliveringInput{
 			OrderId: value_object.NewID(),
 			By:      value_object.NewID(),
 		}
@@ -39,9 +39,11 @@ func Test_MarkOrderAwaitingDelivery(t *testing.T) {
 		err = anOrder.MarkAsInProgress()
 		require.NoError(t, err)
 
+		err = anOrder.MarkAsAwaitingDelivery()
+		require.NoError(t, err)
 		err = applicationFactory.OrderRepository.Create(ctx, anOrder)
 		require.NoError(t, err)
-		input := Input{
+		input := MarkOrderDeliveringInput{
 			OrderId: anOrder.Id,
 			By:      value_object.NewID(),
 		}
@@ -49,6 +51,6 @@ func Test_MarkOrderAwaitingDelivery(t *testing.T) {
 		require.NoError(t, err)
 		savedOrder, err := applicationFactory.OrderRepository.FindById(ctx, anOrder.Id)
 		require.NoError(t, err)
-		require.Equal(t, savedOrder.GetStatus(), status.AwaitingDeliveryStatus.Name())
+		require.Equal(t, savedOrder.GetStatus(), status.DeliveringStatus.Name())
 	})
 }

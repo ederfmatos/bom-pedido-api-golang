@@ -1,4 +1,4 @@
-package mark_order_delivering
+package order
 
 import (
 	"bom-pedido-api/internal/domain/entity/order"
@@ -14,13 +14,13 @@ import (
 	"time"
 )
 
-func Test_MarkOrderDelivering(t *testing.T) {
+func Test_MarkOrderInProgress(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
-	useCase := New(applicationFactory)
+	useCase := NewMarkOrderInProgress(applicationFactory)
 
 	t.Run("should return order not found", func(t *testing.T) {
 		ctx := context.Background()
-		input := Input{
+		input := MarkOrderInProgressInput{
 			OrderId: value_object.NewID(),
 			By:      value_object.NewID(),
 		}
@@ -28,7 +28,7 @@ func Test_MarkOrderDelivering(t *testing.T) {
 		require.ErrorIs(t, err, errors.OrderNotFoundError)
 	})
 
-	t.Run("should mark an order in delivering", func(t *testing.T) {
+	t.Run("should mark an order in progress", func(t *testing.T) {
 		ctx := context.Background()
 		customerId := value_object.NewID()
 		anOrder, err := order.New(customerId, enums.CreditCard, enums.InReceiving, enums.Delivery, "", 0, 0, time.Now(), faker.WORD)
@@ -36,14 +36,9 @@ func Test_MarkOrderDelivering(t *testing.T) {
 		err = anOrder.Approve()
 		require.NoError(t, err)
 
-		err = anOrder.MarkAsInProgress()
-		require.NoError(t, err)
-
-		err = anOrder.MarkAsAwaitingDelivery()
-		require.NoError(t, err)
 		err = applicationFactory.OrderRepository.Create(ctx, anOrder)
 		require.NoError(t, err)
-		input := Input{
+		input := MarkOrderInProgressInput{
 			OrderId: anOrder.Id,
 			By:      value_object.NewID(),
 		}
@@ -51,6 +46,6 @@ func Test_MarkOrderDelivering(t *testing.T) {
 		require.NoError(t, err)
 		savedOrder, err := applicationFactory.OrderRepository.FindById(ctx, anOrder.Id)
 		require.NoError(t, err)
-		require.Equal(t, savedOrder.GetStatus(), status.DeliveringStatus.Name())
+		require.Equal(t, savedOrder.GetStatus(), status.InProgressStatus.Name())
 	})
 }
