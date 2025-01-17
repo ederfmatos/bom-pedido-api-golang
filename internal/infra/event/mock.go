@@ -2,8 +2,8 @@ package event
 
 import (
 	"bom-pedido-api/internal/application/event"
+	"bom-pedido-api/pkg/testify/mock"
 	"context"
-	"github.com/stretchr/testify/mock"
 )
 
 type MockEventHandler struct {

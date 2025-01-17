@@ -3,8 +3,8 @@ package notification
 import (
 	"bom-pedido-api/internal/application/gateway"
 	"bom-pedido-api/internal/domain/entity"
+	"bom-pedido-api/pkg/testify/mock"
 	"context"
-	"github.com/stretchr/testify/mock"
 )
 
 type MockNotificationGateway struct {

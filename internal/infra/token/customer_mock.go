@@ -2,8 +2,8 @@ package token
 
 import (
 	"bom-pedido-api/internal/application/token"
+	"bom-pedido-api/pkg/testify/mock"
 	"context"
-	"github.com/stretchr/testify/mock"
 )
 
 type CustomerTokenManagerMock struct {

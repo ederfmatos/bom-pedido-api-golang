@@ -2,8 +2,8 @@ package google
 
 import (
 	"bom-pedido-api/internal/application/gateway"
+	"bom-pedido-api/pkg/testify/mock"
 	"context"
-	"github.com/stretchr/testify/mock"
 )
 
 type GatewayMock struct {
