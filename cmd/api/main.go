@@ -17,14 +17,14 @@ func main() {
 	}
 
 	redisClient := config.Redis(environment.RedisUrl)
-	mongoClient := config.Mongo(environment.MongoUrl)
+	mongoDatabase := config.Mongo(environment.MongoUrl, environment.MongoDatabaseName)
 
-	applicationFactory := factory.NewApplicationFactory(environment, redisClient, mongoClient)
+	applicationFactory := factory.NewApplicationFactory(environment, redisClient, mongoDatabase)
 	defer applicationFactory.Close()
 
 	go messaging.HandleEvents(applicationFactory)
 
-	server := http.NewServer(redisClient, mongoClient, environment)
+	server := http.NewServer(redisClient, mongoDatabase, environment)
 	server.ConfigureRoutes(applicationFactory)
 	go server.Run(fmt.Sprintf(":%s", environment.Port))
 	server.AwaitInterruptSignal()

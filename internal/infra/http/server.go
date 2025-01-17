@@ -12,13 +12,13 @@ import (
 	"bom-pedido-api/internal/infra/http/order"
 	"bom-pedido-api/internal/infra/http/products"
 	"bom-pedido-api/internal/infra/http/shopping_cart"
+	"bom-pedido-api/pkg/mongo"
 	"context"
 	echoPrometheus "github.com/labstack/echo-contrib/echoprometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/redis/go-redis/v9"
 	echoSwagger "github.com/swaggo/echo-swagger"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -35,14 +35,14 @@ import (
 
 type Server struct {
 	server         *echo.Echo
-	mongoClient    *mongo.Client
+	mongoDatabase  *mongo.Database
 	redisClient    *redis.Client
 	tracerProvider *trace.TracerProvider
 	environment    *config.Environment
 }
 
-func NewServer(redisClient *redis.Client, mongoClient *mongo.Client, environment *config.Environment) *Server {
-	return &Server{redisClient: redisClient, mongoClient: mongoClient, environment: environment}
+func NewServer(redisClient *redis.Client, mongoDatabase *mongo.Database, environment *config.Environment) *Server {
+	return &Server{redisClient: redisClient, mongoDatabase: mongoDatabase, environment: environment}
 }
 
 func (s *Server) ConfigureRoutes(applicationFactory *factory.ApplicationFactory) {
@@ -73,7 +73,7 @@ func (s *Server) ConfigureRoutes(applicationFactory *factory.ApplicationFactory)
 	callback.ConfigureCallbackRoutes(api, applicationFactory)
 	category.ConfigureRoutes(api, applicationFactory)
 
-	server.GET("/api/health", health.Handle(s.redisClient, s.mongoClient))
+	server.GET("/api/health", health.Handle(s.redisClient, s.mongoDatabase))
 	s.server = server
 }
 
@@ -126,7 +126,7 @@ func (s *Server) Shutdown() {
 	if err := s.redisClient.Close(); err != nil {
 		slog.Error("Error on close redis connection", "error", err)
 	}
-	if err := s.mongoClient.Disconnect(ctx); err != nil {
+	if err := s.mongoDatabase.Disconnect(ctx); err != nil {
 		slog.Error("Error on close mongo connection", "error", err)
 	}
 	if s.tracerProvider != nil {

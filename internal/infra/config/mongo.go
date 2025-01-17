@@ -1,6 +1,7 @@
 package config
 
 import (
+	mongo2 "bom-pedido-api/pkg/mongo"
 	"context"
 	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -9,7 +10,7 @@ import (
 	"log/slog"
 )
 
-func Mongo(url string) *mongo.Client {
+func Mongo(url, database string) *mongo2.Database {
 	clientOptions := options.Client().ApplyURI(url)
 	monitor := otelmongo.NewMonitor()
 	started := monitor.Started
@@ -25,5 +26,5 @@ func Mongo(url string) *mongo.Client {
 	err = mongoClient.Ping(context.Background(), nil)
 	failOnError(err, "Failed to ping mongo")
 	slog.Info("Connected to mongo successfully")
-	return mongoClient
+	return mongo2.NewDatabase(mongoClient.Database(database))
 }

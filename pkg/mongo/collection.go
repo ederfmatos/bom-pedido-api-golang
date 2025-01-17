@@ -28,6 +28,14 @@ func (d Database) ForCollection(name string) *Collection {
 	return newCollection(d.database.Collection(name))
 }
 
+func (d Database) Ping(ctx context.Context) error {
+	return d.database.Client().Ping(ctx, nil)
+}
+
+func (d Database) Disconnect(ctx context.Context) error {
+	return d.database.Client().Disconnect(ctx)
+}
+
 func newCollection(collection *mongo.Collection) *Collection {
 	return &Collection{Collection: collection}
 }
@@ -102,6 +110,17 @@ func (c Collection) FindAllByID(ctx context.Context, ids []string) (*mongo.Curso
 func (c Collection) FindAllBy(ctx context.Context, values map[string]interface{}) (*mongo.Cursor, error) {
 	filter := bson.M(values)
 	cursor, err := c.Collection.Find(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("find records: %w", err)
+	}
+	return cursor, nil
+}
+
+func (c Collection) Find(ctx context.Context, filter map[string]interface{}, skip, limit int64) (*mongo.Cursor, error) {
+	cursor, err := c.Collection.Find(ctx, bson.M(filter), &options.FindOptions{
+		Skip:  &skip,
+		Limit: &limit,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("find records: %w", err)
 	}

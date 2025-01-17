@@ -6,7 +6,6 @@ import (
 	"bom-pedido-api/pkg/mongo"
 	"context"
 	"fmt"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type ProductQuery struct {
@@ -28,10 +27,7 @@ func (q *ProductQuery) List(ctx context.Context, filter projection.ProductListFi
 	skip := (filter.CurrentPage - 1) * filter.PageSize
 	limit := filter.PageSize
 
-	cursor, err := q.Collection.Find(ctx, mongoFilter, &options.FindOptions{
-		Skip:  &skip,
-		Limit: &limit,
-	})
+	cursor, err := q.Collection.Find(ctx, mongoFilter, skip, limit)
 	if err != nil {
 		return nil, fmt.Errorf("find products: %v", err)
 	}

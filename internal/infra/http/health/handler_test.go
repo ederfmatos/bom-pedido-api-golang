@@ -16,9 +16,9 @@ func Test_Health(t *testing.T) {
 	response := httptest.NewRecorder()
 
 	container := test.NewContainer()
-	mongoClient, redisClient := container.MongoClient, container.RedisClient
+	redisClient := container.RedisClient
 
-	err := Handle(redisClient, mongoClient)(instance.NewContext(request, response))
+	err := Handle(redisClient, container.MongoDatabase())(instance.NewContext(request, response))
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, response.Code)
 
