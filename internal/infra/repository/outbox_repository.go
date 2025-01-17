@@ -22,8 +22,12 @@ type (
 	}
 )
 
-func NewMongoOutboxRepository(collection *mongo.Collection) *MongoOutboxRepository {
-	return &MongoOutboxRepository{collection: collection}
+func (r *MongoOutboxRepository) FetchStream(ctx context.Context) (<-chan string, error) {
+	return r.collection.FetchStream(ctx)
+}
+
+func NewMongoOutboxRepository(collection *mongo.Database) *MongoOutboxRepository {
+	return &MongoOutboxRepository{collection: collection.ForCollection("outbox")}
 }
 
 func (r *MongoOutboxRepository) Save(ctx context.Context, entry *Entry) error {

@@ -7,7 +7,6 @@ import (
 	"bom-pedido-api/internal/infra/repository"
 	"bom-pedido-api/internal/infra/retry"
 	"bom-pedido-api/internal/infra/telemetry"
-	"bom-pedido-api/pkg/mongo"
 	"context"
 	"time"
 )
@@ -16,24 +15,25 @@ type outboxRepository interface {
 	Save(ctx context.Context, entry *repository.Entry) error
 	Get(ctx context.Context, id string) (*repository.Entry, error)
 	Update(ctx context.Context, entry *repository.Entry) error
+	FetchStream(ctx context.Context) (<-chan string, error)
 }
 
 type OutboxEventHandler struct {
 	handler          event.Handler
 	outboxRepository outboxRepository
-	collection       *mongo.Collection
 	locker           lock.Locker
 }
 
-func NewOutboxEventHandler(handler event.Handler, outboxRepository outboxRepository, collection *mongo.Collection, locker lock.Locker) event.Handler {
+func NewOutboxEventHandler(handler event.Handler, outboxRepository outboxRepository, locker lock.Locker) (*OutboxEventHandler, error) {
 	eventHandler := &OutboxEventHandler{
 		handler:          handler,
 		outboxRepository: outboxRepository,
-		collection:       collection,
 		locker:           locker,
 	}
-	eventHandler.handleStream()
-	return eventHandler
+	if err := eventHandler.handleStream(); err != nil {
+		return nil, err
+	}
+	return eventHandler, nil
 }
 
 func (handler *OutboxEventHandler) Emit(ctx context.Context, event *event.Event) error {
@@ -57,16 +57,17 @@ func (handler *OutboxEventHandler) Emit(ctx context.Context, event *event.Event)
 	return handler.outboxRepository.Save(ctx, entry)
 }
 
-func (handler *OutboxEventHandler) handleStream() {
-	fetchEvents, err := handler.collection.FetchStream(context.Background())
+func (handler *OutboxEventHandler) handleStream() error {
+	fetchEvents, err := handler.outboxRepository.FetchStream(context.Background())
 	if err != nil {
-		panic(err)
+		return err
 	}
 	go func() {
 		for id := range fetchEvents {
 			handler.processEvent(id)
 		}
 	}()
+	return nil
 }
 
 func (handler *OutboxEventHandler) processEvent(id string) {

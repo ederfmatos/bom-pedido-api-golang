@@ -6,8 +6,8 @@ import (
 	"bom-pedido-api/internal/infra/retry"
 	"bom-pedido-api/internal/infra/telemetry"
 	"context"
+	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"log"
 	"log/slog"
 	"os"
 	"time"
@@ -15,42 +15,47 @@ import (
 
 const exchange = "bompedido"
 
-type RabbitMqAdapter struct {
+type RabbitMqEventHandler struct {
 	connection      *amqp.Connection
 	producerChannel *amqp.Channel
 	consumerChannel *amqp.Channel
 }
 
-func NewRabbitMqAdapter(server string) event.Handler {
+func NewRabbitMqEventHandler(server string) (*RabbitMqEventHandler, error) {
 	connection, err := amqp.Dial(server)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("create connection: %v", err)
 	}
-	slog.Info("Connected to rabbitmq successfully")
+
 	producerChannel, err := connection.Channel()
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("create producer channel: %v", err)
 	}
+
 	consumerChannel, err := connection.Channel()
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("create consumer channel: %v", err)
 	}
-	adapter := &RabbitMqAdapter{
+
+	eventHandler := &RabbitMqEventHandler{
 		connection:      connection,
 		producerChannel: producerChannel,
 		consumerChannel: consumerChannel,
 	}
-	adapter.createQueues()
-	return adapter
+	if err = eventHandler.createQueues(); err != nil {
+		return nil, fmt.Errorf("create queues: %v", err)
+	}
+
+	return eventHandler, nil
 }
 
-func (adapter *RabbitMqAdapter) Close() {
-	_ = adapter.producerChannel.Close()
-	_ = adapter.consumerChannel.Close()
-	_ = adapter.connection.Close()
+func (r *RabbitMqEventHandler) Close() {
+	_ = r.producerChannel.Close()
+	_ = r.consumerChannel.Close()
+	_ = r.connection.Close()
 }
 
-func (adapter *RabbitMqAdapter) Emit(ctx context.Context, event *event.Event) error {
+func (r *RabbitMqEventHandler) Emit(ctx context.Context, event *event.Event) error {
 	ctx, span := telemetry.StartSpan(ctx, "RabbitMq.Emit")
 	defer span.End()
 	eventBytes, err := json.Marshal(ctx, event)
@@ -58,7 +63,7 @@ func (adapter *RabbitMqAdapter) Emit(ctx context.Context, event *event.Event) er
 		slog.Error("Error on emit event", "event", event, "error", err)
 		return err
 	}
-	err = adapter.producerChannel.PublishWithContext(
+	err = r.producerChannel.PublishWithContext(
 		ctx,
 		exchange,
 		event.Name,
@@ -73,8 +78,8 @@ func (adapter *RabbitMqAdapter) Emit(ctx context.Context, event *event.Event) er
 	return nil
 }
 
-func (adapter *RabbitMqAdapter) Consume(options *event.ConsumerOptions, handler event.HandlerFunc) {
-	messages, err := adapter.consumerChannel.Consume(
+func (r *RabbitMqEventHandler) Consume(options *event.ConsumerOptions, handler event.HandlerFunc) {
+	messages, err := r.consumerChannel.Consume(
 		options.Queue,
 		"BOM_PEDIDO_API_"+options.Queue,
 		false,
@@ -87,18 +92,17 @@ func (adapter *RabbitMqAdapter) Consume(options *event.ConsumerOptions, handler 
 		slog.Error("Error on consume messages", "error", err)
 		return
 	}
-	adapter.bindQueue(options.Queue, exchange, options.Topics)
 
 	for range options.WorkerPoolSize {
 		go func(messages <-chan amqp.Delivery) {
 			for message := range messages {
-				adapter.handleMessage(message, handler, options.Id)
+				r.handleMessage(message, handler, options.Id)
 			}
 		}(messages)
 	}
 }
 
-func (adapter *RabbitMqAdapter) handleMessage(message amqp.Delivery, handler event.HandlerFunc, name string) {
+func (r *RabbitMqEventHandler) handleMessage(message amqp.Delivery, handler event.HandlerFunc, name string) {
 	ctx, span := telemetry.StartSpan(context.Background(), "RabbitMq.Process::"+name)
 	defer span.End()
 	slog.Info("Mensagem recebida", "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
@@ -153,15 +157,22 @@ type Queue struct {
 	} `json:"arguments"`
 }
 
-func (adapter *RabbitMqAdapter) createQueues() {
+// TODO: Criar script para criar fila fora da aplicação
+func (r *RabbitMqEventHandler) createQueues() error {
 	file, err := os.ReadFile(".resources/rabbitmq.json")
-	handleError(err)
+	if err != nil {
+		return err
+	}
 	var resourceConfig ResourceConfig
 	err = json.Unmarshal(context.Background(), file, &resourceConfig)
-	handleError(err)
+	if err != nil {
+		return err
+	}
 	for _, item := range resourceConfig.Exchanges {
-		err = adapter.consumerChannel.ExchangeDeclare(item.Name, item.Type, true, false, false, false, nil)
-		handleError(err)
+		err = r.consumerChannel.ExchangeDeclare(item.Name, item.Type, true, false, false, false, nil)
+		if err != nil {
+			return err
+		}
 	}
 	for _, queue := range resourceConfig.Queues {
 		var arguments amqp.Table
@@ -172,24 +183,16 @@ func (adapter *RabbitMqAdapter) createQueues() {
 				"x-message-ttl":             queue.Arguments.MessageTtl,
 			}
 		}
-		_, err = adapter.consumerChannel.QueueDeclare(queue.Name, true, false, false, false, arguments)
-		handleError(err)
+		_, err = r.consumerChannel.QueueDeclare(queue.Name, true, false, false, false, arguments)
+		if err != nil {
+			return err
+		}
 		for _, binding := range queue.Bindings {
-			err = adapter.consumerChannel.QueueBind(queue.Name, binding.RoutingKey, binding.Exchange, false, nil)
-			handleError(err)
+			err = r.consumerChannel.QueueBind(queue.Name, binding.RoutingKey, binding.Exchange, false, nil)
+			if err != nil {
+				return err
+			}
 		}
 	}
-}
-
-func (adapter *RabbitMqAdapter) bindQueue(queue, exchange string, routingKeys []string) {
-	for _, routingKey := range routingKeys {
-		err := adapter.consumerChannel.QueueBind(queue, routingKey, exchange, false, nil)
-		handleError(err)
-	}
-}
-
-func handleError(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
+	return nil
 }
