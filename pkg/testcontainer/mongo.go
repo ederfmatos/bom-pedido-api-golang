@@ -38,6 +38,11 @@ func NewMongoContainer(ctx context.Context) (*MongoContainer, error) {
 }
 
 func (c MongoContainer) Shutdown(ctx context.Context) {
-	_ = c.container.Terminate(ctx)
-	_ = c.MongoClient.Disconnect(ctx)
+	if c.container != nil {
+		_ = c.container.Terminate(ctx)
+	}
+
+	if c.MongoClient != nil {
+		_ = c.MongoClient.Disconnect(ctx)
+	}
 }

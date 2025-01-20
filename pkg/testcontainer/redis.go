@@ -36,6 +36,11 @@ func NewRedisContainer(ctx context.Context) (*RedisContainer, error) {
 }
 
 func (c RedisContainer) Shutdown(ctx context.Context) {
-	_ = c.RedisClient.Close()
-	_ = c.container.Terminate(ctx)
+	if c.RedisClient != nil {
+		_ = c.RedisClient.Close()
+	}
+
+	if c.container != nil {
+		_ = c.container.Terminate(ctx)
+	}
 }
