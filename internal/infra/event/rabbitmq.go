@@ -9,7 +9,6 @@ import (
 	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"log/slog"
-	"os"
 	"time"
 )
 
@@ -37,16 +36,11 @@ func NewRabbitMqEventHandler(server string) (*RabbitMqEventHandler, error) {
 		return nil, fmt.Errorf("create consumer channel: %v", err)
 	}
 
-	eventHandler := &RabbitMqEventHandler{
+	return &RabbitMqEventHandler{
 		connection:      connection,
 		producerChannel: producerChannel,
 		consumerChannel: consumerChannel,
-	}
-	if err = eventHandler.createQueues(); err != nil {
-		return nil, fmt.Errorf("create queues: %v", err)
-	}
-
-	return eventHandler, nil
+	}, nil
 }
 
 func (r *RabbitMqEventHandler) Close() {
@@ -132,67 +126,4 @@ func (r *RabbitMqEventHandler) handleMessage(message amqp.Delivery, handler even
 	err = retry.Func(ctx, 5, time.Second, time.Second*30, func(ctx context.Context) error {
 		return handler(ctx, messageEvent)
 	})
-}
-
-type ResourceConfig struct {
-	Exchanges []Exchange `json:"exchanges"`
-	Queues    []Queue    `json:"queues"`
-}
-
-type Exchange struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
-}
-
-type Queue struct {
-	Name     string `json:"name"`
-	Bindings []struct {
-		Exchange   string `json:"exchange"`
-		RoutingKey string `json:"routingKey"`
-	} `json:"bindings"`
-	Arguments *struct {
-		DeadLetterExchange   string `json:"x-dead-letter-exchange"`
-		DeadLetterRoutingKey string `json:"x-dead-letter-routing-key"`
-		MessageTtl           int32  `json:"x-message-ttl"`
-	} `json:"arguments"`
-}
-
-// TODO: Criar script para criar fila fora da aplicação
-func (r *RabbitMqEventHandler) createQueues() error {
-	file, err := os.ReadFile(".resources/rabbitmq.json")
-	if err != nil {
-		return err
-	}
-	var resourceConfig ResourceConfig
-	err = json.Unmarshal(context.Background(), file, &resourceConfig)
-	if err != nil {
-		return err
-	}
-	for _, item := range resourceConfig.Exchanges {
-		err = r.consumerChannel.ExchangeDeclare(item.Name, item.Type, true, false, false, false, nil)
-		if err != nil {
-			return err
-		}
-	}
-	for _, queue := range resourceConfig.Queues {
-		var arguments amqp.Table
-		if queue.Arguments != nil {
-			arguments = amqp.Table{
-				"x-dead-letter-exchange":    queue.Arguments.DeadLetterExchange,
-				"x-dead-letter-routing-key": queue.Arguments.DeadLetterRoutingKey,
-				"x-message-ttl":             queue.Arguments.MessageTtl,
-			}
-		}
-		_, err = r.consumerChannel.QueueDeclare(queue.Name, true, false, false, false, arguments)
-		if err != nil {
-			return err
-		}
-		for _, binding := range queue.Bindings {
-			err = r.consumerChannel.QueueBind(queue.Name, binding.RoutingKey, binding.Exchange, false, nil)
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
 }
