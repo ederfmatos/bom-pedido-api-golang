@@ -9,7 +9,6 @@ RUN PATH="/go/bin:${PATH}" GO111MODULE=on CGO_ENABLED=1 GOOS=linux GOARCH=amd64 
 FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /build/app ./app
-COPY --from=builder /build/.docs ./.docs
 COPY --from=builder /build/.resources ./.resources
 EXPOSE 8080
 ENTRYPOINT ["/app"]

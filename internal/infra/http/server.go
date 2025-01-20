@@ -18,7 +18,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/redis/go-redis/v9"
-	echoSwagger "github.com/swaggo/echo-swagger"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -49,7 +48,6 @@ func (s *Server) ConfigureRoutes(applicationFactory *factory.ApplicationFactory)
 	server := echo.New()
 	server.Use(middleware.Recover())
 	server.Use(middleware.RequestID())
-	server.Use(middlewares.RedocDocumentation())
 	server.Use(echoPrometheus.NewMiddleware("bom_pedido_api"))
 	server.Use(otelecho.Middleware("bom-pedido-api"))
 	server.Use(middlewares.AuthenticateMiddleware(applicationFactory))
@@ -57,12 +55,6 @@ func (s *Server) ConfigureRoutes(applicationFactory *factory.ApplicationFactory)
 	server.HTTPErrorHandler = middlewares.HandleError
 
 	server.GET("/metrics", echoPrometheus.NewHandler())
-	server.GET("/swagger.json", func(c echo.Context) error {
-		return c.File(".docs/openapi.json")
-	})
-	server.GET("/swagger/*", echoSwagger.EchoWrapHandler(func(c *echoSwagger.Config) {
-		c.URLs = []string{".docs/openapi.json"}
-	}))
 
 	api := server.Group("/api")
 	admin.ConfigureRoutes(api, applicationFactory, s.environment)

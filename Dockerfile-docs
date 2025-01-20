@@ -1,0 +1,16 @@
+FROM golang:1.23-alpine AS builder
+WORKDIR /build
+COPY cmd/docs ./cmd/docs
+COPY go.mod .
+COPY go.sum .
+COPY .docs/openapi.json ./.docs/openapi.json
+
+RUN GOOS=linux GOARCH=amd64 go mod tidy && \
+    go mod download && \
+    go build -tags musl -ldflags '-s -w -extldflags "-static"' -o app ./cmd/docs
+
+FROM scratch
+COPY --from=builder /build/app ./app
+COPY --from=builder /build/.docs ./.docs
+EXPOSE 8080
+ENTRYPOINT ["/app"]
