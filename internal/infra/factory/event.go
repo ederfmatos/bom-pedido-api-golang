@@ -7,13 +7,20 @@ import (
 	"bom-pedido-api/internal/infra/event"
 	"bom-pedido-api/internal/infra/repository"
 	"bom-pedido-api/pkg/mongo"
+	"fmt"
 )
 
-func eventFactory(environment *config.Environment, locker lock.Locker, mongoDatabase *mongo.Database) *factory.EventFactory {
-	// TODO: Handle error
-	eventHandler, _ := event.NewRabbitMqEventHandler(environment.RabbitMqServer)
+func eventFactory(environment *config.Environment, locker lock.Locker, mongoDatabase *mongo.Database) (*factory.EventFactory, error) {
+	eventHandler, err := event.NewRabbitMqEventHandler(environment.RabbitMqServer)
+	if err != nil {
+		return nil, fmt.Errorf("create rabbitmq event handler: %v", err)
+	}
+
 	outboxRepository := repository.NewMongoOutboxRepository(mongoDatabase)
-	// TODO: Handle error
-	handler, _ := event.NewOutboxEventHandler(eventHandler, outboxRepository, locker)
-	return factory.NewEventFactory(handler)
+	handler, err := event.NewOutboxEventHandler(eventHandler, outboxRepository, locker)
+	if err != nil {
+		return nil, fmt.Errorf("create outbox event handler: %v", err)
+	}
+
+	return factory.NewEventFactory(handler), nil
 }

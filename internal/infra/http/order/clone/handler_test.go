@@ -23,7 +23,8 @@ func TestHandle(t *testing.T) {
 	ctx := context.Background()
 	container := test.NewContainer()
 	defer container.Down()
-	applicationFactory := factory.NewApplicationFactory(container.GetEnvironment(), container.RedisClient, container.MongoDatabase())
+	applicationFactory, err := factory.NewApplicationFactory(container.GetEnvironment(), container.RedisClient, container.MongoDatabase())
+	require.NoError(t, err)
 
 	merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.PhoneNumber(), faker.DomainName())
 	require.NoError(t, err)

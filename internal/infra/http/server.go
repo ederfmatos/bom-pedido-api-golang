@@ -14,6 +14,7 @@ import (
 	"bom-pedido-api/internal/infra/http/shopping_cart"
 	"bom-pedido-api/pkg/mongo"
 	"context"
+	"fmt"
 	echoPrometheus "github.com/labstack/echo-contrib/echoprometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -33,37 +34,48 @@ import (
 )
 
 type Server struct {
-	server         *echo.Echo
-	mongoDatabase  *mongo.Database
-	redisClient    *redis.Client
-	tracerProvider *trace.TracerProvider
-	environment    *config.Environment
+	server             *echo.Echo
+	mongoDatabase      *mongo.Database
+	redisClient        *redis.Client
+	tracerProvider     *trace.TracerProvider
+	environment        *config.Environment
+	applicationFactory *factory.ApplicationFactory
 }
 
-func NewServer(redisClient *redis.Client, mongoDatabase *mongo.Database, environment *config.Environment) *Server {
-	return &Server{redisClient: redisClient, mongoDatabase: mongoDatabase, environment: environment}
+func NewServer(
+	redisClient *redis.Client,
+	mongoDatabase *mongo.Database,
+	environment *config.Environment,
+	applicationFactory *factory.ApplicationFactory,
+) *Server {
+	return &Server{
+		redisClient:        redisClient,
+		mongoDatabase:      mongoDatabase,
+		environment:        environment,
+		applicationFactory: applicationFactory,
+	}
 }
 
-func (s *Server) ConfigureRoutes(applicationFactory *factory.ApplicationFactory) {
+func (s *Server) ConfigureRoutes() {
 	server := echo.New()
 	server.Use(middleware.Recover())
 	server.Use(middleware.RequestID())
 	server.Use(echoPrometheus.NewMiddleware("bom_pedido_api"))
 	server.Use(otelecho.Middleware("bom-pedido-api"))
-	server.Use(middlewares.AuthenticateMiddleware(applicationFactory))
+	server.Use(middlewares.AuthenticateMiddleware(s.applicationFactory))
 	server.Use(middlewares.SetContextTenantId())
 	server.HTTPErrorHandler = middlewares.HandleError
 
 	server.GET("/metrics", echoPrometheus.NewHandler())
 
 	api := server.Group("/api")
-	admin.ConfigureRoutes(api, applicationFactory, s.environment)
-	order.ConfigureRoutes(api, applicationFactory)
-	products.ConfigureRoutes(api, applicationFactory)
-	customer.ConfigureRoutes(api, applicationFactory)
-	shopping_cart.ConfigureRoutes(api, applicationFactory)
-	callback.ConfigureCallbackRoutes(api, applicationFactory)
-	category.ConfigureRoutes(api, applicationFactory)
+	admin.ConfigureRoutes(api, s.applicationFactory, s.environment)
+	order.ConfigureRoutes(api, s.applicationFactory)
+	products.ConfigureRoutes(api, s.applicationFactory)
+	customer.ConfigureRoutes(api, s.applicationFactory)
+	shopping_cart.ConfigureRoutes(api, s.applicationFactory)
+	callback.ConfigureCallbackRoutes(api, s.applicationFactory)
+	category.ConfigureRoutes(api, s.applicationFactory)
 
 	server.GET("/api/health", health.Handle(s.redisClient, s.mongoDatabase))
 	s.server = server
@@ -100,9 +112,9 @@ func (s *Server) StartTracer() {
 	s.tracerProvider = tracerProvider
 }
 
-func (s *Server) Run(port string) {
+func (s *Server) Run() {
 	s.StartTracer()
-	s.server.Logger.Fatal(s.server.Start(port))
+	s.server.Logger.Fatal(s.server.Start(fmt.Sprintf(":%s", s.environment.Port)))
 }
 
 func (s *Server) AwaitInterruptSignal() {
@@ -112,6 +124,8 @@ func (s *Server) AwaitInterruptSignal() {
 }
 
 func (s *Server) Shutdown() {
+	s.applicationFactory.Close()
+
 	ctx, cancelCtx := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancelCtx()
 

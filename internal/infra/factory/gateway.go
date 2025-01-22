@@ -13,9 +13,10 @@ import (
 	"bom-pedido-api/pkg/mongo"
 	"context"
 	firebase "firebase.google.com/go/v4"
+	"fmt"
 )
 
-func gatewayFactory(environment *config.Environment, mongoDatabase *mongo.Database) *factory.GatewayFactory {
+func gatewayFactory(environment *config.Environment, mongoDatabase *mongo.Database) (*factory.GatewayFactory, error) {
 	paymentGatewayConfigRepository := repository.NewMerchantPaymentGatewayConfigMongoRepository(mongoDatabase)
 	pixEnvironment := environment.PixPaymentGateway
 	expirationTimeInMinutes := pixEnvironment.ExpirationTimeInMinutes
@@ -29,16 +30,16 @@ func gatewayFactory(environment *config.Environment, mongoDatabase *mongo.Databa
 	ctx := context.Background()
 	app, err := firebase.NewApp(ctx, nil)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("create firebase app: %v", err)
 	}
 	fcmClient, err := app.Messaging(ctx)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("create firebase messaging: %v", err)
 	}
 	return factory.NewGatewayFactory(
 		google.NewDefaultGoogleGateway(http_client.NewDefaultHttpClient(environment.GoogleAuthUrl)),
 		pix.NewMerchantPixGatewayMediator(paymentGatewayConfigRepository, pixGateways),
 		notification.NewFirebaseNotificationGateway(fcmClient),
 		email.NewResendEmailGateway(email.NewTemplateLoader(), environment.EmailFrom, environment.ResendMailKey),
-	)
+	), nil
 }

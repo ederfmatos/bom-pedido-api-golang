@@ -10,23 +10,42 @@ import (
 )
 
 func main() {
+	server, err := makeServer()
+	if err != nil {
+		log.Fatalf("make server: %v", err)
+	}
+
+	go server.Run()
+	server.AwaitInterruptSignal()
+	server.Shutdown()
+}
+
+func makeServer() (*http.Server, error) {
 	config.ConfigureLogger()
 	environment, err := config.LoadEnvironment()
 	if err != nil {
-		log.Fatalf("load environment: %v", err)
+		return nil, fmt.Errorf("load environment: %v", err)
 	}
 
-	redisClient := config.Redis(environment.RedisUrl)
-	mongoDatabase := config.Mongo(environment.MongoUrl, environment.MongoDatabaseName)
+	redisClient, err := config.Redis(environment.RedisUrl)
+	if err != nil {
+		return nil, fmt.Errorf("connect redis: %v", err)
+	}
 
-	applicationFactory := factory.NewApplicationFactory(environment, redisClient, mongoDatabase)
-	defer applicationFactory.Close()
+	mongoDatabase, err := config.Mongo(environment.MongoUrl, environment.MongoDatabaseName)
+	if err != nil {
+		return nil, fmt.Errorf("connect mongo: %v", err)
+	}
+
+	applicationFactory, err := factory.NewApplicationFactory(environment, redisClient, mongoDatabase)
+	if err != nil {
+		return nil, fmt.Errorf("create application factory: %v", err)
+	}
 
 	go messaging.HandleEvents(applicationFactory)
 
-	server := http.NewServer(redisClient, mongoDatabase, environment)
-	server.ConfigureRoutes(applicationFactory)
-	go server.Run(fmt.Sprintf(":%s", environment.Port))
-	server.AwaitInterruptSignal()
-	server.Shutdown()
+	server := http.NewServer(redisClient, mongoDatabase, environment, applicationFactory)
+	server.ConfigureRoutes()
+
+	return server, nil
 }
