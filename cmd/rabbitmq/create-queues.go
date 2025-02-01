@@ -1,9 +1,9 @@
 package main
 
 import (
+	"bom-pedido-api/pkg/log"
 	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"log"
 	"time"
 )
 
@@ -11,10 +11,11 @@ func main() {
 	url := "amqp://guest:guest@localhost:5672/"
 
 	if err := createQueues(url); err != nil {
-		log.Fatal(err)
+		log.Error("Erro ao criar filas", err)
+		return
 	}
 
-	log.Println("Recursos criados com sucesso")
+	log.Info("Recursos criados com sucesso")
 }
 
 type ResourceConfig struct {
@@ -157,7 +158,7 @@ func createQueues(url string) error {
 		if err != nil {
 			return fmt.Errorf("declare exchange %s: %v", name, err)
 		}
-		log.Printf("Exchange %s criada com sucesso", name)
+		log.Info("Exchange criada com sucesso", "exchange", name)
 	}
 
 	for queueName, queue := range config.Queues {
@@ -173,7 +174,7 @@ func createQueues(url string) error {
 		if err != nil {
 			return fmt.Errorf("declare queue %s: %v", queueName, err)
 		}
-		log.Printf("Queue %s criada com sucesso", queueName)
+		log.Info("Queue criada com sucesso", "queue", queueName)
 
 		for _, binding := range queue.Bindings {
 			err = channel.QueueBind(queueName, binding.RoutingKey, binding.Exchange, false, nil)
