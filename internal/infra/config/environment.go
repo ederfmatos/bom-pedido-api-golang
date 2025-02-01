@@ -1,10 +1,9 @@
 package config
 
 import (
+	"bom-pedido-api/pkg/config"
 	"fmt"
-	"os"
 	"reflect"
-	"strconv"
 )
 
 type (
@@ -36,46 +35,9 @@ func LoadEnvironment() (*Environment, error) {
 	var environment Environment
 	envStruct := reflect.ValueOf(&environment).Elem()
 
-	if err := loadStruct(envStruct); err != nil {
+	if err := config.Load(envStruct); err != nil {
 		return nil, fmt.Errorf("load environment struct: %v", err)
 	}
 
 	return &environment, nil
-}
-
-func loadStruct(s reflect.Value) error {
-	for i := 0; i < s.NumField(); i++ {
-		field := s.Type().Field(i)
-		name := field.Tag.Get("name")
-
-		if name == "" {
-			continue
-		}
-
-		if field.Type.Kind() == reflect.Struct {
-			if err := loadStruct(s.Field(i)); err != nil {
-				return fmt.Errorf("load environment struct %s: %v", name, err)
-			}
-			continue
-		}
-
-		value := os.Getenv(name)
-		if value == "" {
-			return fmt.Errorf("the environment variable %s was not found", name)
-		}
-
-		switch s.Field(i).Kind() {
-		case reflect.String:
-			s.Field(i).SetString(value)
-		case reflect.Int:
-			intValue, err := strconv.Atoi(value)
-			if err != nil {
-				return fmt.Errorf("failed to convert %s to int: %v", name, err)
-			}
-			s.Field(i).SetInt(int64(intValue))
-		default:
-			return fmt.Errorf("unsupported field type: %s", s.Field(i).Kind())
-		}
-	}
-	return nil
 }
