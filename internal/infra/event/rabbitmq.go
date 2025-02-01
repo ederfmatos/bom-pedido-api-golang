@@ -5,10 +5,10 @@ import (
 	"bom-pedido-api/internal/infra/json"
 	"bom-pedido-api/internal/infra/retry"
 	"bom-pedido-api/internal/infra/telemetry"
+	"bom-pedido-api/pkg/log"
 	"context"
 	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"log/slog"
 	"time"
 )
 
@@ -54,7 +54,7 @@ func (r *RabbitMqEventHandler) Emit(ctx context.Context, event *event.Event) err
 	defer span.End()
 	eventBytes, err := json.Marshal(ctx, event)
 	if err != nil {
-		slog.Error("Error on emit event", "event", event, "error", err)
+		log.Error("Error on emit event", err, "event", event)
 		return err
 	}
 	err = r.producerChannel.PublishWithContext(
@@ -66,7 +66,7 @@ func (r *RabbitMqEventHandler) Emit(ctx context.Context, event *event.Event) err
 		amqp.Publishing{ContentType: "text/plain", Body: eventBytes},
 	)
 	if err != nil {
-		slog.Error("Error on publish event", "event", event, "exchange", exchange, "error", err)
+		log.Error("Error on publish event", err, "event", event, "exchange", exchange)
 		return err
 	}
 	return nil
@@ -83,7 +83,7 @@ func (r *RabbitMqEventHandler) Consume(options *event.ConsumerOptions, handler e
 		nil,
 	)
 	if err != nil {
-		slog.Error("Error on consume messages", "error", err)
+		log.Error("Error on consume messages", err)
 		return
 	}
 
@@ -99,7 +99,7 @@ func (r *RabbitMqEventHandler) Consume(options *event.ConsumerOptions, handler e
 func (r *RabbitMqEventHandler) handleMessage(message amqp.Delivery, handler event.HandlerFunc, name string) {
 	ctx, span := telemetry.StartSpan(context.Background(), "RabbitMq.Process::"+name)
 	defer span.End()
-	slog.Info("Mensagem recebida", "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
+	log.Info("Mensagem recebida", "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
 	var applicationEvent event.Event
 	err := json.Unmarshal(ctx, message.Body, &applicationEvent)
 	messageEvent := &event.MessageEvent{
@@ -113,12 +113,12 @@ func (r *RabbitMqEventHandler) handleMessage(message amqp.Delivery, handler even
 	}
 	defer func() {
 		if err == nil {
-			slog.Info("Mensagem consumida com sucesso", "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
+			log.Info("Mensagem consumida com sucesso", "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
 			return
 		}
 		span.RecordError(err)
 		messageEvent.Nack(ctx)
-		slog.Error("Ocorreu um erro no consumo da mensagem", "error", err, "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
+		log.Error("Ocorreu um erro no consumo da mensagem", err, "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
 	}()
 	if err != nil {
 		return

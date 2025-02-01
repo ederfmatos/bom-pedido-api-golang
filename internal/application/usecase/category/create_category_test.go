@@ -25,16 +25,18 @@ func Test_CreateCategory(t *testing.T) {
 			Name:        category.Name,
 			Description: faker.Word(),
 		}
-		err = useCase.Execute(ctx, input)
+		output, err := useCase.Execute(ctx, input)
 		require.ErrorIs(t, err, CategoryWithSameNameError)
+		require.Nil(t, output)
 
 		input = CreateCategoryInput{
 			TenantId:    value_object.NewTenantId(),
 			Name:        category.Name,
 			Description: faker.Word(),
 		}
-		err = useCase.Execute(ctx, input)
+		output, err = useCase.Execute(ctx, input)
 		require.NoError(t, err)
+		require.NotNil(t, output)
 	})
 
 	t.Run("should create a category", func(t *testing.T) {
@@ -44,7 +46,8 @@ func Test_CreateCategory(t *testing.T) {
 			Name:        faker.Name(),
 			Description: faker.Word(),
 		}
-		err := useCase.Execute(ctx, input)
+		output, err := useCase.Execute(ctx, input)
 		require.NoError(t, err)
+		require.NotNil(t, output)
 	})
 }

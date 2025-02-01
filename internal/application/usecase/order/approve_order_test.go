@@ -16,7 +16,7 @@ import (
 
 func Test_ApproveOrder(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
-	useCase := NewApproveOrderUseCase(applicationFactory)
+	useCase := NewApproveOrder(applicationFactory)
 
 	t.Run("should return order not found", func(t *testing.T) {
 		ctx := context.Background()

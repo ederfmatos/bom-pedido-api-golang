@@ -3,8 +3,9 @@ package main
 import (
 	"bom-pedido-api/internal/infra/config"
 	"bom-pedido-api/internal/infra/factory"
-	"bom-pedido-api/internal/infra/http"
 	"bom-pedido-api/internal/infra/messaging"
+	"bom-pedido-api/pkg/http"
+	"bom-pedido-api/pkg/http/net"
 	"fmt"
 	"log"
 )
@@ -20,8 +21,7 @@ func main() {
 	server.Shutdown()
 }
 
-func makeServer() (*http.Server, error) {
-	config.ConfigureLogger()
+func makeServer() (http.Server, error) {
 	environment, err := config.LoadEnvironment()
 	if err != nil {
 		return nil, fmt.Errorf("load environment: %v", err)
@@ -44,8 +44,8 @@ func makeServer() (*http.Server, error) {
 
 	go messaging.HandleEvents(applicationFactory)
 
-	server := http.NewServer(redisClient, mongoDatabase, environment, applicationFactory)
-	server.ConfigureRoutes()
+	server := net.NewHTTPServer(environment.Port)
 
+	ConfigureRoutes(environment, applicationFactory, mongoDatabase, server)
 	return server, nil
 }

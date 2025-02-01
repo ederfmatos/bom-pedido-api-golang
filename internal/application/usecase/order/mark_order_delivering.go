@@ -20,7 +20,7 @@ type (
 	}
 )
 
-func NewMarkOrderDeliveringUseCase(factory *factory.ApplicationFactory) *MarkOrderDeliveringUseCase {
+func NewMarkOrderDelivering(factory *factory.ApplicationFactory) *MarkOrderDeliveringUseCase {
 	return &MarkOrderDeliveringUseCase{
 		orderRepository: factory.OrderRepository,
 		eventEmitter:    factory.EventEmitter,

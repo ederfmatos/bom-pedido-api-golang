@@ -79,5 +79,5 @@ func (r Request) Int(name string) (int, error) {
 }
 
 func (r Request) String() string {
-	return fmt.Sprintf("%s %s (%s)", r.request.Method, r.request.URL.Path)
+	return fmt.Sprintf("%s %s", r.request.Method, r.request.URL.Path)
 }

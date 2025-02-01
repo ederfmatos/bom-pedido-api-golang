@@ -20,7 +20,7 @@ type (
 	}
 )
 
-func NewApproveOrderUseCase(factory *factory.ApplicationFactory) *ApproveOrderUseCase {
+func NewApproveOrder(factory *factory.ApplicationFactory) *ApproveOrderUseCase {
 	return &ApproveOrderUseCase{
 		orderRepository: factory.OrderRepository,
 		eventEmitter:    factory.EventEmitter,

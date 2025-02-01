@@ -16,7 +16,7 @@ import (
 
 func Test_MarkOrderAwaitingWithdraw(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
-	useCase := New(applicationFactory)
+	useCase := NewMarkOrderAwaitingWithdraw(applicationFactory)
 
 	t.Run("should return order not found", func(t *testing.T) {
 		ctx := context.Background()

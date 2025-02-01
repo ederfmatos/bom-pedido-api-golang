@@ -16,7 +16,7 @@ import (
 
 func Test_MarkOrderDelivering(t *testing.T) {
 	applicationFactory := factory.NewTestApplicationFactory()
-	useCase := NewMarkOrderDeliveringUseCase(applicationFactory)
+	useCase := NewMarkOrderDelivering(applicationFactory)
 
 	t.Run("should return order not found", func(t *testing.T) {
 		ctx := context.Background()

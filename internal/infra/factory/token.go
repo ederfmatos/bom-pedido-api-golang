@@ -17,7 +17,7 @@ func tokenFactory(environment *config.Environment) (*factory.TokenFactory, error
 		return nil, fmt.Errorf("load private key: %v", err)
 	}
 
-	tokenManager := token.NewCustomerTokenManager(privateKey)
+	tokenManager := token.NewTokenManager(privateKey)
 	return factory.NewTokenFactory(tokenManager), nil
 }
 

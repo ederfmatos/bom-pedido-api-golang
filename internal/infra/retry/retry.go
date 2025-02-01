@@ -2,9 +2,9 @@ package retry
 
 import (
 	"bom-pedido-api/internal/infra/telemetry"
+	"bom-pedido-api/pkg/log"
 	"context"
 	"fmt"
-	"log/slog"
 	"math"
 	"strconv"
 	"time"
@@ -21,10 +21,10 @@ func Func(ctx context.Context, maxRetries int, initialBackoff, maxBackoff time.D
 		}
 		span.RecordError(err)
 		backoff := time.Duration(math.Min(float64(maxBackoff), float64(initialBackoff)*math.Pow(2, float64(attempt-1))))
-		slog.Warn(fmt.Sprintf("Attempt %d failed; retrying in %s...", attempt, backoff))
+		log.Warn("Attempt failed. Retrying...", "attempt", attempt, "backoff", backoff)
 		time.Sleep(backoff)
 		span.End()
 	}
-	slog.Error(fmt.Sprintf("operation failed after %d attempts: %f", maxRetries, err))
+	log.Error("operation failed", err, "maxRetries", maxRetries, err)
 	return fmt.Errorf("operation failed after %d attempts: %w", maxRetries, err)
 }

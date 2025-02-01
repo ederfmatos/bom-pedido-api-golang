@@ -6,6 +6,7 @@ import (
 	"bom-pedido-api/internal/domain/entity"
 	"bom-pedido-api/internal/domain/errors"
 	"context"
+	"fmt"
 )
 
 var (
@@ -22,6 +23,12 @@ type (
 		Name        string
 		Description string
 	}
+
+	CreateCategoryOutput struct {
+		ID          string `json:"id"`
+		Name        string `json:"name"`
+		Description string `json:"description"`
+	}
 )
 
 func NewCreateCategory(factory *factory.ApplicationFactory) *CreateCategoryUseCase {
@@ -30,14 +37,23 @@ func NewCreateCategory(factory *factory.ApplicationFactory) *CreateCategoryUseCa
 	}
 }
 
-func (u *CreateCategoryUseCase) Execute(ctx context.Context, input CreateCategoryInput) error {
+func (u *CreateCategoryUseCase) Execute(ctx context.Context, input CreateCategoryInput) (*CreateCategoryOutput, error) {
 	existsByName, err := u.categoryRepository.ExistsByNameAndTenantId(ctx, input.Name, input.TenantId)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if existsByName {
-		return CategoryWithSameNameError
+		return nil, CategoryWithSameNameError
 	}
+
 	category := entity.NewCategory(input.Name, input.Description, input.TenantId)
-	return u.categoryRepository.Create(ctx, category)
+	if err = u.categoryRepository.Create(ctx, category); err != nil {
+		return nil, fmt.Errorf("create category: %v", err)
+	}
+
+	return &CreateCategoryOutput{
+		ID:          category.Id,
+		Name:        category.Name,
+		Description: category.Description,
+	}, nil
 }

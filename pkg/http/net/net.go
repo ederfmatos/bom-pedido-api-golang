@@ -92,15 +92,6 @@ func (s *HTTPServer) writeResponse(writer net.ResponseWriter, httpResponse http.
 	_, _ = writer.Write(httpResponse.Bytes())
 }
 
-func (s *HTTPServer) handleError(response http.Response) {
-	if response.Status() != http.StatusOK {
-		return
-	}
-
-	response.SetStatus(http.StatusInternalServerError)
-	_ = response.SetBody(http.ErrorResponse{Error: "Ocorreu um erro interno, tente novamente"})
-}
-
 func (s *HTTPServer) Run() {
 	err := s.server.ListenAndServe()
 	if err != nil {

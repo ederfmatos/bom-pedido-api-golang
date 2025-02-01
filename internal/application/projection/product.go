@@ -11,7 +11,7 @@ type (
 		Id          string  `json:"id"`
 		Name        string  `json:"name"`
 		Description *string `json:"description,omitempty"`
-		Price       string  `json:"price"`
+		Price       float64 `json:"price"`
 		Status      string  `json:"status"`
 		ImageURL    string  `json:"imageURL,omitempty"`
 		Category    struct {

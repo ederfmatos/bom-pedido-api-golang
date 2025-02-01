@@ -20,7 +20,7 @@ type (
 	}
 )
 
-func New(factory *factory.ApplicationFactory) *MarkOrderAwaitingWithdrawUseCase {
+func NewMarkOrderAwaitingWithdraw(factory *factory.ApplicationFactory) *MarkOrderAwaitingWithdrawUseCase {
 	return &MarkOrderAwaitingWithdrawUseCase{
 		orderRepository: factory.OrderRepository,
 		eventEmitter:    factory.EventEmitter,
