@@ -7,8 +7,9 @@ import (
 	"bom-pedido-api/internal/domain/enums"
 	"bom-pedido-api/internal/domain/value_object"
 	"bom-pedido-api/internal/infra/event"
-	"bom-pedido-api/internal/infra/factory"
 	"bom-pedido-api/internal/infra/gateway/pix"
+	"bom-pedido-api/internal/infra/lock"
+	"bom-pedido-api/internal/infra/repository"
 	"bom-pedido-api/pkg/faker"
 	"bom-pedido-api/pkg/testify/mock"
 	"bom-pedido-api/pkg/testify/require"
@@ -19,18 +20,28 @@ import (
 )
 
 func Test_RefundPixTransaction(t *testing.T) {
-	pixGateway := pix.NewFakePixGateway()
-	eventEmitter := event.NewMockEventHandler()
-	applicationFactory := factory.NewTestApplicationFactory()
-	applicationFactory.PixGateway = pixGateway
-	applicationFactory.EventEmitter = eventEmitter
-	ctx := context.Background()
+	var (
+		ctx = context.Background()
+
+		pixGateway            = pix.NewFakePixGateway()
+		eventEmitter          = event.NewMockEventHandler()
+		merchantRepository    = repository.NewMerchantMemoryRepository()
+		orderRepository       = repository.NewOrderMemoryRepository()
+		transactionRepository = repository.NewTransactionMemoryRepository()
+		locker                = lock.NewMemoryLocker()
+	)
 
 	customer, err := entity.NewCustomer(faker.Name(), faker.Email(), value_object.NewTenantId())
 	require.NoError(t, err)
 
 	customerId := customer.Id
-	useCase := NewRefundPixTransaction(applicationFactory)
+	useCase := NewRefundPixTransaction(
+		orderRepository,
+		transactionRepository,
+		pixGateway,
+		eventEmitter,
+		locker,
+	)
 
 	t.Run("should return nil if order does not exists", func(t *testing.T) {
 		input := RefundPixTransactionInput{OrderId: value_object.NewID()}
@@ -78,7 +89,7 @@ func Test_RefundPixTransaction(t *testing.T) {
 		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.PhoneNumber(), faker.DomainName())
 		require.NoError(t, err)
 
-		err = applicationFactory.MerchantRepository.Create(ctx, merchant)
+		err = merchantRepository.Create(ctx, merchant)
 		require.NoError(t, err)
 
 		order, err := entity.NewOrder(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 10, time.Now(), merchant.TenantId)
@@ -87,7 +98,7 @@ func Test_RefundPixTransaction(t *testing.T) {
 		err = order.AwaitApproval()
 		require.NoError(t, err)
 
-		err = applicationFactory.OrderRepository.Create(ctx, order)
+		err = orderRepository.Create(ctx, order)
 		require.NoError(t, err)
 
 		input := RefundPixTransactionInput{OrderId: order.Id}
@@ -101,7 +112,7 @@ func Test_RefundPixTransaction(t *testing.T) {
 		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.PhoneNumber(), faker.DomainName())
 		require.NoError(t, err)
 
-		err = applicationFactory.MerchantRepository.Create(ctx, merchant)
+		err = merchantRepository.Create(ctx, merchant)
 		require.NoError(t, err)
 
 		order, err := entity.NewOrder(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 10, time.Now(), merchant.Id)
@@ -110,12 +121,12 @@ func Test_RefundPixTransaction(t *testing.T) {
 		err = order.AwaitApproval()
 		require.NoError(t, err)
 
-		err = applicationFactory.OrderRepository.Create(ctx, order)
+		err = orderRepository.Create(ctx, order)
 		require.NoError(t, err)
 
 		pixTransaction := entity.NewPixTransaction(value_object.NewID(), order.Id, "", faker.Word(), "", 10)
 		pixTransaction.Pay()
-		err = applicationFactory.TransactionRepository.CreatePixTransaction(ctx, pixTransaction)
+		err = transactionRepository.CreatePixTransaction(ctx, pixTransaction)
 		require.NoError(t, err)
 
 		pixGateway.On("GetPaymentById", mock.Anything, mock.Anything).Return(nil, nil).Once()
@@ -137,18 +148,18 @@ func Test_RefundPixTransaction(t *testing.T) {
 			merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.PhoneNumber(), faker.DomainName())
 			require.NoError(t, err)
 
-			err = applicationFactory.MerchantRepository.Create(ctx, merchant)
+			err = merchantRepository.Create(ctx, merchant)
 			require.NoError(t, err)
 
 			order, err := entity.RestoreOrder(value_object.NewID(), customerId, enums.Pix, enums.InApp, enums.Delivery, "", status.AwaitingApprovalStatus.Name(), time.Now(), 0, 1, 1, time.Now(), []entity.OrderItem{}, faker.Word())
 			require.NoError(t, err)
 
-			err = applicationFactory.OrderRepository.Create(ctx, order)
+			err = orderRepository.Create(ctx, order)
 			require.NoError(t, err)
 
 			pixTransaction := entity.NewPixTransaction(value_object.NewID(), order.Id, "", faker.Word(), "", 10)
 			pixTransaction.Status = entity.PixTransactionStatus(transactionStatus)
-			err = applicationFactory.TransactionRepository.CreatePixTransaction(ctx, pixTransaction)
+			err = transactionRepository.CreatePixTransaction(ctx, pixTransaction)
 			require.NoError(t, err)
 
 			input := RefundPixTransactionInput{OrderId: order.Id}
@@ -165,7 +176,7 @@ func Test_RefundPixTransaction(t *testing.T) {
 			merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.PhoneNumber(), faker.DomainName())
 			require.NoError(t, err)
 
-			err = applicationFactory.MerchantRepository.Create(ctx, merchant)
+			err = merchantRepository.Create(ctx, merchant)
 			require.NoError(t, err)
 
 			order, err := entity.NewOrder(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 10, time.Now(), merchant.Id)
@@ -174,12 +185,12 @@ func Test_RefundPixTransaction(t *testing.T) {
 			err = order.AwaitApproval()
 			require.NoError(t, err)
 
-			err = applicationFactory.OrderRepository.Create(ctx, order)
+			err = orderRepository.Create(ctx, order)
 			require.NoError(t, err)
 
 			pixTransaction := entity.NewPixTransaction(value_object.NewID(), order.Id, "", faker.Word(), "", 10)
 			pixTransaction.Pay()
-			err = applicationFactory.TransactionRepository.CreatePixTransaction(ctx, pixTransaction)
+			err = transactionRepository.CreatePixTransaction(ctx, pixTransaction)
 			require.NoError(t, err)
 
 			pixGateway.On("GetPaymentById", mock.Anything, mock.Anything).Return(&gateway.GetPaymentOutput{
@@ -209,7 +220,7 @@ func Test_RefundPixTransaction(t *testing.T) {
 		merchant, err := entity.NewMerchant(faker.Name(), faker.Email(), faker.PhoneNumber(), faker.DomainName())
 		require.NoError(t, err)
 
-		err = applicationFactory.MerchantRepository.Create(ctx, merchant)
+		err = merchantRepository.Create(ctx, merchant)
 		require.NoError(t, err)
 
 		order, err := entity.NewOrder(customerId, enums.Pix, enums.InApp, enums.Withdraw, faker.Word(), 0, 10, time.Now(), merchant.Id)
@@ -218,12 +229,12 @@ func Test_RefundPixTransaction(t *testing.T) {
 		err = order.AwaitApproval()
 		require.NoError(t, err)
 
-		err = applicationFactory.OrderRepository.Create(ctx, order)
+		err = orderRepository.Create(ctx, order)
 		require.NoError(t, err)
 
 		pixTransaction := entity.NewPixTransaction(value_object.NewID(), order.Id, "", faker.Word(), "", 10)
 		pixTransaction.Pay()
-		err = applicationFactory.TransactionRepository.CreatePixTransaction(ctx, pixTransaction)
+		err = transactionRepository.CreatePixTransaction(ctx, pixTransaction)
 		require.NoError(t, err)
 
 		gatewayPayment := &gateway.GetPaymentOutput{
@@ -248,7 +259,7 @@ func Test_RefundPixTransaction(t *testing.T) {
 			PaymentGateway: pixTransaction.PaymentGateway,
 		})
 
-		savedTransaction, err := applicationFactory.TransactionRepository.FindByOrderId(ctx, order.Id)
+		savedTransaction, err := transactionRepository.FindByOrderId(ctx, order.Id)
 		require.NoError(t, err)
 		require.True(t, savedTransaction.IsRefunded())
 	})

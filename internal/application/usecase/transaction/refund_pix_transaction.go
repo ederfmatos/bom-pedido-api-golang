@@ -2,7 +2,6 @@ package transaction
 
 import (
 	"bom-pedido-api/internal/application/event"
-	"bom-pedido-api/internal/application/factory"
 	"bom-pedido-api/internal/application/gateway"
 	"bom-pedido-api/internal/application/lock"
 	"bom-pedido-api/internal/application/repository"
@@ -23,13 +22,19 @@ type (
 	}
 )
 
-func NewRefundPixTransaction(factory *factory.ApplicationFactory) *RefundPixTransactionUseCase {
+func NewRefundPixTransaction(
+	orderRepository repository.OrderRepository,
+	transactionRepository repository.TransactionRepository,
+	pixGateway gateway.PixGateway,
+	eventEmitter event.Emitter,
+	locker lock.Locker,
+) *RefundPixTransactionUseCase {
 	return &RefundPixTransactionUseCase{
-		orderRepository:       factory.OrderRepository,
-		transactionRepository: factory.TransactionRepository,
-		pixGateway:            factory.PixGateway,
-		eventEmitter:          factory.EventEmitter,
-		locker:                factory.Locker,
+		orderRepository:       orderRepository,
+		transactionRepository: transactionRepository,
+		pixGateway:            pixGateway,
+		eventEmitter:          eventEmitter,
+		locker:                locker,
 	}
 }
 
