@@ -2,7 +2,6 @@ package transaction
 
 import (
 	"bom-pedido-api/internal/application/event"
-	"bom-pedido-api/internal/application/factory"
 	"bom-pedido-api/internal/application/lock"
 	"bom-pedido-api/internal/application/repository"
 	"context"
@@ -22,12 +21,17 @@ type (
 	}
 )
 
-func NewCancelPixTransaction(factory *factory.ApplicationFactory) *CancelPixTransactionUseCase {
+func NewCancelPixTransaction(
+	orderRepository repository.OrderRepository,
+	transactionRepository repository.TransactionRepository,
+	eventEmitter event.Emitter,
+	locker lock.Locker,
+) *CancelPixTransactionUseCase {
 	return &CancelPixTransactionUseCase{
-		orderRepository:       factory.OrderRepository,
-		transactionRepository: factory.TransactionRepository,
-		eventEmitter:          factory.EventEmitter,
-		locker:                factory.Locker,
+		orderRepository:       orderRepository,
+		transactionRepository: transactionRepository,
+		eventEmitter:          eventEmitter,
+		locker:                locker,
 	}
 }
 
