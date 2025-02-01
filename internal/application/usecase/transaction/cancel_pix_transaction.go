@@ -5,7 +5,6 @@ import (
 	"bom-pedido-api/internal/application/lock"
 	"bom-pedido-api/internal/application/repository"
 	"context"
-	"time"
 )
 
 type (
@@ -36,7 +35,7 @@ func NewCancelPixTransaction(
 }
 
 func (uc *CancelPixTransactionUseCase) Execute(ctx context.Context, input CancelPixTransactionInput) error {
-	lockKey, err := uc.locker.Lock(ctx, time.Second*30, "CANCEL_PIX_TRANSACTION_", input.OrderId)
+	lockKey, err := uc.locker.Lock(ctx, "CANCEL_PIX_TRANSACTION_", input.OrderId)
 	if err != nil {
 		return err
 	}

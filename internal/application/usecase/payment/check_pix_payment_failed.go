@@ -7,7 +7,6 @@ import (
 	"bom-pedido-api/internal/application/lock"
 	"bom-pedido-api/internal/application/repository"
 	"context"
-	"time"
 )
 
 type (
@@ -35,7 +34,7 @@ func NewCheckPixPaymentFailed(factory *factory.ApplicationFactory) *CheckPixPaym
 }
 
 func (uc *CheckPixPaymentFailedUseCase) Execute(ctx context.Context, input CheckPixPaymentFailedInput) error {
-	lockKey, err := uc.locker.Lock(ctx, time.Second*30, "CHECK_PIX_PAYMENT_FAILED_", input.OrderId)
+	lockKey, err := uc.locker.Lock(ctx, "CHECK_PIX_PAYMENT_FAILED_", input.OrderId)
 	if err != nil {
 		return err
 	}

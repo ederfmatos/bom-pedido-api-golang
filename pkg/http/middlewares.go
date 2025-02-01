@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"strings"
-	"time"
 )
 
 const (
@@ -20,7 +19,7 @@ const (
 
 type (
 	locker interface {
-		Lock(ctx context.Context, ttl time.Duration, key ...string) (string, error)
+		Lock(ctx context.Context, key ...string) (string, error)
 		Release(ctx context.Context, key string)
 	}
 
@@ -46,7 +45,7 @@ func (m Middlewares) LockByRequestPath(pathName string) Middleware {
 		return func(request Request, response Response) error {
 			param := request.PathParam(pathName)
 
-			lockKey, err := m.locker.Lock(request.Context(), time.Minute, param)
+			lockKey, err := m.locker.Lock(request.Context(), param)
 			if err != nil {
 				return fmt.Errorf("lock request by path: %v", err)
 			}

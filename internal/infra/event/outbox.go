@@ -75,7 +75,7 @@ func (handler *OutboxEventHandler) processEvent(id string) {
 	ctx, span := telemetry.StartSpan(ctx, "OutboxEventHandler.Process", "eventId", id)
 	defer span.End()
 	defer cancel()
-	_ = handler.locker.LockFunc(ctx, id, time.Minute, func() {
+	_ = handler.locker.LockFunc(ctx, id, func() {
 		entry, err := handler.outboxRepository.Get(ctx, id)
 		if err != nil {
 			return

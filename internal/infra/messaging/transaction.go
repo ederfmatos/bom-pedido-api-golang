@@ -38,7 +38,7 @@ func handleRefundPixTransaction(factory *factory.ApplicationFactory) event.Handl
 }
 
 func handleCancelPixTransaction(factory *factory.ApplicationFactory) event.HandlerFunc {
-	useCase := transaction.NewCancelPixTransaction(factory)
+	useCase := transaction.NewCancelPixTransaction(factory.OrderRepository, factory.TransactionRepository, factory.EventEmitter, factory.Locker)
 	return func(ctx context.Context, message *event.MessageEvent) error {
 		input := transaction.CancelPixTransactionInput{
 			OrderId: message.Event.Data["orderId"],

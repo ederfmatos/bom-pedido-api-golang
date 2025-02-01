@@ -8,7 +8,6 @@ import (
 	"bom-pedido-api/internal/application/repository"
 	"bom-pedido-api/internal/domain/entity"
 	"context"
-	"time"
 )
 
 type (
@@ -38,7 +37,7 @@ func NewCreatePixTransaction(factory *factory.ApplicationFactory) *CreatePixTran
 }
 
 func (uc *CreatePixTransactionUseCase) Execute(ctx context.Context, input CreatePixTransactionInput) error {
-	lockKey, err := uc.locker.Lock(ctx, time.Second*30, "CREATE_PIX_TRANSACTION_", input.OrderId)
+	lockKey, err := uc.locker.Lock(ctx, "CREATE_PIX_TRANSACTION_", input.OrderId)
 	if err != nil {
 		return err
 	}

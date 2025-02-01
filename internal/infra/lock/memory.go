@@ -21,7 +21,7 @@ func NewMemoryLocker() lock.Locker {
 	}
 }
 
-func (l *memoryLocker) Lock(_ context.Context, _ time.Duration, key ...string) (string, error) {
+func (l *memoryLocker) Lock(_ context.Context, key ...string) (string, error) {
 	l.mutex.Lock()
 	defer l.mutex.Unlock()
 
@@ -35,8 +35,8 @@ func (l *memoryLocker) Lock(_ context.Context, _ time.Duration, key ...string) (
 	return lockKey, nil
 }
 
-func (l *memoryLocker) LockFunc(ctx context.Context, key string, ttl time.Duration, lockedFunc func()) error {
-	lockKey, err := l.Lock(ctx, ttl, key)
+func (l *memoryLocker) LockFunc(ctx context.Context, key string, lockedFunc func()) error {
+	lockKey, err := l.Lock(ctx, key)
 	if err != nil {
 		return err
 	}
