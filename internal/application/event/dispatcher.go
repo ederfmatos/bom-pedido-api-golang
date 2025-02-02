@@ -3,8 +3,6 @@ package event
 import (
 	"bom-pedido-api/internal/infra/telemetry"
 	"context"
-	"os"
-	"strconv"
 )
 
 type HandlerFunc func(ctx context.Context, message *MessageEvent) error
@@ -34,39 +32,12 @@ func (m *MessageEvent) Nack(ctx context.Context) {
 	m.NackFn(ctx)
 }
 
-var defaultWorkerPoolSize int
-
-func init() {
-	size := os.Getenv("POOL_WORKER_SIZE")
-	if value, err := strconv.Atoi(size); err != nil {
-		defaultWorkerPoolSize = 20
-	} else {
-		defaultWorkerPoolSize = value
-	}
-}
-
-type ConsumerOptions struct {
-	Id             string
-	Queue          string
-	Topics         []string
-	WorkerPoolSize int
-}
-
-func OptionsForTopics(id string, topics ...string) *ConsumerOptions {
-	return &ConsumerOptions{
-		Id:             id,
-		Queue:          id,
-		Topics:         topics,
-		WorkerPoolSize: defaultWorkerPoolSize,
-	}
-}
-
 type Emitter interface {
 	Emit(ctx context.Context, event *Event) error
 }
 
 type Handler interface {
 	Emitter
-	Consume(options *ConsumerOptions, handler HandlerFunc)
+	OnEvent(eventName string, handler HandlerFunc)
 	Close()
 }

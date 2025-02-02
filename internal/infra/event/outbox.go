@@ -109,8 +109,8 @@ func (handler *OutboxEventHandler) processEntry(ctx context.Context, entry *repo
 	return nil
 }
 
-func (handler *OutboxEventHandler) Consume(options *event.ConsumerOptions, handlerFunc event.HandlerFunc) {
-	handler.handler.Consume(options, handlerFunc)
+func (handler *OutboxEventHandler) OnEvent(event string, handlerFunc event.HandlerFunc) {
+	handler.handler.OnEvent(event, handlerFunc)
 }
 
 func (handler *OutboxEventHandler) Close() {

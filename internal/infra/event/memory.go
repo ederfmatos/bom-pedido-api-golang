@@ -19,5 +19,5 @@ func (handler *MemoryEventHandler) Emit(context.Context, *event.Event) error {
 func (handler *MemoryEventHandler) Close() {
 }
 
-func (handler *MemoryEventHandler) Consume(*event.ConsumerOptions, event.HandlerFunc) {
+func (handler *MemoryEventHandler) OnEvent(string, event.HandlerFunc) {
 }

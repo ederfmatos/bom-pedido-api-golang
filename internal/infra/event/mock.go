@@ -22,5 +22,5 @@ func (handler *MockEventHandler) Emit(ctx context.Context, event *event.Event) e
 func (handler *MockEventHandler) Close() {
 }
 
-func (handler *MockEventHandler) Consume(*event.ConsumerOptions, event.HandlerFunc) {
+func (handler *MockEventHandler) OnEvent(string, event.HandlerFunc) {
 }

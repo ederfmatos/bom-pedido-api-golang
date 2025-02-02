@@ -72,10 +72,10 @@ func (r *RabbitMqEventHandler) Emit(ctx context.Context, event *event.Event) err
 	return nil
 }
 
-func (r *RabbitMqEventHandler) Consume(options *event.ConsumerOptions, handler event.HandlerFunc) {
+func (r *RabbitMqEventHandler) OnEvent(eventName string, handlerFunc event.HandlerFunc) {
 	messages, err := r.consumerChannel.Consume(
-		options.Queue,
-		"BOM_PEDIDO_API_"+options.Queue,
+		eventName,
+		"BOM_PEDIDO_API_"+eventName,
 		false,
 		false,
 		false,
@@ -87,10 +87,10 @@ func (r *RabbitMqEventHandler) Consume(options *event.ConsumerOptions, handler e
 		return
 	}
 
-	for range options.WorkerPoolSize {
+	for range 3 {
 		go func(messages <-chan amqp.Delivery) {
 			for message := range messages {
-				r.handleMessage(message, handler, options.Id)
+				r.handleMessage(message, handlerFunc, eventName)
 			}
 		}(messages)
 	}
