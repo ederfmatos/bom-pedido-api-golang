@@ -4,8 +4,8 @@ import (
 	"bom-pedido-api/internal/domain/value_object"
 )
 
-var (
-	SendEmail = "SEND_EMAIL"
+const (
+	SendEmail Name = "SEND_EMAIL"
 )
 
 func NewSendEmailEvent(to value_object.Email, subject string, data map[string]string) *Event {

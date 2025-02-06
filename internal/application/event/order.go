@@ -6,18 +6,18 @@ import (
 	"time"
 )
 
-var (
-	OrderCreated          = "ORDER_CREATED"
-	OrderAwaitingApproval = "ORDER_AWAITING_APPROVAL"
-	OrderApproved         = "ORDER_APPROVED"
-	OrderFinished         = "ORDER_FINISHED"
-	OrderRejected         = "ORDER_REJECTED"
-	OrderInProgress       = "ORDER_IN_PROGRESS"
-	OrderDelivering       = "ORDER_DELIVERING"
-	OrderAwaitingWithdraw = "ORDER_AWAITING_WITHDRAW"
-	OrderAwaitingDelivery = "ORDER_AWAITING_DELIVERY"
-	OrderCancelled        = "ORDER_CANCELLED"
-	OrderPaymentFailed    = "ORDER_PAYMENT_FAILED"
+const (
+	OrderCreated          Name = "ORDER_CREATED"
+	OrderAwaitingApproval Name = "ORDER_AWAITING_APPROVAL"
+	OrderApproved         Name = "ORDER_APPROVED"
+	OrderFinished         Name = "ORDER_FINISHED"
+	OrderRejected         Name = "ORDER_REJECTED"
+	OrderInProgress       Name = "ORDER_IN_PROGRESS"
+	OrderDelivering       Name = "ORDER_DELIVERING"
+	OrderAwaitingWithdraw Name = "ORDER_AWAITING_WITHDRAW"
+	OrderAwaitingDelivery Name = "ORDER_AWAITING_DELIVERY"
+	OrderCancelled        Name = "ORDER_CANCELLED"
+	OrderPaymentFailed    Name = "ORDER_PAYMENT_FAILED"
 )
 
 func NewOrderCreatedEvent(order *entity.Order) *Event {

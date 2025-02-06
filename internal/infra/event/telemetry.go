@@ -17,7 +17,7 @@ func NewTelemetryEventEmitter(handler event.Handler) *TelemetryEventEmitter {
 func (t TelemetryEventEmitter) Emit(ctx context.Context, event *event.Event) error {
 	return telemetry.StartSpanReturningError(ctx, "EventEmitter.Emit", func(ctx context.Context) error {
 		return t.handler.Emit(ctx, event)
-	}, "event.name", event.Name)
+	}, "event.name", string(event.Name))
 }
 
 func (t TelemetryEventEmitter) OnEvent(eventName string, handler event.HandlerFunc) {

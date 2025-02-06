@@ -42,7 +42,7 @@ func (handler *OutboxEventHandler) Emit(ctx context.Context, event *event.Event)
 	}
 	entry := &repository.Entry{
 		Id:        event.Id,
-		Name:      event.Name,
+		Name:      string(event.Name),
 		Data:      string(eventData),
 		CreatedAt: time.Now(),
 		Status:    "NEW",

@@ -4,11 +4,11 @@ import (
 	"bom-pedido-api/internal/domain/value_object"
 )
 
-var (
-	PixTransactionCreated   = "PIX_TRANSACTION_CREATED"
-	PixTransactionPaid      = "PIX_TRANSACTION_PAID"
-	PixTransactionRefunded  = "PIX_TRANSACTION_REFUNDED"
-	PixTransactionCancelled = "PIX_TRANSACTION_CANCELLED"
+const (
+	PixTransactionCreated   Name = "PIX_TRANSACTION_CREATED"
+	PixTransactionPaid      Name = "PIX_TRANSACTION_PAID"
+	PixTransactionRefunded  Name = "PIX_TRANSACTION_REFUNDED"
+	PixTransactionCancelled Name = "PIX_TRANSACTION_CANCELLED"
 )
 
 func NewPixTransactionCreated(orderId, transactionId string) *Event {

@@ -4,12 +4,11 @@ import (
 	"bom-pedido-api/internal/domain/value_object"
 )
 
-var (
-	CheckPixPaymentFailed   = "CHECK_PIX_PAYMENT_FAILED"
-	PixPaymentCreated       = "PIX_PAYMENT_CREATED"
-	PixPaymentRefunded      = "PIX_PAYMENT_REFUNDED"
-	PixPaymentCancelled     = "PIX_PAYMENT_CANCELLED"
-	PaymentCallbackReceived = "PAYMENT_CALLBACK_RECEIVED"
+const (
+	PixPaymentCreated       Name = "PIX_PAYMENT_CREATED"
+	PixPaymentRefunded      Name = "PIX_PAYMENT_REFUNDED"
+	PixPaymentCancelled     Name = "PIX_PAYMENT_CANCELLED"
+	PaymentCallbackReceived Name = "PAYMENT_CALLBACK_RECEIVED"
 )
 
 func NewPixPaymentCancelled(orderId, paymentId, paymentGateway string) *Event {

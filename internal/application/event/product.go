@@ -5,8 +5,8 @@ import (
 	"bom-pedido-api/internal/domain/value_object"
 )
 
-var (
-	ProductCreated = "PRODUCT_CREATED"
+const (
+	ProductCreated Name = "PRODUCT_CREATED"
 )
 
 func NewProductCreatedEvent(product *entity.Product) *Event {

@@ -57,10 +57,10 @@ func (r *RabbitMqEventHandler) Emit(ctx context.Context, event *event.Event) err
 	err = r.producerChannel.PublishWithContext(
 		ctx,
 		exchange,
-		event.Name,
+		string(event.Name),
 		false,
 		false,
-		amqp.Publishing{ContentType: "text/plain", Body: eventBytes},
+		amqp.Publishing{ContentType: "text/json", Body: eventBytes},
 	)
 	if err != nil {
 		log.Error("Error on publish event", err, "event", event, "exchange", exchange)
@@ -79,8 +79,8 @@ func (r *RabbitMqEventHandler) OnEvent(eventName string, handlerFunc event.Handl
 		r.consumerChannel = consumerChannel
 	}
 	messages, err := r.consumerChannel.Consume(
-		eventName,
-		"BOM_PEDIDO_API_"+eventName,
+		string(eventName),
+		string("BOM_PEDIDO_API_"+eventName),
 		false,
 		false,
 		false,
@@ -95,13 +95,13 @@ func (r *RabbitMqEventHandler) OnEvent(eventName string, handlerFunc event.Handl
 	for range 3 {
 		go func(messages <-chan amqp.Delivery) {
 			for message := range messages {
-				r.handleMessage(message, handlerFunc, eventName)
+				r.handleMessage(message, handlerFunc)
 			}
 		}(messages)
 	}
 }
 
-func (r *RabbitMqEventHandler) handleMessage(message amqp.Delivery, handler event.HandlerFunc, name string) {
+func (r *RabbitMqEventHandler) handleMessage(message amqp.Delivery, handler event.HandlerFunc) {
 	ctx := context.Background()
 	log.Info("Mensagem recebida", "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
 	var applicationEvent event.Event
