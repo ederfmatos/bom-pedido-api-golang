@@ -7,7 +7,7 @@ import (
 )
 
 type CustomerMongoRepository struct {
-	collection *mongo.Collection
+	collection mongo.Collection
 }
 
 func NewCustomerMongoRepository(mongoDatabase *mongo.Database) *CustomerMongoRepository {

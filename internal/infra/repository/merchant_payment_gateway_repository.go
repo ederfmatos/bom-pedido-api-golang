@@ -7,7 +7,7 @@ import (
 )
 
 type MerchantPaymentGatewayConfigMongoRepository struct {
-	collection *mongo.Collection
+	collection mongo.Collection
 }
 
 func NewMerchantPaymentGatewayConfigMongoRepository(database *mongo.Database) *MerchantPaymentGatewayConfigMongoRepository {

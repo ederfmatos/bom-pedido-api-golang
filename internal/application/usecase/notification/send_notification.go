@@ -5,7 +5,6 @@ import (
 	"bom-pedido-api/internal/application/gateway"
 	"bom-pedido-api/internal/application/lock"
 	"bom-pedido-api/internal/application/repository"
-	"bom-pedido-api/internal/infra/telemetry"
 	"context"
 )
 
@@ -26,8 +25,8 @@ func NewSendNotification(factory *factory.ApplicationFactory) *SendNotificationU
 }
 
 func (u *SendNotificationUseCase) Execute(ctx context.Context) {
+	// TODO: Add telemetry
 	for notification := range u.notificationRepository.Stream(ctx) {
-		ctx, span := telemetry.StartSpan(ctx, "SendNotification", "id", notification.Id)
 		_ = u.locker.LockFunc(ctx, notification.Id, func() {
 			err := u.notificationGateway.Send(ctx, notification)
 			if err == nil {
@@ -37,6 +36,5 @@ func (u *SendNotificationUseCase) Execute(ctx context.Context) {
 				u.notificationRepository.Update(ctx, notification)
 			}
 		})
-		span.End()
 	}
 }

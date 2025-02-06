@@ -2,11 +2,10 @@ package event
 
 import (
 	"bom-pedido-api/internal/application/event"
-	"bom-pedido-api/internal/infra/json"
 	"bom-pedido-api/internal/infra/retry"
-	"bom-pedido-api/internal/infra/telemetry"
 	"bom-pedido-api/pkg/log"
 	"context"
+	"encoding/json"
 	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"time"
@@ -50,9 +49,7 @@ func (r *RabbitMqEventHandler) Close() {
 }
 
 func (r *RabbitMqEventHandler) Emit(ctx context.Context, event *event.Event) error {
-	ctx, span := telemetry.StartSpan(ctx, "RabbitMq.Emit")
-	defer span.End()
-	eventBytes, err := json.Marshal(ctx, event)
+	eventBytes, err := json.Marshal(event)
 	if err != nil {
 		log.Error("Error on emit event", err, "event", event)
 		return err
@@ -73,6 +70,14 @@ func (r *RabbitMqEventHandler) Emit(ctx context.Context, event *event.Event) err
 }
 
 func (r *RabbitMqEventHandler) OnEvent(eventName string, handlerFunc event.HandlerFunc) {
+	if r.consumerChannel.IsClosed() {
+		consumerChannel, err := r.connection.Channel()
+		if err != nil {
+			log.Error("Error on consume messages", err)
+			return
+		}
+		r.consumerChannel = consumerChannel
+	}
 	messages, err := r.consumerChannel.Consume(
 		eventName,
 		"BOM_PEDIDO_API_"+eventName,
@@ -97,11 +102,10 @@ func (r *RabbitMqEventHandler) OnEvent(eventName string, handlerFunc event.Handl
 }
 
 func (r *RabbitMqEventHandler) handleMessage(message amqp.Delivery, handler event.HandlerFunc, name string) {
-	ctx, span := telemetry.StartSpan(context.Background(), "RabbitMq.Process::"+name)
-	defer span.End()
+	ctx := context.Background()
 	log.Info("Mensagem recebida", "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
 	var applicationEvent event.Event
-	err := json.Unmarshal(ctx, message.Body, &applicationEvent)
+	err := json.Unmarshal(message.Body, &applicationEvent)
 	messageEvent := &event.MessageEvent{
 		Event: &applicationEvent,
 		AckFn: func(ctx context.Context) error {
@@ -116,7 +120,6 @@ func (r *RabbitMqEventHandler) handleMessage(message amqp.Delivery, handler even
 			log.Info("Mensagem consumida com sucesso", "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
 			return
 		}
-		span.RecordError(err)
 		messageEvent.Nack(ctx)
 		log.Error("Ocorreu um erro no consumo da mensagem", err, "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
 	}()

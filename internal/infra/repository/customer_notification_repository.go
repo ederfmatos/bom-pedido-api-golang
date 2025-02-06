@@ -7,7 +7,7 @@ import (
 )
 
 type CustomerNotificationMongoRepository struct {
-	collection *mongo.Collection
+	collection mongo.Collection
 }
 
 func NewCustomerNotificationMongoRepository(database *mongo.Database) *CustomerNotificationMongoRepository {

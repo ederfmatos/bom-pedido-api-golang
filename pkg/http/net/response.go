@@ -1,9 +1,8 @@
 package net
 
 import (
-	"bom-pedido-api/internal/infra/json"
 	"bom-pedido-api/pkg/http"
-	"context"
+	"encoding/json"
 	"fmt"
 )
 
@@ -37,7 +36,7 @@ func (r *Response) Headers() map[string]string {
 }
 
 func (r *Response) SetBody(body interface{}) error {
-	responseBytes, err := json.Marshal(context.Background(), body)
+	responseBytes, err := json.Marshal(body)
 	if err != nil {
 		return fmt.Errorf("marshal response: %w", err)
 	}

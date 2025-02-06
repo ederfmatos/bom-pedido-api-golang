@@ -9,17 +9,17 @@ import (
 )
 
 type ProductQuery struct {
-	*mongo.Collection
+	collection mongo.Collection
 }
 
 func NewProductQuery(mongoDatabase *mongo.Database) query.ProductQuery {
-	return &ProductQuery{Collection: mongoDatabase.ForCollection("products")}
+	return &ProductQuery{collection: mongoDatabase.ForCollection("products")}
 }
 
 func (q *ProductQuery) List(ctx context.Context, filter projection.ProductListFilter) (*projection.Page[projection.ProductListItem], error) {
 	mongoFilter := map[string]interface{}{"tenantId": filter.TenantId}
 
-	totalItems, err := q.Collection.CountDocuments(ctx, mongoFilter)
+	totalItems, err := q.collection.CountDocuments(ctx, mongoFilter)
 	if err != nil {
 		return nil, fmt.Errorf("count products: %v", err)
 	}
@@ -27,7 +27,7 @@ func (q *ProductQuery) List(ctx context.Context, filter projection.ProductListFi
 	skip := (filter.CurrentPage - 1) * filter.PageSize
 	limit := filter.PageSize
 
-	cursor, err := q.Collection.Find(ctx, mongoFilter, skip, limit)
+	cursor, err := q.collection.Find(ctx, mongoFilter, skip, limit)
 	if err != nil {
 		return nil, fmt.Errorf("find products: %v", err)
 	}

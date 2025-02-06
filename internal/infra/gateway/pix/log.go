@@ -2,59 +2,36 @@ package pix
 
 import (
 	"bom-pedido-api/internal/application/gateway"
-	"bom-pedido-api/internal/infra/telemetry"
-	"bom-pedido-api/pkg/log"
+	"bom-pedido-api/pkg/telemetry"
 	"context"
 )
 
-type LogPixGatewayDecorator struct {
+type TelemetryPixGatewayDecorator struct {
 	delegate gateway.PixGateway
 }
 
-func NewLogPixGatewayDecorator(delegate gateway.PixGateway) gateway.PixGateway {
-	return &LogPixGatewayDecorator{delegate: delegate}
+func NewTelemetryPixGatewayDecorator(delegate gateway.PixGateway) gateway.PixGateway {
+	return &TelemetryPixGatewayDecorator{delegate: delegate}
 }
 
-func (g *LogPixGatewayDecorator) Name() string {
+func (g *TelemetryPixGatewayDecorator) Name() string {
 	return g.delegate.Name()
 }
 
-func (g *LogPixGatewayDecorator) CreateQrCodePix(ctx context.Context, input gateway.CreateQrCodePixInput) (*gateway.CreateQrCodePixOutput, error) {
-	log.Info("Iniciando criação de pagamento PIX", "paymentGateway", g.delegate.Name())
-	ctx, span := telemetry.StartSpan(ctx, "PixGateway.CreateQrCodePix")
-	defer span.End()
-	output, err := g.delegate.CreateQrCodePix(ctx, input)
-	if err != nil {
-		log.Error("Ocorreu um erro na criação de pagamento Pix", err, "paymentGateway", g.delegate.Name())
-		span.RecordError(err)
-		return nil, err
-	}
-	log.Info("Sucesso na criação de pagamento PIX", "paymentGateway", g.delegate.Name())
-	return output, nil
+func (g *TelemetryPixGatewayDecorator) CreateQrCodePix(ctx context.Context, input gateway.CreateQrCodePixInput) (*gateway.CreateQrCodePixOutput, error) {
+	return telemetry.StartSpan[*gateway.CreateQrCodePixOutput](ctx, "PixGateway.CreateQrCodePix", func(ctx context.Context) (*gateway.CreateQrCodePixOutput, error) {
+		return g.delegate.CreateQrCodePix(ctx, input)
+	})
 }
 
-func (g *LogPixGatewayDecorator) GetPaymentById(ctx context.Context, input gateway.GetPaymentInput) (*gateway.GetPaymentOutput, error) {
-	log.Info("Iniciando busca de pagamento PIX", "paymentGateway", g.delegate.Name())
-	ctx, span := telemetry.StartSpan(ctx, "PixGateway.GetPaymentById")
-	defer span.End()
-	output, err := g.delegate.GetPaymentById(ctx, input)
-	if err != nil {
-		log.Error("Ocorreu um erro na busca de pagamento Pix", err, "paymentGateway", g.delegate.Name())
-		return nil, err
-	}
-	log.Info("Sucesso na busca de pagamento PIX", "paymentGateway", g.delegate.Name())
-	return output, nil
+func (g *TelemetryPixGatewayDecorator) GetPaymentById(ctx context.Context, input gateway.GetPaymentInput) (*gateway.GetPaymentOutput, error) {
+	return telemetry.StartSpan[*gateway.GetPaymentOutput](ctx, "PixGateway.GetPaymentById", func(ctx context.Context) (*gateway.GetPaymentOutput, error) {
+		return g.delegate.GetPaymentById(ctx, input)
+	})
 }
 
-func (g *LogPixGatewayDecorator) RefundPix(ctx context.Context, input gateway.RefundPixInput) error {
-	log.Info("Iniciando estorno de pagamento PIX", "paymentGateway", g.delegate.Name())
-	ctx, span := telemetry.StartSpan(ctx, "PixGateway.RefundPix")
-	defer span.End()
-	err := g.delegate.RefundPix(ctx, input)
-	if err != nil {
-		log.Error("Ocorreu um erro na estorno de pagamento Pix", err, "paymentGateway", g.delegate.Name())
-		return err
-	}
-	log.Info("Sucesso na estorno de pagamento PIX", "paymentGateway", g.delegate.Name())
-	return nil
+func (g *TelemetryPixGatewayDecorator) RefundPix(ctx context.Context, input gateway.RefundPixInput) error {
+	return telemetry.StartSpanReturningError(ctx, "PixGateway.RefundPix", func(ctx context.Context) error {
+		return g.delegate.RefundPix(ctx, input)
+	})
 }

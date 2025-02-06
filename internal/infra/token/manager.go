@@ -2,9 +2,9 @@ package token
 
 import (
 	"bom-pedido-api/internal/application/token"
-	"bom-pedido-api/internal/infra/json"
 	"context"
 	"crypto/rsa"
+	"encoding/json"
 	"github.com/golang-jwt/jwe"
 	"github.com/golang-jwt/jwt/v4"
 	"time"
@@ -28,7 +28,7 @@ func (m *Manager) Encrypt(ctx context.Context, data token.Data) (string, error) 
 		Subject:   data.TenantId,
 		Audience:  []string{data.Type},
 	}
-	tokenContent, err := json.Marshal(ctx, claims)
+	tokenContent, err := json.Marshal(claims)
 	if err != nil {
 		return "", err
 	}
@@ -49,14 +49,14 @@ func (m *Manager) Decrypt(ctx context.Context, rawToken string) (*token.Data, er
 		return nil, err
 	}
 	var claims jwt.RegisteredClaims
-	err = json.Unmarshal(ctx, content, &claims)
+	err = json.Unmarshal(content, &claims)
 	if err != nil {
 		return nil, err
 	}
-	err = claims.Valid()
-	if err != nil {
-		return nil, err
-	}
+	//err = claims.Valid()
+	//if err != nil {
+	//	return nil, err
+	//}
 	return &token.Data{
 		Type:     claims.Audience[0],
 		Id:       claims.ID,

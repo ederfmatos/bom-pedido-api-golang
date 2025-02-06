@@ -1,7 +1,6 @@
 package event
 
 import (
-	"bom-pedido-api/internal/infra/telemetry"
 	"context"
 )
 
@@ -14,8 +13,6 @@ type MessageEvent struct {
 }
 
 func (m *MessageEvent) Ack(ctx context.Context) error {
-	_, span := telemetry.StartSpan(ctx, "MessageEvent.Ack")
-	defer span.End()
 	return m.AckFn(ctx)
 }
 
@@ -27,8 +24,6 @@ func (m *MessageEvent) AckIfNoError(ctx context.Context, err error) error {
 }
 
 func (m *MessageEvent) Nack(ctx context.Context) {
-	_, span := telemetry.StartSpan(ctx, "MessageEvent.Nack")
-	defer span.End()
 	m.NackFn(ctx)
 }
 

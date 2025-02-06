@@ -3,6 +3,7 @@ package net
 import (
 	"bom-pedido-api/pkg/http"
 	"bom-pedido-api/pkg/log"
+	"bom-pedido-api/pkg/telemetry"
 	"context"
 	"fmt"
 	log2 "log"
@@ -13,8 +14,9 @@ import (
 )
 
 type HTTPServer struct {
-	server      *net.Server
-	middlewares []http.Middleware
+	server         *net.Server
+	middlewares    []http.Middleware
+	tracerProvider telemetry.TracerProvider
 }
 
 func NewHTTPServer(address string) http.Server {
@@ -26,6 +28,10 @@ func NewHTTPServer(address string) http.Server {
 
 func (s *HTTPServer) AddMiddleware(middleware http.Middleware) {
 	s.middlewares = append(s.middlewares, middleware)
+}
+
+func (s *HTTPServer) UseTracerProvider(provider telemetry.TracerProvider) {
+	s.tracerProvider = provider
 }
 
 func (s *HTTPServer) Get(path string, handler http.Handler, middlewares ...http.Middleware) {
@@ -93,6 +99,7 @@ func (s *HTTPServer) writeResponse(writer net.ResponseWriter, httpResponse http.
 }
 
 func (s *HTTPServer) Run() {
+	log.Info("Server started", "address", s.server.Addr)
 	err := s.server.ListenAndServe()
 	if err != nil {
 		log2.Fatal(err)
@@ -107,6 +114,12 @@ func (s *HTTPServer) AwaitInterruptSignal() {
 
 func (s *HTTPServer) Shutdown() {
 	log.Info("Shutting down server...")
+	if s.tracerProvider != nil {
+		if err := s.tracerProvider.Close(); err != nil {
+			log.Error("Error on shutdown tracer provider", err)
+		}
+	}
+
 	if err := s.server.Shutdown(context.Background()); err != nil {
 		log.Error("Error on shutdown server", err)
 	}

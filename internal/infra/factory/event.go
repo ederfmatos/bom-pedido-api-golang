@@ -17,10 +17,10 @@ func eventFactory(environment *config.Environment, locker lock.Locker, mongoData
 	}
 
 	outboxRepository := repository.NewMongoOutboxRepository(mongoDatabase)
-	handler, err := event.NewOutboxEventHandler(eventHandler, outboxRepository, locker)
+	handler, err := event.NewOutboxEventHandler(event.NewTelemetryEventEmitter(eventHandler), outboxRepository, locker)
 	if err != nil {
 		return nil, fmt.Errorf("create outbox event handler: %v", err)
 	}
 
-	return factory.NewEventFactory(handler), nil
+	return factory.NewEventFactory(event.NewTelemetryEventEmitter(handler)), nil
 }

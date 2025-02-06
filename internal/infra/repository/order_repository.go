@@ -8,7 +8,7 @@ import (
 )
 
 type OrderMongoRepository struct {
-	collection *mongo.Collection
+	collection mongo.Collection
 }
 
 func NewOrderMongoRepository(database *mongo.Database) repository.OrderRepository {

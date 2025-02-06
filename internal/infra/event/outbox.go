@@ -3,11 +3,10 @@ package event
 import (
 	"bom-pedido-api/internal/application/event"
 	"bom-pedido-api/internal/application/lock"
-	"bom-pedido-api/internal/infra/json"
 	"bom-pedido-api/internal/infra/repository"
 	"bom-pedido-api/internal/infra/retry"
-	"bom-pedido-api/internal/infra/telemetry"
 	"context"
+	"encoding/json"
 	"time"
 )
 
@@ -37,13 +36,7 @@ func NewOutboxEventHandler(handler event.Handler, outboxRepository outboxReposit
 }
 
 func (handler *OutboxEventHandler) Emit(ctx context.Context, event *event.Event) error {
-	ctx, span := telemetry.StartSpan(ctx, "OutboxEventEmitter.Emit",
-		"event", event.Name,
-		"eventId", event.Id,
-		"eventCorrelationId", event.CorrelationId,
-	)
-	defer span.End()
-	eventData, err := json.Marshal(ctx, event)
+	eventData, err := json.Marshal(event)
 	if err != nil {
 		return err
 	}
@@ -71,19 +64,16 @@ func (handler *OutboxEventHandler) handleStream() error {
 }
 
 func (handler *OutboxEventHandler) processEvent(id string) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	ctx, span := telemetry.StartSpan(ctx, "OutboxEventHandler.Process", "eventId", id)
-	defer span.End()
-	defer cancel()
+	// TODO: Add telemetry
+	ctx := context.Background()
 	_ = handler.locker.LockFunc(ctx, id, func() {
 		entry, err := handler.outboxRepository.Get(ctx, id)
-		if err != nil {
+		if err != nil || entry == nil {
 			return
 		}
-		err = retry.Func(ctx, 5, time.Second, time.Second*30, func(ctx context.Context) error {
+		_ = retry.Func(ctx, 5, time.Second, time.Second*30, func(ctx context.Context) error {
 			return handler.processEntry(ctx, entry)
 		})
-		span.RecordError(err)
 	})
 }
 
@@ -92,7 +82,7 @@ func (handler *OutboxEventHandler) processEntry(ctx context.Context, entry *repo
 		return nil
 	}
 	var messageEvent event.Event
-	err := json.Unmarshal(ctx, []byte(entry.Data), &messageEvent)
+	err := json.Unmarshal([]byte(entry.Data), &messageEvent)
 	if err != nil {
 		entry.MarkAsError()
 		_ = handler.outboxRepository.Update(ctx, entry)

@@ -3,6 +3,7 @@ package http
 import (
 	"bom-pedido-api/internal/application/token"
 	"bom-pedido-api/pkg/log"
+	"bom-pedido-api/pkg/telemetry"
 	"context"
 	"fmt"
 	"github.com/google/uuid"
@@ -90,6 +91,14 @@ func (m Middlewares) OnlyAdminMiddleware(handler Handler) Handler {
 			return response.SetBody(NewErrorResponse(MessageYouNeedToBeAuthenticated))
 		}
 		return handler(request, response)
+	}
+}
+
+func (m Middlewares) TelemetryMiddleware(handler Handler) Handler {
+	return func(request Request, response Response) error {
+		return telemetry.StartSpanReturningError(request.Context(), request.String(), func(ctx context.Context) error {
+			return handler(request.WithContext(ctx), response)
+		}, "http.method", request.Method(), "http.url", request.URL(), "tenant.id", request.TenantID())
 	}
 }
 

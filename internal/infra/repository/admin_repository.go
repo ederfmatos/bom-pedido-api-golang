@@ -7,7 +7,7 @@ import (
 )
 
 type AdminMongoRepository struct {
-	collection *mongo.Collection
+	collection mongo.Collection
 }
 
 func NewAdminMongoRepository(database *mongo.Database) *AdminMongoRepository {

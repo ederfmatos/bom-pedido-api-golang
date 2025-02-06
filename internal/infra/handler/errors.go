@@ -45,7 +45,7 @@ func ErrorHandlerMiddleware() http.Middleware {
 			Response: http.NewErrorResponse("Já existe um produto com esse nome"),
 		},
 		domainErrors.ProductCategoryNotFoundError: {
-			Status:   http.StatusNoContent,
+			Status:   http.StatusNotFound,
 			Response: http.NewErrorResponse("Categoria de produto não encontrada"),
 		},
 		domainErrors.ProductInvalidProductStatusError: {

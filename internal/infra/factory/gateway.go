@@ -25,7 +25,7 @@ func gatewayFactory(environment *config.Environment, mongoDatabase *mongo.Databa
 		pix.Woovi:       pix.NewWooviPixGateway(http_client.NewDefaultHttpClient(pixEnvironment.WooviApiBaseUrl), expirationTimeInMinutes),
 	}
 	for key, pixGateway := range pixGateways {
-		pixGateways[key] = pix.NewLogPixGatewayDecorator(pixGateway)
+		pixGateways[key] = pix.NewTelemetryPixGatewayDecorator(pixGateway)
 	}
 	ctx := context.Background()
 	app, err := firebase.NewApp(ctx, nil)
@@ -39,7 +39,7 @@ func gatewayFactory(environment *config.Environment, mongoDatabase *mongo.Databa
 	return factory.NewGatewayFactory(
 		google.NewDefaultGoogleGateway(http_client.NewDefaultHttpClient(environment.GoogleAuthUrl)),
 		pix.NewMerchantPixGatewayMediator(paymentGatewayConfigRepository, pixGateways),
-		notification.NewFirebaseNotificationGateway(fcmClient),
+		notification.NewTelemetryNotificationGateway(notification.NewFirebaseNotificationGateway(fcmClient)),
 		email.NewResendEmailGateway(email.NewTemplateLoader(), environment.EmailFrom, environment.ResendMailKey),
 	), nil
 }

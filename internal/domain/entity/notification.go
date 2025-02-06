@@ -6,7 +6,7 @@ import (
 )
 
 type Notification struct {
-	Id            string            `bson:"_id"`
+	Id            string            `bson:"id"`
 	Title         string            `bson:"title"`
 	Body          string            `bson:"body"`
 	Recipient     string            `bson:"recipient"`

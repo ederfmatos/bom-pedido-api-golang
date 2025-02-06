@@ -6,6 +6,7 @@ import (
 	"bom-pedido-api/internal/application/repository"
 	"bom-pedido-api/internal/domain/errors"
 	"context"
+	"fmt"
 	"time"
 )
 
@@ -50,8 +51,11 @@ func (useCase *CheckoutShoppingCartUseCase) Execute(ctx context.Context, input C
 		return nil, errors.ShoppingCartEmptyError
 	}
 	merchant, err := useCase.merchantRepository.FindByTenantId(ctx, shoppingCart.TenantId)
-	if err != nil || merchant == nil {
+	if err != nil {
 		return nil, err
+	}
+	if merchant == nil {
+		return nil, fmt.Errorf("merchant '%s' does not exists", shoppingCart.TenantId)
 	}
 	var productIds []string
 	for _, item := range shoppingCart.Items {

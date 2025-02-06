@@ -1,9 +1,9 @@
 package http_client
 
 import (
-	"bom-pedido-api/internal/infra/json"
 	"bytes"
 	"context"
+	"encoding/json"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"io"
 	"net/http"
@@ -66,7 +66,7 @@ func (builder *defaultHttpClientBuilder) Header(key string, value string) HTTPCl
 func (builder *defaultHttpClientBuilder) Execute(ctx context.Context) (HTTPResponse, error) {
 	var body io.Reader
 	if builder.body != nil {
-		paymentBytes, err := json.Marshal(ctx, builder.body)
+		paymentBytes, err := json.Marshal(builder.body)
 		if err != nil {
 			return nil, err
 		}
@@ -97,11 +97,11 @@ func (r *defaultHttpResponse) Close() {
 }
 
 func (r *defaultHttpResponse) ParseBody(value interface{}) error {
-	return json.Decode(r.ctx, r.Body, value)
+	return json.NewDecoder(r.Body).Decode(value)
 }
 
 func (r *defaultHttpResponse) ParseError(value error) error {
-	if err := json.Decode(r.ctx, r.Body, value); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(value); err != nil {
 		return err
 	}
 	return value
@@ -109,7 +109,7 @@ func (r *defaultHttpResponse) ParseError(value error) error {
 
 func (r *defaultHttpResponse) GetErrorMessage() string {
 	var mapResponse map[string]interface{}
-	_ = json.Decode(r.ctx, r.Body, &mapResponse)
+	_ = json.NewDecoder(r.Body).Decode(&mapResponse)
 	var errorMessage interface{}
 	if value := mapResponse["error"]; value != nil {
 		errorMessage = value

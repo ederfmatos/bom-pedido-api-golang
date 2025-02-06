@@ -1,6 +1,7 @@
 package http
 
 import (
+	"bom-pedido-api/pkg/telemetry"
 	"context"
 )
 
@@ -20,6 +21,8 @@ type (
 		String() string
 		GetHeader(name Header) string
 		SetHeader(name Header, value string)
+		Method() string
+		URL() string
 	}
 
 	Response interface {
@@ -44,6 +47,7 @@ type (
 		Put(path string, handler Handler, middlewares ...Middleware)
 		Delete(path string, handler Handler, middlewares ...Middleware)
 		AddMiddleware(middleware Middleware)
+		UseTracerProvider(provider telemetry.TracerProvider)
 		AwaitInterruptSignal()
 		Shutdown()
 		Run()

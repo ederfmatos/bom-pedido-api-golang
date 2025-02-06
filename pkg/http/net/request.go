@@ -1,9 +1,9 @@
 package net
 
 import (
-	"bom-pedido-api/internal/infra/json"
 	"bom-pedido-api/pkg/http"
 	"context"
+	"encoding/json"
 	"fmt"
 	net "net/http"
 	"strconv"
@@ -17,6 +17,14 @@ const (
 
 type Request struct {
 	request *net.Request
+}
+
+func (r Request) Method() string {
+	return r.request.Method
+}
+
+func (r Request) URL() string {
+	return r.request.URL.Path
 }
 
 func NewRequest(request *net.Request) http.Request {
@@ -58,10 +66,9 @@ func (r Request) AuthenticatedUser() string {
 }
 
 func (r Request) Bind(target interface{}) error {
-	if err := json.Decode(r.Context(), r.request.Body, target); err != nil {
+	if err := json.NewDecoder(r.request.Body).Decode(target); err != nil {
 		return fmt.Errorf("decode body: %w", err)
 	}
-
 	return nil
 }
 

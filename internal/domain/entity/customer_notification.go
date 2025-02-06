@@ -1,7 +1,7 @@
 package entity
 
 type CustomerNotification struct {
-	CustomerId string `bson:"_id"`
+	CustomerId string `bson:"id"`
 	Recipient  string `bson:"recipient"` // TODO: Mover para dentro do customer
 }
 

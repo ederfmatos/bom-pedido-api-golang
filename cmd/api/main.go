@@ -6,6 +6,7 @@ import (
 	"bom-pedido-api/internal/infra/messaging"
 	"bom-pedido-api/pkg/http"
 	"bom-pedido-api/pkg/http/net"
+	"bom-pedido-api/pkg/telemetry"
 	"fmt"
 	"log"
 )
@@ -44,7 +45,13 @@ func makeServer() (http.Server, error) {
 
 	go messaging.HandleEvents(applicationFactory)
 
+	tracerProvider, err := telemetry.NewTracerProvider()
+	if err != nil {
+		return nil, fmt.Errorf("create tracer provider: %v", err)
+	}
+
 	server := net.NewHTTPServer(environment.Port)
+	server.UseTracerProvider(tracerProvider)
 
 	ConfigureRoutes(environment, applicationFactory, mongoDatabase, server)
 	return server, nil

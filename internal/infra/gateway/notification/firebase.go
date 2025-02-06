@@ -3,7 +3,6 @@ package notification
 import (
 	"bom-pedido-api/internal/application/gateway"
 	"bom-pedido-api/internal/domain/entity"
-	"bom-pedido-api/internal/infra/telemetry"
 	"context"
 	"firebase.google.com/go/v4/messaging"
 )
@@ -17,8 +16,6 @@ func NewFirebaseNotificationGateway(fcmClient *messaging.Client) gateway.Notific
 }
 
 func (f *FirebaseNotificationGateway) Send(ctx context.Context, notification *entity.Notification) error {
-	ctx, span := telemetry.StartSpan(ctx, "FirebaseNotificationGateway.Send")
-	defer span.End()
 	_, err := f.fcmClient.Send(ctx, &messaging.Message{
 		Notification: &messaging.Notification{
 			Title: notification.Title,

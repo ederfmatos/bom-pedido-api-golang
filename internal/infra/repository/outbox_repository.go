@@ -8,7 +8,7 @@ import (
 
 type (
 	Entry struct {
-		Id              string     `json:"id,omitempty" bson:"_id"`
+		Id              string     `json:"id,omitempty" bson:"id"`
 		Name            string     `json:"name,omitempty" bson:"name"`
 		Data            string     `json:"data,omitempty" bson:"data"`
 		CreatedAt       time.Time  `json:"createdAt,omitempty" bson:"createdAt"`
@@ -18,7 +18,7 @@ type (
 	}
 
 	MongoOutboxRepository struct {
-		collection *mongo.Collection
+		collection mongo.Collection
 	}
 )
 

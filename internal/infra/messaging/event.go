@@ -72,7 +72,6 @@ func HandleEvents(factory *factory.ApplicationFactory) {
 	eventHandler.OnEvent("CHECK_PIX_PAYMENT_FAILED", paymentHandler.CheckPixPaymentFailed)
 
 	// Shopping Cart
-	eventHandler.OnEvent("ORDER_CREATED", shoppingCartHandler.DeleteShoppingCart)
 	eventHandler.OnEvent("DELETE_SHOPPING_CART", shoppingCartHandler.DeleteShoppingCart)
 
 	// Transaction

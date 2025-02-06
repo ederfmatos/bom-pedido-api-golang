@@ -9,7 +9,7 @@ import (
 )
 
 type OrderStatusHistoryMongoRepository struct {
-	collection *mongo.Collection
+	collection mongo.Collection
 }
 
 func NewOrderStatusHistoryMongoRepository(database *mongo.Database) repository.OrderStatusHistoryRepository {
