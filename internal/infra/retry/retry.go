@@ -22,7 +22,7 @@ func Func(ctx context.Context, maxRetries int, initialBackoff, maxBackoff time.D
 				return nil
 			}
 			backoff := time.Duration(math.Min(float64(maxBackoff), float64(initialBackoff)*math.Pow(2, float64(attempt-1))))
-			log.Warn("Attempt failed. Retrying...", "attempt", attempt, "backoff", backoff)
+			log.Warn("Attempt failed. Retrying...", "attempt", attempt, "backoff", backoff.String(), "err", err)
 			time.Sleep(backoff)
 			return err
 		}, "attempt", strconv.Itoa(attempt))

@@ -34,7 +34,7 @@ func ErrorContext(ctx context.Context, message string, err error, params ...inte
 }
 
 func Warn(message string, params ...interface{}) {
-	WarnContext(context.Background(), message, params)
+	WarnContext(context.Background(), message, params...)
 }
 
 func WarnContext(ctx context.Context, message string, params ...interface{}) {

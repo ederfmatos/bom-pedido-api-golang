@@ -4,6 +4,8 @@ import (
 	"context"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -14,7 +16,7 @@ func StartSpan[T any](ctx context.Context, spanName string, f func(ctx context.C
 	output, err := f(ctx)
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(1, err.Error())
+		span.SetStatus(codes.Error, err.Error())
 	}
 	span.End()
 	return output, err
@@ -25,7 +27,7 @@ func StartSpanReturningError(ctx context.Context, spanName string, f func(ctx co
 	err := f(ctx)
 	if err != nil {
 		span.RecordError(err)
-		span.SetStatus(1, err.Error())
+		span.SetStatus(codes.Error, err.Error())
 	}
 	span.End()
 	return err
@@ -47,4 +49,14 @@ func startSpan(ctx context.Context, spanName string, attributes ...string) (cont
 		attrs = append(attrs, attribute.String("user.id", userID.(string)))
 	}
 	return tracer.Start(ctx, spanName, trace.WithAttributes(attrs...))
+}
+
+func GetPropagationHeaders(ctx context.Context) map[string]string {
+	var headers propagation.MapCarrier
+	otel.GetTextMapPropagator().Inject(ctx, headers)
+	return headers
+}
+
+func InjectPropagationHeaders(ctx context.Context, headers map[string]string) context.Context {
+	return otel.GetTextMapPropagator().Extract(ctx, propagation.MapCarrier(headers))
 }

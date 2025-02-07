@@ -4,6 +4,7 @@ import (
 	"bom-pedido-api/internal/application/event"
 	"bom-pedido-api/internal/infra/retry"
 	"bom-pedido-api/pkg/log"
+	"bom-pedido-api/pkg/telemetry"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -54,14 +55,23 @@ func (r *RabbitMqEventHandler) Emit(ctx context.Context, event *event.Event) err
 		log.Error("Error on emit event", err, "event", event)
 		return err
 	}
-	err = r.producerChannel.PublishWithContext(
-		ctx,
-		exchange,
-		string(event.Name),
-		false,
-		false,
-		amqp.Publishing{ContentType: "text/json", Body: eventBytes},
-	)
+
+	err = telemetry.StartSpanReturningError(ctx, "RabbitMQ.Emit", func(ctx context.Context) error {
+		headers := telemetry.GetPropagationHeaders(ctx)
+
+		return r.producerChannel.PublishWithContext(
+			ctx,
+			exchange,
+			string(event.Name),
+			false,
+			false,
+			amqp.Publishing{
+				ContentType: "text/json",
+				Body:        eventBytes,
+				Headers:     NewAmqpHeaders(headers),
+			},
+		)
+	}, "event.name", string(event.Name))
 	if err != nil {
 		log.Error("Error on publish event", err, "event", event, "exchange", exchange)
 		return err
@@ -79,8 +89,8 @@ func (r *RabbitMqEventHandler) OnEvent(eventName string, handlerFunc event.Handl
 		r.consumerChannel = consumerChannel
 	}
 	messages, err := r.consumerChannel.Consume(
-		string(eventName),
-		string("BOM_PEDIDO_API_"+eventName),
+		eventName,
+		"BOM_PEDIDO_API_"+eventName,
 		false,
 		false,
 		false,
@@ -102,31 +112,50 @@ func (r *RabbitMqEventHandler) OnEvent(eventName string, handlerFunc event.Handl
 }
 
 func (r *RabbitMqEventHandler) handleMessage(message amqp.Delivery, handler event.HandlerFunc) {
-	ctx := context.Background()
-	log.Info("Mensagem recebida", "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
-	var applicationEvent event.Event
-	err := json.Unmarshal(message.Body, &applicationEvent)
-	messageEvent := &event.MessageEvent{
-		Event: &applicationEvent,
-		AckFn: func(ctx context.Context) error {
-			return message.Ack(false)
-		},
-		NackFn: func(ctx context.Context) {
-			_ = message.Nack(false, true)
-		},
-	}
-	defer func() {
-		if err == nil {
-			log.Info("Mensagem consumida com sucesso", "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
-			return
+	ctx := telemetry.InjectPropagationHeaders(context.Background(), ParseAmqpTable(message.Headers))
+
+	_ = telemetry.StartSpanReturningError(ctx, fmt.Sprintf("%s.HandleMessage", message.ConsumerTag), func(ctx context.Context) error {
+		var applicationEvent event.Event
+		err := json.Unmarshal(message.Body, &applicationEvent)
+		messageEvent := &event.MessageEvent{
+			Event: &applicationEvent,
+			AckFn: func(ctx context.Context) error {
+				return message.Ack(false)
+			},
+			NackFn: func(ctx context.Context) {
+				_ = message.Nack(false, true)
+			},
 		}
-		messageEvent.Nack(ctx)
-		log.Error("Ocorreu um erro no consumo da mensagem", err, "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
-	}()
-	if err != nil {
-		return
-	}
-	err = retry.Func(ctx, 5, time.Second, time.Second*30, func(ctx context.Context) error {
-		return handler(ctx, messageEvent)
+		defer func() {
+			if err != nil {
+				messageEvent.Nack(ctx)
+				log.Error("Ocorreu um erro no consumo da mensagem", err, "consumer", message.ConsumerTag, "routingKey", message.RoutingKey)
+			}
+		}()
+		if err != nil {
+			return nil
+		}
+
+		err = retry.Func(ctx, 5, time.Second, time.Second*30, func(ctx context.Context) error {
+			return handler(ctx, messageEvent)
+		})
+
+		return err
 	})
+}
+
+func NewAmqpHeaders(headers map[string]string) amqp.Table {
+	table := amqp.Table{}
+	for key, value := range headers {
+		table[key] = value
+	}
+	return table
+}
+
+func ParseAmqpTable(headers amqp.Table) map[string]string {
+	values := map[string]string{}
+	for key, value := range headers {
+		values[key] = value.(string)
+	}
+	return values
 }
