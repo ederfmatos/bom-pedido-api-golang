@@ -52,7 +52,7 @@ func startSpan(ctx context.Context, spanName string, attributes ...string) (cont
 }
 
 func GetPropagationHeaders(ctx context.Context) map[string]string {
-	var headers propagation.MapCarrier
+	headers := propagation.MapCarrier{}
 	otel.GetTextMapPropagator().Inject(ctx, headers)
 	return headers
 }

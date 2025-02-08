@@ -65,6 +65,7 @@ func ConfigureRoutes(
 	server.AddMiddleware(handler.ErrorHandlerMiddleware())
 	server.AddMiddleware(middlewares.TelemetryMiddleware)
 	server.AddMiddleware(middlewares.AuthenticateMiddleware())
+	server.AddMiddleware(middlewares.MetricMiddleware)
 
 	server.Get("/health", healthHandler.Health)
 

@@ -6,6 +6,7 @@ import (
 	"bom-pedido-api/pkg/telemetry"
 	"context"
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log2 "log"
 	net "net/http"
 	"os"
@@ -20,8 +21,10 @@ type HTTPServer struct {
 }
 
 func NewHTTPServer(address string) http.Server {
+	server := &net.Server{Addr: address}
+	net.Handle("/metrics", promhttp.Handler())
 	return &HTTPServer{
-		server:      &net.Server{Addr: address},
+		server:      server,
 		middlewares: []http.Middleware{},
 	}
 }

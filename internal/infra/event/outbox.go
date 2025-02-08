@@ -106,3 +106,7 @@ func (handler *OutboxEventHandler) OnEvent(event string, handlerFunc event.Handl
 func (handler *OutboxEventHandler) Close() {
 	handler.handler.Close()
 }
+
+func (handler *OutboxEventHandler) Name() string {
+	return "OUTBOX"
+}

@@ -8,6 +8,7 @@ type HandlerFunc func(ctx context.Context, message *MessageEvent) error
 
 type MessageEvent struct {
 	Event  *Event
+	Topic  string
 	AckFn  func(context.Context) error
 	NackFn func(context.Context)
 }
@@ -35,4 +36,5 @@ type Handler interface {
 	Emitter
 	OnEvent(eventName string, handler HandlerFunc)
 	Close()
+	Name() string
 }

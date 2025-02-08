@@ -141,3 +141,18 @@ func (m Middlewares) RequestIDMiddleware(handler Handler) Handler {
 		return handler(request, response)
 	}
 }
+
+func (m Middlewares) MetricMiddleware(handler Handler) Handler {
+	return func(request Request, response Response) error {
+		tags := map[string]string{
+			"http_method": request.Method(),
+			"http_url":    request.URL(),
+		}
+		telemetry.IncrementMetricWithTags("http_request", tags)
+		err := handler(request, response)
+		if err != nil {
+			telemetry.IncrementErrorMetricWithTags("http_request", err, tags)
+		}
+		return err
+	}
+}

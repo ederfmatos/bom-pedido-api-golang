@@ -9,10 +9,14 @@ import (
 	"encoding/json"
 	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"strings"
 	"time"
 )
 
-const exchange = "bompedido"
+const (
+	exchange                  = "bompedido"
+	_rabbitMQEventHandlerName = "RABBITMQ"
+)
 
 type RabbitMqEventHandler struct {
 	connection      *amqp.Connection
@@ -118,6 +122,7 @@ func (r *RabbitMqEventHandler) handleMessage(message amqp.Delivery, handler even
 		var applicationEvent event.Event
 		err := json.Unmarshal(message.Body, &applicationEvent)
 		messageEvent := &event.MessageEvent{
+			Topic: strings.ReplaceAll(message.ConsumerTag, "BOM_PEDIDO_API_", ""),
 			Event: &applicationEvent,
 			AckFn: func(ctx context.Context) error {
 				return message.Ack(false)
@@ -142,6 +147,10 @@ func (r *RabbitMqEventHandler) handleMessage(message amqp.Delivery, handler even
 
 		return err
 	})
+}
+
+func (r *RabbitMqEventHandler) Name() string {
+	return _rabbitMQEventHandlerName
 }
 
 func NewAmqpHeaders(headers map[string]string) amqp.Table {
